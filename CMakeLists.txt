@@ -70,14 +70,12 @@ add_subdirectory(src)
 add_subdirectory(test)
 
 # Build Documentation
-#if (BUILD_DOXYGEN)
-  find_package(Doxygen QUIET)
-  if(DOXYGEN_FOUND)
+find_package(Doxygen QUIET)
+if(DOXYGEN_FOUND)
     add_subdirectory (doc)
-  else(DOXYGEN_FOUND)
+else(DOXYGEN_FOUND)
     message(STATUS "Doxygen not found. Documentation will not be built.")
-  endif(DOXYGEN_FOUND)
-#endif (BUILD_DOXYGEN)
+endif(DOXYGEN_FOUND)
 
 message(STATUS "Install ${CMAKE_INSTALL_PREFIX}")
 

@@ -63,7 +63,7 @@ make python
 ```
 
 
-### Usage Example
+### Python Usage Example
 
 ```
 # copy this code in the same directory of libpyfarmhash64 library
