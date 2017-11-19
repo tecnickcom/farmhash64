@@ -53,3 +53,32 @@ To build a library:
 make build
 ```
 Set *VH_BUILD_SHARED_LIB* in config.mk to build a static or shared library.
+
+
+## Python Module
+
+A shared library can be built using the command:
+```
+make python
+```
+
+
+### Usage Example
+
+```
+# copy this code in the same directory of libpyfarmhash64 library
+
+import libpyfarmhash64 as vh
+
+print('\nUSAGE EXAMPLE:\n')
+
+vhash = vh.farmhash64("Lorem ipsum dolor sit amet")
+print('vh.farmhash64("Lorem ipsum dolor sit amet")')
+print("Variant Hash (DEC): %d" % vhash)
+print("Variant Hash (HEX): %x\n" % vhash)
+
+vhash = vh.farmhash32("Lorem ipsum dolor sit amet")
+print('vh.farmhash32("Lorem ipsum dolor sit amet")')
+print("Variant Hash (DEC): %d" % vhash)
+print("Variant Hash (HEX): %x\n" % vhash)
+```

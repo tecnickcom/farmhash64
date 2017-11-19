@@ -1,0 +1,4 @@
+include ../README.md
+include ../LICENSE
+include ../src/farmhash64.h
+include src/pyvarianthash64.h

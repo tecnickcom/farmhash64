@@ -5,7 +5,7 @@
 # ------------------------------------------------------------------------------
 
 # List special make targets that are not associated with files
-.PHONY: help qa test build doc format clean
+.PHONY: help qa test build python doc format clean
 
 # Use bash as shell (Note: Ubuntu now uses dash which doesn't support PIPESTATUS).
 SHELL=/bin/bash
@@ -49,6 +49,7 @@ help:
 	@echo "    make qa      : Run all the tests and static analysis reports"
 	@echo "    make test    : Run the unit tests"
 	@echo "    make build   : Build the library"
+	@echo "    make python  : Build the python module"
 	@echo "    make doc     : Generate source code documentation"
 	@echo "    make format  : Format the source code"
 	@echo "    make clean   : Remove any build artifact"
@@ -103,6 +104,11 @@ build:
 	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./ && \
 	env CTEST_OUTPUT_ON_FAILURE=1 make test | tee test.log ; test $${PIPESTATUS[0]} -eq 0
 
+# Build the python module
+python:
+	cd python && \
+	python setup.py build_ext --include-dirs=../src
+
 # Generate source code documentation
 doc:
 	cd target/build && \
@@ -113,6 +119,8 @@ format:
 	astyle --style=allman --recursive --suffix=none 'src/*.h'
 	astyle --style=allman --recursive --suffix=none 'src/*.c'
 	astyle --style=allman --recursive --suffix=none 'test/*.c'
+	astyle --style=allman --recursive --suffix=none 'python/src/*.h'
+	astyle --style=allman --recursive --suffix=none 'python/src/*.c'
 
 # Remove any build artifact
 clean:
