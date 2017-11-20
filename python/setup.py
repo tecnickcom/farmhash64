@@ -1,29 +1,10 @@
 #!/usr/bin/env python
 
 
-from subprocess import call
-from setuptools import setup, find_packages, Command, Extension
+from setuptools import setup, find_packages, Extension
 
 
 VERSION = (1, 0, 0)
-
-
-class RunTests(Command):
-    """Run all tests."""
-    description = 'run tests'
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        """Run all tests!"""
-        errno = call(['py.test', '--cov=libpyfarmhash64', '--cov-report=term-missing'])
-        raise SystemExit(errno)
-
 
 setup(
     name='libpyfarmhash64',
@@ -51,8 +32,4 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
     ],
-    extras_require = {
-        'test': ['coverage', 'pytest', 'pytest-cov'],
-    },
-    cmdclass = {'test': RunTests},
 )
