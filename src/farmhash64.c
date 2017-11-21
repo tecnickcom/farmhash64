@@ -134,6 +134,12 @@
 #define uint64_t_in_expected_order(x) (x)
 #endif
 
+typedef struct uint128_t
+{
+    uint64_t a;
+    uint64_t b;
+} uint128_t;
+
 STATIC_INLINE uint64_t uint128_t_low64(const uint128_t x)
 {
     return x.a;
