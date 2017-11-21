@@ -7,8 +7,9 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
-#include "farmhash64.c"
+#include "farmhash64.h"
 
 static const int k_test_size = 300;
 static const int k_data_size = 1048576; // 1 << 20
@@ -258,6 +259,7 @@ uint64_t get_time()
 // Initialize data to pseudorandom values.
 void data_setup()
 {
+    static const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
     uint64_t a = 9;
     uint64_t b = 777;
     for (int i = 0; i < k_data_size; i++)
