@@ -43,6 +43,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+typedef struct uint128_t
+{
+    uint64_t a;
+    uint64_t b;
+} uint128_t;
+
 /**
  * @brief 64 bit hash.
  *
