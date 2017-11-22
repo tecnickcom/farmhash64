@@ -5,13 +5,24 @@ package farmhash64
 #include "../../src/farmhash64.c"
 */
 import "C"
+import "unsafe"
 
 // FarmHash64 returns a 64-bit fingerprint hash for a string.
-func FarmHash64(s string) uint64 {
-	return uint64(C.farmhash64(C.CString(s), C.size_t(len(s))))
+func FarmHash64(s []byte) uint64 {
+	slen := len(s)
+	var p unsafe.Pointer
+	if slen > 0 {
+		p = unsafe.Pointer(&s[0]) /* #nosec */
+	}
+	return uint64(C.farmhash64((*C.char)(p), C.size_t(slen)))
 }
 
 // FarmHash32 returns a 32-bit fingerprint hash for a string.
-func FarmHash32(s string) uint32 {
-	return uint32(C.farmhash32(C.CString(s), C.size_t(len(s))))
+func FarmHash32(s []byte) uint32 {
+	slen := len(s)
+	var p unsafe.Pointer
+	if slen > 0 {
+		p = unsafe.Pointer(&s[0]) /* #nosec */
+	}
+	return uint32(C.farmhash32((*C.char)(p), C.size_t(slen)))
 }

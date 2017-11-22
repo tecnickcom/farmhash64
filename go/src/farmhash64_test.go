@@ -143,21 +143,21 @@ var expectedFarmHash64 = []uint32{
 
 func TestFarmHash64Strings(t *testing.T) {
 	for _, tt := range hashTestData {
-		if h := FarmHash64(tt.in); h != tt.oh64 {
+		if h := FarmHash64([]byte(tt.in)); h != tt.oh64 {
 			t.Errorf("FarmHash64(%q)=%#08x (len=%d), want %#08x", tt.in, h, len(tt.in), tt.oh64)
 		}
 	}
 }
 
 func BenchmarkFarmHash64(b *testing.B) {
-	var buf = "X:2789730_CAAATAAATAAATAAAT_C"
+	var buf = []byte("X:2789730_CAAATAAATAAATAAAT_C")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		FarmHash64(buf)
 	}
 }
 
-func dataSetup() string {
+func dataSetup() []byte {
 	const k0 uint64 = 0xc3a5c85c97cb3127
 	data := make([]byte, dataSize)
 	var a uint64 = 9
@@ -171,10 +171,10 @@ func dataSetup() string {
 		u = byte(b >> 37)
 		data[i] = u
 	}
-	return string(data)
+	return data
 }
 
-func testDataItemFarmHash64(t *testing.T, data string, offset int, len int, index int) {
+func testDataItemFarmHash64(t *testing.T, data []byte, offset int, len int, index int) {
 	h := FarmHash64(data[offset : offset+len])
 	a := (uint32)(h >> 32)
 	if a != expectedFarmHash64[index] {
@@ -203,7 +203,7 @@ func TestFarmHash64(t *testing.T) {
 
 func TestFarmHash32Strings(t *testing.T) {
 	for _, tt := range hashTestData {
-		h := FarmHash32(tt.in)
+		h := FarmHash32([]byte(tt.in))
 		if h != tt.oh32 {
 			t.Errorf("FarmHash32(%q)=%#08x (len=%d), want %#08x", tt.in, h, len(tt.in), tt.oh32)
 		}
