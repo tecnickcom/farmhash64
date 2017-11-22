@@ -57,7 +57,7 @@ help:
 	@echo ""
 
 # Alias for help target
-all: test build
+all: clean format test build python pytest
 
 # BUikd and run the unit tests
 test:
@@ -135,3 +135,6 @@ format:
 clean:
 	rm -rf ./target
 	rm -rf ./python/build
+	rm -rf ./python/.cache
+	rm -rf ./python/tests/*.so
+	rm -rf ./python/tests/__pycache__
