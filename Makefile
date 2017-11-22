@@ -110,7 +110,7 @@ python:
 	cd python && \
 	rm -rf ./build && \
 	python3 setup.py build_ext --include-dirs=../src && \
-	rm -f test/*.so && \
+	rm -f tests/*.so && \
 	find build/ -iname '*.so' -exec cp {} tests/ \;
 
 # Test python module
