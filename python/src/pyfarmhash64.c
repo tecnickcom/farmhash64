@@ -22,7 +22,7 @@ static PyObject* py_farmhash64(PyObject *Py_UNUSED(ignored), PyObject *args)
     PyObject *result;
     const char *s;
     Py_ssize_t len;
-    if (!PyArg_ParseTuple(args, "s", &s))
+    if (!PyArg_ParseTuple(args, "s#", &s))
         return NULL;
     len = strlen(s);
     uint64_t h = farmhash64(s, len);
@@ -40,7 +40,7 @@ static PyObject* py_farmhash32(PyObject *Py_UNUSED(ignored), PyObject *args)
     PyObject *result;
     const char *s;
     Py_ssize_t len;
-    if (!PyArg_ParseTuple(args, "s", &s))
+    if (!PyArg_ParseTuple(args, "s#", &s))
         return NULL;
     len = strlen(s);
     uint64_t h = farmhash32(s, len);

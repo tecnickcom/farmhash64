@@ -13,4 +13,4 @@ class TestFunctions(TestCase):
 
     def test_farmhash32(self):
         h = vh.farmhash32("Lorem ipsum dolor sit amet")
-        self.assertEqual(h, 0xb241db06777)
+        self.assertEqual(h, 0xb241db06)
