@@ -108,6 +108,7 @@ build:
 # Build the python module
 python:
 	cd python && \
+	rm -rf ./build && \
 	python3 setup.py build_ext --include-dirs=../src && \
 	rm -f test/*.so && \
 	find build/ -iname '*.so' -exec cp {} tests/ \;
