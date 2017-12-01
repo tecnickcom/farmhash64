@@ -76,9 +76,4 @@ vhash = vh.farmhash64("Lorem ipsum dolor sit amet")
 print('vh.farmhash64("Lorem ipsum dolor sit amet")')
 print("Variant Hash (DEC): %d" % vhash)
 print("Variant Hash (HEX): %x\n" % vhash)
-
-vhash = vh.farmhash32("Lorem ipsum dolor sit amet")
-print('vh.farmhash32("Lorem ipsum dolor sit amet")')
-print("Variant Hash (DEC): %d" % vhash)
-print("Variant Hash (HEX): %x\n" % vhash)
 ```
