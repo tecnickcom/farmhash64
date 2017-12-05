@@ -149,7 +149,7 @@ func TestFarmHash64Strings(t *testing.T) {
 }
 
 func BenchmarkFarmHash64(b *testing.B) {
-	var buf = []byte("X:2789730_CAAATAAATAAATAAAT_C")
+	var buf = []byte("2ZVSmMwBTILcCekZjgZ49Py5RoJUriQ7URkCgZPw")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		FarmHash64(buf)
