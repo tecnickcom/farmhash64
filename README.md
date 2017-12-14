@@ -4,6 +4,7 @@
 
 [![Master Build Status](https://secure.travis-ci.org/tecnickcom/farmhash64.png?branch=master)](https://travis-ci.org/tecnickcom/farmhash64?branch=master)
 [![Master Coverage Status](https://coveralls.io/repos/tecnickcom/farmhash64/badge.svg?branch=master&service=github)](https://coveralls.io/github/tecnickcom/farmhash64?branch=master)
+[![GoDoc](https://godoc.org/github.com/dgryski/go-farm?status.svg)](https://godoc.org/github.com/tecnickcom/farmhash64/go/src)
 
 * **category**    Libraries
 * **license**     MIT (see LICENSE)
