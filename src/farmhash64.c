@@ -22,8 +22,8 @@
 // THE SOFTWARE.
 
 #include "farmhash64.h"
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 
 // PORTABILITY LAYER: "static inline" or similar
 
