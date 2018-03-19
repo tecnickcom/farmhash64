@@ -19,33 +19,24 @@
 
 static PyObject* py_farmhash64(PyObject *Py_UNUSED(ignored), PyObject *args)
 {
-    PyObject *result;
     const char *s;
     Py_ssize_t len;
     if (!PyArg_ParseTuple(args, "s#", &s))
         return NULL;
     len = strlen(s);
     uint64_t h = farmhash64(s, len);
-# if __WORDSIZE == 64
-    const char* int_param = "k"; // (int) [unsigned long]
-# else
-    const char* int_param = "K"; // (int) [unsigned long long]
-#endif
-    result = Py_BuildValue(int_param, h);
-    return result;
+    return Py_BuildValue("K", h);
 }
 
 static PyObject* py_farmhash32(PyObject *Py_UNUSED(ignored), PyObject *args)
 {
-    PyObject *result;
     const char *s;
     Py_ssize_t len;
     if (!PyArg_ParseTuple(args, "s#", &s))
         return NULL;
     len = strlen(s);
-    uint64_t h = farmhash32(s, len);
-    result = Py_BuildValue("I", h);
-    return result;
+    uint32_t h = farmhash32(s, len);
+    return Py_BuildValue("I", h);
 }
 
 static PyMethodDef PyFarmhash64Methods[] =
