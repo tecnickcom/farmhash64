@@ -75,7 +75,7 @@ static int myextension_clear(PyObject *m)
 static struct PyModuleDef moduledef =
 {
     PyModuleDef_HEAD_INIT,
-    "libpyfarmhash64",
+    "farmhash64",
     NULL,
     sizeof(struct module_state),
     PyFarmhash64Methods,
@@ -87,19 +87,19 @@ static struct PyModuleDef moduledef =
 
 #define INITERROR return NULL
 
-PyObject* PyInit_libpyfarmhash64(void)
+PyObject* PyInit_farmhash64(void)
 
 #else
 #define INITERROR return
 
 void
-initlibpyfarmhash64(void)
+initfarmhash64(void)
 #endif
 {
 #if PY_MAJOR_VERSION >= 3
     PyObject *module = PyModule_Create(&moduledef);
 #else
-    PyObject *module = Py_InitModule("libpyfarmhash64", PyFarmhash64Methods);
+    PyObject *module = Py_InitModule("farmhash64", PyFarmhash64Methods);
 #endif
     struct module_state *st = NULL;
 
@@ -107,7 +107,7 @@ initlibpyfarmhash64(void)
         INITERROR;
     st = GETSTATE(module);
 
-    st->error = PyErr_NewException("libpyfarmhash64.Error", NULL, NULL);
+    st->error = PyErr_NewException("farmhash64.Error", NULL, NULL);
     if (st->error == NULL)
     {
         Py_DECREF(module);

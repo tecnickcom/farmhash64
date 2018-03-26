@@ -1,0 +1,28 @@
+package:
+  name: farmhash64
+  version: 1.1.10.1
+
+source:
+  path: ..
+
+requirements:
+  build:
+    - setuptools
+  run:
+    - python
+
+test:
+  requires:
+    - python
+    - setuptools
+    - coverage
+    - pytest
+    - pytest-pep8
+    - pytest-cov
+    - pytest-benchmark
+  imports:
+    - farmhash64
+
+about:
+  home: https://github.com/tecnickcom/farmhash64
+  license: MIT

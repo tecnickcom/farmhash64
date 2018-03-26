@@ -5,7 +5,7 @@
 # ------------------------------------------------------------------------------
 
 # List special make targets that are not associated with files
-.PHONY: help qa test tidy build python pytest go cgo doc format clean
+.PHONY: help qa test tidy build python version conda go cgo doc format clean
 
 # Use bash as shell (Note: Ubuntu now uses dash which doesn't support PIPESTATUS).
 SHELL=/bin/bash
@@ -34,6 +34,9 @@ PKGNAME=${VENDOR}-${PROJECT}
 # Current directory
 CURRENTDIR=$(shell pwd)
 
+# Conda environment
+CONDA_ENV=${CURRENTDIR}/../env-${PROJECT}
+
 # Include default build configuration
 include $(CURRENTDIR)/config.mk
 
@@ -50,8 +53,9 @@ help:
 	@echo "    make test    : Run the unit tests"
 	@echo "    make tidy    : Check the code using clang-tidy"
 	@echo "    make build   : Build the library"
-	@echo "    make python  : Build the python module"
-	@echo "    make pytest  : Test the python module"
+	@echo "    make python  : Build and test the python module"
+	@echo "    make version : Set version from VERSION file"
+	@echo "    make conda   : Build a conda package for the python wrapper"
 	@echo "    make go      : Test the native golang module"
 	@echo "    make cgo     : Test the golang cgo module"
 	@echo "    make doc     : Generate source code documentation"
@@ -115,18 +119,26 @@ build:
 	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./ && \
 	env CTEST_OUTPUT_ON_FAILURE=1 make test | tee test.log ; test $${PIPESTATUS[0]} -eq 0
 
+# Set the version from VERSION file
+version:
+	sed -i "s/version:.*$$/version: $(VERSION).$(RELEASE)/" conda/meta.yaml
+	sed -i "s/__version__.*$$/__version__ = '$(VERSION)'/" python/farmhash64/__init__.py
+
 # Build the python module
-python:
+python: version
 	cd python && \
 	rm -rf ./build && \
 	python3 setup.py build_ext --include-dirs=../src && \
 	rm -f tests/*.so && \
-	find build/ -iname '*.so' -exec cp {} tests/ \;
-
-# Test python module
-pytest:
-	cd python && \
+	find build/ -iname '*.so' -exec cp {} tests/ \; && \
 	python3 setup.py test
+
+# Build a conda package
+conda: version
+	@mkdir -p target
+	./conda/setup-conda.sh && \
+	${CONDA_ENV}/bin/conda build --prefix-length 160 --no-anaconda-upload --no-remove-work-dir --override-channels $(ARTIFACTORY_CONDA_CHANNELS) conda
+
 
 # Test golang module
 go:
@@ -148,16 +160,16 @@ format:
 	astyle --style=allman --recursive --suffix=none 'src/*.h'
 	astyle --style=allman --recursive --suffix=none 'src/*.c'
 	astyle --style=allman --recursive --suffix=none 'test/*.c'
-	astyle --style=allman --recursive --suffix=none 'python/src/*.h'
-	astyle --style=allman --recursive --suffix=none 'python/src/*.c'
+	astyle --style=allman --recursive --suffix=none 'python/farmhash64/*.h'
+	astyle --style=allman --recursive --suffix=none 'python/farmhash64/*.c'
 	autopep8 --in-place --aggressive --aggressive ./python/tests/*.py
 	cd cgo && make format
 	cd go && make format
 
 # Remove any build artifact
 clean:
-	rm -rf ./target
-	rm -rf ./python/build
-	rm -rf ./python/.cache
-	rm -rf ./python/tests/*.so
-	rm -rf ./python/tests/__pycache__
+	rm -rf target
+	rm -rf ./go/target ./go/src.test
+	rm -rf ./python/htmlcov ./python/build ./python/dist ./python/.cache ./python/.benchmarks ./python/tests/*.so ./python/tests/__pycache__ ./python/farmhash64/__pycache__ ./python/farmhash64.egg-info
+	find . -type f -name '*.pyc' -exec rm -f {} \;
+

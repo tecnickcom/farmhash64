@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 from codecs import open
+from os.path import abspath, dirname, join
 from subprocess import call
 from setuptools import setup, find_packages, Extension, Command
-
-
-VERSION = (1, 0, 0)
-
+from farmhash64 import __version__ as VERSION
 
 class RunTests(Command):
     """Run all tests."""
@@ -26,21 +24,37 @@ class RunTests(Command):
 
 
 setup(
-    name='libpyfarmhash64',
-    version=".".join([str(x) for x in VERSION]),
+    name='farmhash64',
+    version=VERSION,
     keywords=('farmhash64', 'farmhash'),
     description="Farmhash64 Bindings for Python",
-    long_description=open('../README.md', 'r').read(),
     author='Nicola Asuni',
     author_email='nicola.asuni@tecnick.com',
     url='https://github.com/tecnickcom/farmhash64',
-    packages=find_packages('src', exclude=['docs', 'tests*']),
-    package_dir={'': 'src'},
+    packages=find_packages(exclude=['docs', 'tests*']),
     ext_modules=[
-        Extension('libpyfarmhash64', [
+        Extension('farmhash64', [
             '../src/farmhash64.c',
-            'src/pyfarmhash64.c'
-        ], extra_compile_args=["-O3"])
+            'farmhash64/pyfarmhash64.c'
+        ],
+        include_dirs=[
+            '../src',
+            'farmhash64',
+        ],
+        extra_compile_args=[
+            "-O3",
+            "-pedantic",
+            "-std=c99",
+            "-Wall",
+            "-Wextra",
+            "-Wno-strict-prototypes",
+            "-Wunused-value",
+            "-Wcast-align",
+            "-Wundef",
+            "-Wformat-security",
+            "-Wshadow",
+            "-I../src",
+        ])
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -48,11 +62,15 @@ setup(
         'Intended Audience :: Developers',
         'Programming Language :: C',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
     ],
-    extras_require = {
-        'test': ['pytest', 'pytest-benchmark'],
+    extras_require={
+        'test': [
+            'coverage',
+            'pytest',
+            'pytest-benchmark',
+            'pytest-cov',
+            'pytest-pep8',
+        ],
     },
-    cmdclass = {'test': RunTests},
+    cmdclass={'test': RunTests},
 )

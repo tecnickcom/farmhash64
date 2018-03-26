@@ -1,7 +1,7 @@
-"""Tests for libpyfarmhash64 module."""
+"""Tests for farmhash64 module."""
 
 
-import libpyfarmhash64 as vh
+import farmhash64 as vh
 from unittest import TestCase
 
 

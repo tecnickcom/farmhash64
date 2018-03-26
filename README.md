@@ -67,9 +67,9 @@ make python
 ### Python Usage Example
 
 ```
-# copy this code in the same directory of libpyfarmhash64 library
+# copy this code in the same directory of farmhash64 library
 
-import libpyfarmhash64 as vh
+import farmhash64 as vh
 
 print('\nUSAGE EXAMPLE:\n')
 

@@ -6,7 +6,7 @@ include setup.cfg
 include ../README.md
 include ../LICENSE
 include ../src/farmhash64.h
-include src/pyfarmhash64.h
+include farmhash64/pyfarmhash64.h
 prune .cache
 prune .git
 prune build
