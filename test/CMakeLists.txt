@@ -16,13 +16,13 @@ endmacro ()
 
 # create a smoke test
 function(SMOKE_TEST test_name test_file dependencies)
-  add_executable (${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_file})
+  add_executable (${test_name} ${test_file})
   # Link the executable to the libraries
   target_link_libraries (${test_name} ${dependencies})
   # run test
   do_test (${test_name})
 endfunction(SMOKE_TEST)
 
-file (COPY test_farmhash64.c DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file (COPY DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 SMOKE_TEST (test_farmhash test_farmhash64.c farmhash64)
 
