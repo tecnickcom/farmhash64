@@ -4,7 +4,7 @@ from codecs import open
 from os.path import abspath, dirname, join
 from subprocess import call
 from setuptools import setup, find_packages, Extension, Command
-from farmhash64 import __version__ as VERSION
+
 
 class RunTests(Command):
     """Run all tests."""
@@ -25,11 +25,11 @@ class RunTests(Command):
 
 setup(
     name='farmhash64',
-    version=VERSION,
+    version='1.1.11',
     keywords=('farmhash64', 'farmhash'),
     description="Farmhash64 Bindings for Python",
     author='Nicola Asuni',
-    author_email='nicola.asuni@tecnick.com',
+    author_email='info@tecnick.com',
     url='https://github.com/tecnickcom/farmhash64',
     packages=find_packages(exclude=['docs', 'tests*']),
     ext_modules=[

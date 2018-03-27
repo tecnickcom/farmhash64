@@ -1,7 +1,7 @@
 """Tests for farmhash64 module."""
 
 
-import farmhash64 as vh
+import farmhash64 as fh
 from unittest import TestCase
 
 
@@ -58,12 +58,12 @@ class TestFunctions(TestCase):
 
     def test_farmhash64_strings(self):
         for expected32, expected64, test_input in hashTestData:
-            h = vh.farmhash64(test_input)
+            h = fh.farmhash64(test_input)
             self.assertEqual(h, expected64)
 
     def test_farmhash32_strings(self):
         for expected32, expected64, test_input in hashTestData:
-            h = vh.farmhash32(test_input)
+            h = fh.farmhash32(test_input)
             self.assertEqual(h, expected32)
 
 
@@ -71,7 +71,7 @@ class TestBenchmark(object):
 
     def test_farmhash64_benchmark(self, benchmark):
         benchmark.pedantic(
-            vh.farmhash64,
+            fh.farmhash64,
             args=["2ZVSmMwBTILcCekZjgZ49Py5RoJUriQ7URkCgZPw"],
             iterations=10000,
             rounds=100)

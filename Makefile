@@ -122,7 +122,7 @@ build:
 # Set the version from VERSION file
 version:
 	sed -i "s/version:.*$$/version: $(VERSION).$(RELEASE)/" conda/meta.yaml
-	sed -i "s/__version__.*$$/__version__ = '$(VERSION)'/" python/farmhash64/__init__.py
+	sed -i "s/version=.*,$$/version='$(VERSION)',/" python/setup.py
 
 # Build the python module
 python: version
@@ -131,14 +131,13 @@ python: version
 	python3 setup.py build_ext --include-dirs=../src && \
 	rm -f tests/*.so && \
 	find build/ -iname '*.so' -exec cp {} tests/ \; && \
-	python3 setup.py test
+	python3 setup.py test --verbose
 
 # Build a conda package
 conda: version
 	@mkdir -p target
 	./conda/setup-conda.sh && \
 	${CONDA_ENV}/bin/conda build --prefix-length 160 --no-anaconda-upload --no-remove-work-dir --override-channels $(ARTIFACTORY_CONDA_CHANNELS) conda
-
 
 # Test golang module
 go:

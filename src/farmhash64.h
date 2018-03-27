@@ -40,6 +40,10 @@
 #ifndef FARMHASH64_H
 #define FARMHASH64_H
 
+#ifdef __cplusplus
+}
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -73,5 +77,9 @@ uint64_t farmhash64(const char* s, size_t len);
  * @return 32-bit hash code
  */
 uint32_t farmhash32(const char* s, size_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // FARMHASH64_H
