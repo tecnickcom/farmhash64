@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 from codecs import open
-from os.path import abspath, dirname, join
+from os.path import dirname, join
 from subprocess import call
 from setuptools import setup, find_packages, Extension, Command
 
+def read(fname):
+    return open(join(dirname(__file__), fname)).read()
 
 class RunTests(Command):
     """Run all tests."""
@@ -25,12 +27,15 @@ class RunTests(Command):
 
 setup(
     name='farmhash64',
-    version='1.1.11',
+    version='1.1.12',
     keywords=('farmhash64', 'farmhash'),
     description="Farmhash64 Bindings for Python",
+    long_description=read('../README.md'),
     author='Nicola Asuni',
     author_email='info@tecnick.com',
     url='https://github.com/tecnickcom/farmhash64',
+    license='MIT',
+    platforms='Linux',
     packages=find_packages(exclude=['docs', 'tests*']),
     ext_modules=[
         Extension('farmhash64', [

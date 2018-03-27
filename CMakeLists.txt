@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.1)
 project (farmhash64)
 
-set( CMAKE_VERBOSE_MAKEFILE off )
+set( CMAKE_VERBOSE_MAKEFILE on )
 
 add_definitions(-DCMAKE)
 
