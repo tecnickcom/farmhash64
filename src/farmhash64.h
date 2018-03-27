@@ -41,7 +41,7 @@
 #define FARMHASH64_H
 
 #ifdef __cplusplus
-}
+extern "C" {
 #endif
 
 #include <stdint.h>
