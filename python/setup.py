@@ -21,13 +21,13 @@ class RunTests(Command):
 
     def run(self):
         """Run all tests!"""
-        errno = call(['py.test'])
+        errno = call(['py.test', '--verbose'])
         raise SystemExit(errno)
 
 
 setup(
     name='farmhash64',
-    version='1.1.12',
+    version='1.2.0',
     keywords=('farmhash64', 'farmhash'),
     description="Farmhash64 Bindings for Python",
     long_description=read('../README.md'),
