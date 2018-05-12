@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "farmhash64.h"
+#include "../src/farmhash64.h"
 
 #define TEST_STRING_DATA_SIZE 45
 
