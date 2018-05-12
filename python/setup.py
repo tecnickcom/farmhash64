@@ -21,29 +21,32 @@ class RunTests(Command):
 
     def run(self):
         """Run all tests!"""
-        errno = call(['py.test', '--verbose'])
+        errno = call([
+            'py.test',
+            '--verbose',
+        ])
         raise SystemExit(errno)
 
 
 setup(
     name='farmhash64',
-    version='1.2.0',
-    keywords=('farmhash64', 'farmhash'),
-    description="Farmhash64 Bindings for Python",
+    version='2.0.0',
+    keywords=('farmhash64'),
+    description="farmhash64 Bindings for Python",
     long_description=read('../README.md'),
     author='Nicola Asuni',
     author_email='info@tecnick.com',
     url='https://github.com/tecnickcom/farmhash64',
     license='MIT',
     platforms='Linux',
-    packages=find_packages(exclude=['docs', 'tests*']),
+    packages=find_packages(exclude=['docs', 'test*']),
     ext_modules=[
         Extension('farmhash64', [
-            '../src/farmhash64.c',
+             '../c/src/farmhash64.c',
             'farmhash64/pyfarmhash64.c'
         ],
         include_dirs=[
-            '../src',
+            '../c/src',
             'farmhash64',
         ],
         extra_compile_args=[
@@ -74,7 +77,7 @@ setup(
             'pytest',
             'pytest-benchmark',
             'pytest-cov',
-            'pytest-pep8',
+            'pycodestyle',
         ],
     },
     cmdclass={'test': RunTests},

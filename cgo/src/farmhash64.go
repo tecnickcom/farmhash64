@@ -1,8 +1,8 @@
 package farmhash64
 
 /*
-#include "../../src/farmhash64.h"
-#include "../../src/farmhash64.c"
+#include "../../c/src/farmhash64.h"
+#include "../../c/src/farmhash64.c"
 */
 import "C"
 import "unsafe"

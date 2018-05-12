@@ -1,9 +1,12 @@
 package:
   name: farmhash64
-  version: 1.2.0.1
+  version: 2.0.0
 
 source:
-  path: ..
+  path: ../..
+
+build:
+  number: 1
 
 requirements:
   host:
@@ -20,12 +23,14 @@ test:
     - setuptools
     - coverage
     - pytest
-    - pytest-pep8
     - pytest-cov
     - pytest-benchmark
+    - pycodestyle
   imports:
     - farmhash64
 
 about:
   home: https://github.com/tecnickcom/farmhash64
   license: MIT
+  license_file: LICENSE
+  summary: Binary search for constant-lenght binary files.
