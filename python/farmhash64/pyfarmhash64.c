@@ -6,7 +6,7 @@
 // @link       https://github.com/tecnickcom/farmhash64
 
 #include <Python.h>
-#include "farmhash64.h"
+#include "../../c/src/farmhash64.h"
 #include "pyfarmhash64.h"
 
 #ifndef Py_UNUSED /* This is already defined for Python 3.4 onwards */

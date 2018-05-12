@@ -26,11 +26,11 @@ All members of the FarmHash family were designed with heavy reliance on previous
 For more information please consult https://github.com/google/farmhash
 
 
+
 ## Getting Started
 
-This application is written in C language and it is C99 compatible.
+The reference code of this application is written in C language and includes wrappers for GO and Python.
 
-This project can be built using CMake.
 A wrapper Makefile is available to allows building the project in a Linux-compatible system with simple commands.  
 All the artifacts and reports produced using this Makefile are stored in the *target* folder.  
 
@@ -39,29 +39,7 @@ To see all available options:
 make help
 ```
 
-To execute all the default test builds and generate reports in the current environment:
-```
-make test
-```
-
-To format the code (please use this command before submitting any pull request):
-```
-make format
-```
-
-To build a library:
-```
-make build
-```
-Set *VH_BUILD_SHARED_LIB* in config.mk to build a static or shared library.
-
-
-## Python Module
-
-A shared library can be built using the command:
-```
-make python
-```
+use the command ```make all``` to build and test all the implementations.
 
 
 ### Python Usage Example
