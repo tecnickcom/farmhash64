@@ -8,13 +8,46 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-static PyObject *py_farmhash64(PyObject *self, PyObject *args);
-static PyObject *py_farmhash32(PyObject *self, PyObject *args);
+static PyObject *py_farmhash64(PyObject *self, PyObject *args, PyObject *keywds);
+static PyObject *py_farmhash32(PyObject *self, PyObject *args, PyObject *keywds);
 
 PyMODINIT_FUNC initfarmhash64(void);
 
-#define PYFARMHASH64_DOCSTRING "Returns a 64-bit fingerprint hash for a byte array.\nexample: print farmhash64.farmhash64('Lorem ipsum dolor sit amet')\n16191328082827683567"
-#define PYFARMHASH32_DOCSTRING "Returns a 32-bit fingerprint hash for a byte array.\nexample: print farmhash64.farmhash32('Lorem ipsum dolor sit amet')\n2990660358"
+#define PYFARMHASH64_DOCSTRING "Returns a 64-bit fingerprint hash for a byte array.\n"\
+"This function is not suitable for cryptography.\n"\
+"\n"\
+"Parameters\n"\
+"----------\n"\
+"s : bytes\n"\
+"    String to process.\n"\
+"\n"\
+"Returns\n"\
+"-------\n"\
+"int :\n"\
+"    64-bit hash code\n"\
+"\n"\
+"Examples\n"\
+"--------\n"\
+">>> print farmhash64.farmhash64(b'Lorem ipsum dolor sit amet')\n"\
+"16191328082827683567"
+
+#define PYFARMHASH32_DOCSTRING "Returns a 32-bit fingerprint hash for a byte array.\n"\
+"This function is not suitable for cryptography.\n"\
+"\n"\
+"Parameters\n"\
+"----------\n"\
+"s : bytes\n"\
+"    String to process.\n"\
+"\n"\
+"Returns\n"\
+"-------\n"\
+"int :\n"\
+"    32-bit hash code\n"\
+"\n"\
+"Examples\n"\
+"--------\n"\
+">>> print farmhash64.farmhash32(b'Lorem ipsum dolor sit amet')\n"\
+"2990660358"
 
 #if defined(__SUNPRO_C) || defined(__hpux) || defined(_AIX)
 #define inline
