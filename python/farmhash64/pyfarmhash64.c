@@ -17,22 +17,24 @@
 #endif
 #endif
 
-static PyObject* py_farmhash64(PyObject *Py_UNUSED(ignored), PyObject *args)
+static PyObject* py_farmhash64(PyObject *Py_UNUSED(ignored), PyObject *args, PyObject *keywds)
 {
     const char *s;
     Py_ssize_t len;
-    if (!PyArg_ParseTuple(args, "y", &s))
+    static char *kwlist[] = {"s", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "y", kwlist, &s))
         return NULL;
     len = strlen(s);
     uint64_t h = farmhash64(s, len);
     return Py_BuildValue("K", h);
 }
 
-static PyObject* py_farmhash32(PyObject *Py_UNUSED(ignored), PyObject *args)
+static PyObject* py_farmhash32(PyObject *Py_UNUSED(ignored), PyObject *args, PyObject *keywds)
 {
     const char *s;
     Py_ssize_t len;
-    if (!PyArg_ParseTuple(args, "y", &s))
+    static char *kwlist[] = {"s", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "y", kwlist, &s))
         return NULL;
     len = strlen(s);
     uint32_t h = farmhash32(s, len);
@@ -41,8 +43,8 @@ static PyObject* py_farmhash32(PyObject *Py_UNUSED(ignored), PyObject *args)
 
 static PyMethodDef PyFarmhash64Methods[] =
 {
-    {"farmhash64", py_farmhash64, METH_VARARGS, PYFARMHASH64_DOCSTRING},
-    {"farmhash32", py_farmhash32, METH_VARARGS, PYFARMHASH32_DOCSTRING},
+    {"farmhash64", (PyCFunction)py_farmhash64, METH_VARARGS|METH_KEYWORDS, PYFARMHASH64_DOCSTRING},
+    {"farmhash32", (PyCFunction)py_farmhash32, METH_VARARGS|METH_KEYWORDS, PYFARMHASH32_DOCSTRING},
     {NULL, NULL, 0, NULL}
 };
 
