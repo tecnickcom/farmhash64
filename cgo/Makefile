@@ -166,7 +166,7 @@ gosimple:
 # AST scanner
 astscan:
 	@mkdir -p target/report
-	GOPATH=$(GOPATH) gas ./src/*.go | tee target/report/astscan.txt ; test $${PIPESTATUS[0]} -eq 0 || true
+	GOPATH=$(GOPATH) gosec ./src/*.go | tee target/report/astscan.txt ; test $${PIPESTATUS[0]} -eq 0 || true
 
 # Generate source docs
 docs:
@@ -194,7 +194,7 @@ deps:
 	GOPATH=$(GOPATH) go get github.com/opennota/check/cmd/varcheck
 	GOPATH=$(GOPATH) go get github.com/kisielk/errcheck
 	GOPATH=$(GOPATH) go get honnef.co/go/tools/cmd/gosimple
-	GOPATH=$(GOPATH) go get github.com/GoASTScanner/gas
+	GOPATH=$(GOPATH) go get github.com/securego/gosec/cmd/gosec/...
 
 # Remove any build artifact
 clean:
