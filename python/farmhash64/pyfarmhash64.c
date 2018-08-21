@@ -5,6 +5,8 @@
 // @license    MIT (see LICENSE)
 // @link       https://github.com/tecnickcom/farmhash64
 
+#define MODULE_NAME "farmhash64"
+
 #include <Python.h>
 #include "../../c/src/farmhash64.h"
 #include "pyfarmhash64.h"
@@ -48,6 +50,8 @@ static PyMethodDef PyFarmhash64Methods[] =
     {NULL, NULL, 0, NULL}
 };
 
+static const char modulename[] = MODULE_NAME;
+
 struct module_state
 {
     PyObject *error;
@@ -61,7 +65,6 @@ static struct module_state _state;
 #endif
 
 #if PY_MAJOR_VERSION >= 3
-
 static int myextension_traverse(PyObject *m, visitproc visit, void *arg)
 {
     Py_VISIT(GETSTATE(m)->error);
@@ -77,7 +80,7 @@ static int myextension_clear(PyObject *m)
 static struct PyModuleDef moduledef =
 {
     PyModuleDef_HEAD_INIT,
-    "farmhash64",
+    modulename,
     NULL,
     sizeof(struct module_state),
     PyFarmhash64Methods,
@@ -90,32 +93,29 @@ static struct PyModuleDef moduledef =
 #define INITERROR return NULL
 
 PyObject* PyInit_farmhash64(void)
-
 #else
 #define INITERROR return
 
-void
-initfarmhash64(void)
+void initfarmhash64(void)
 #endif
 {
 #if PY_MAJOR_VERSION >= 3
     PyObject *module = PyModule_Create(&moduledef);
 #else
-    PyObject *module = Py_InitModule("farmhash64", PyFarmhash64Methods);
+    PyObject *module = Py_InitModule(modulename, PyFarmhash64Methods);
 #endif
     struct module_state *st = NULL;
-
     if (module == NULL)
+    {
         INITERROR;
+    }
     st = GETSTATE(module);
-
-    st->error = PyErr_NewException("farmhash64.Error", NULL, NULL);
+    st->error = PyErr_NewException(MODULE_NAME ".Error", NULL, NULL);
     if (st->error == NULL)
     {
         Py_DECREF(module);
         INITERROR;
     }
-
 #if PY_MAJOR_VERSION >= 3
     return module;
 #endif
