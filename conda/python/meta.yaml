@@ -1,6 +1,6 @@
 package:
   name: farmhash64
-  version: 2.1.4
+  version: 2.1.6
 
 source:
   path: ../..
@@ -24,8 +24,9 @@ test:
     - coverage
     - pytest
     - pytest-cov
-    - pytest-benchmark
+    - pytest-benchmark >=3.2.*
     - pycodestyle
+    - black
   imports:
     - farmhash64
 

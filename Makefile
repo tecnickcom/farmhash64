@@ -4,12 +4,10 @@
 # @link        https://github.com/tecnickcom/farmhash64
 # ------------------------------------------------------------------------------
 
-# List special make targets that are not associated with files
-.PHONY: help c cgo go python clean
-
 # --- MAKE TARGETS ---
 
 # Display general help about this command
+.PHONY: help
 help:
 	@echo ""
 	@echo "FarmHash64 Makefile."
@@ -25,22 +23,27 @@ help:
 all: clean c cgo go python
 
 # Build and test the C version
+.PHONY: c
 c:
 	cd c && make all
 
 # Build and test the GO version
+.PHONY: cgo
 cgo:
 	cd cgo && make all
 
 # Build and test the GO version
+.PHONY: go
 go:
 	cd go && make all
 
 # Build and test the Python version
+.PHONY: python
 python:
 	cd python && make all
 
 # Remove any build artifact
+.PHONY: clean
 clean:
 	rm -rf target
 	cd c && make clean
