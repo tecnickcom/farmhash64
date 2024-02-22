@@ -1,6 +1,13 @@
 os: linux
-dist: trusty
+
+dist: bionic
+
 sudo: required
+
+branches:
+  only:
+    - main
+
 addons:
   apt:
     packages:
@@ -13,6 +20,9 @@ addons:
     - doxygen
 install:
   - gem install coveralls-lcov
+
+script:
+  - echo "$TRAVIS_BUILD_NUMBER" > RELEASE
 
 matrix:
   include:
