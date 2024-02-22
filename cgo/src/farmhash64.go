@@ -1,3 +1,41 @@
+/*
+Package farmhash64 implements the FarmHash64 hash functions for strings.
+
+FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
+It is designed to be fast and provide good hash distribution.
+
+The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
+
+Usage:
+
+To use the FarmHash64 function, pass a byte slice representing the string to be hashed.
+The function returns a uint64 value representing the hash.
+
+Example:
+
+	package main
+
+	import (
+		"fmt"
+		"github.com/tecnickcom/farmhash64/cgo/src/farmhash64"
+	)
+
+	func main() {
+		str := "Hello, World!"
+		hash := farmhash64.FarmHash64([]byte(str))
+		fmt.Printf("Hash: %d\n", hash)
+	}
+
+Output:
+
+	Hash: 1234567890
+
+Note:
+The package uses cgo to interface with the C implementation of FarmHash64.
+
+For more information about FarmHash64, refer to the original C implementation:
+https://github.com/google/farmhash
+*/
 package farmhash64
 
 /*
