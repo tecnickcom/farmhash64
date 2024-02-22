@@ -1,0 +1,76 @@
+name: check
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+
+env:
+  PYTHON_VERSION: 3.x
+
+permissions:
+  contents: read
+
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: install dependencies
+        run: sudo apt install -y lcov astyle
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd c && make version test build
+
+  cgo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: setup go build environment
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: 'go.mod'
+          check-latest: true
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd cgo && make mod deps linter test GOPATH=$(go env GOPATH)
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: setup go build environment
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: 'go.mod'
+          check-latest: true
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd go && make mod deps linter test GOPATH=$(go env GOPATH)
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: setup python build environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade virtualenv
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd python && make vbuild

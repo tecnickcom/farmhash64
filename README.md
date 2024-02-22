@@ -2,13 +2,17 @@
 
 *Provides farmhash64, a portable C99 64-bit hash function*
 
-[![Master Build Status](https://secure.travis-ci.org/tecnickcom/farmhash64.png?branch=master)](https://travis-ci.org/tecnickcom/farmhash64?branch=master)
-[![Master Coverage Status](https://coveralls.io/repos/tecnickcom/farmhash64/badge.svg?branch=master&service=github)](https://coveralls.io/github/tecnickcom/farmhash64?branch=master)
-[![GoDoc](https://godoc.org/github.com/tecnickcom/farmhash64/go/src?status.svg)](https://godoc.org/github.com/tecnickcom/farmhash64/go/src)
+[![Donate via PayPal](https://img.shields.io/badge/donate-paypal-87ceeb.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&currency_code=GBP&business=paypal@tecnick.com&item_name=donation%20for%20farmhash64%20project)
+*Please consider supporting this project by making a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&currency_code=GBP&business=paypal@tecnick.com&item_name=donation%20for%20farmhash64%20project)*
 
-* **category**    Libraries
-* **license**     MIT (see LICENSE)
-* **link**        https://github.com/tecnickcom/farmhash64
+![farmhash64 logo](doc/images/logo.png)
+
+* **category:**    Libraries
+* **license:**     [LICENSE](https://github.com/tecnickcom/farmhash64/blob/main/LICENSE)
+* **cvs:**         https://github.com/tecnickcom/farmhash64
+
+[![check](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yaml/badge.svg)](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yaml)
+
 
 
 ## Description
