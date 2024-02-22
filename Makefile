@@ -57,7 +57,7 @@ help:
 	@echo "    make tag    : Tag the Git repository"
 	@echo ""
 
-all: clean c cgo go java javascript python
+all: clean c cgo go python
 
 # Build and test the C version
 .PHONY: c
