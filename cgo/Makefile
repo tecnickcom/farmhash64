@@ -146,7 +146,7 @@ mod:
 
 # Run all tests and static analysis tools
 .PHONY: qa
-qa: test coverage linter
+qa: linter test coverage
 
 # Run the unit tests
 .PHONY: test
