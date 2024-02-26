@@ -40,7 +40,6 @@ package farmhash64
 
 /*
 #include "../../c/src/farmhash64.h"
-#include "../../c/src/farmhash64.c"
 */
 import "C"
 import "unsafe"
