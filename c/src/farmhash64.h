@@ -1,46 +1,43 @@
-// This is a C99 port of the Fingerprint64 (farmhashna::Hash64) code
-// from Google's FarmHash (https://github.com/google/farmhash).
-//
-// This code has been ported/translated by Nicola Asuni.
-//
-// The original code is released under the MIT License:
-//
-// The MIT License (MIT)
-//
-// Copyright (c) 2014 Google, Inc.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
 /**
  * @file farmhash64.h
  * @brief File containing the definition of public functions.
  *
  * FarmHash is a family of hash functions.
  *
- * This is a C99 translation of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash
- * (https://github.com/google/farmhash).
- *
  * FarmHash64 provides a portable 64-bit hash function for strings (byte array).
  * The function mix the input bits thoroughly but is not suitable for cryptography.
  *
  * All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
  * For more information please consult https://github.com/google/farmhash
+ *
+ * This is a C99 port of the Fingerprint64 (farmhashna::Hash64) code
+ * from Google's FarmHash (https://github.com/google/farmhash).
+ *
+ * This code has been ported/translated by Nicola Asuni to header-only C99 code.
+ *
+ * The original code is released under the MIT License:
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Google, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 #ifndef FARMHASH64_H
@@ -164,31 +161,71 @@ extern "C" {
 #define uint64_t_in_expected_order(x) (x)
 #endif
 
+// Define a struct called uint128_t to represent a 128-bit unsigned integer.
 typedef struct uint128_t
 {
-    uint64_t lo;
-    uint64_t hi;
+    uint64_t lo; // Lower 64 bits of the 128-bit integer
+    uint64_t hi; // Higher 64 bits of the 128-bit integer
 } uint128_t;
 
+// Some primes between 2^63 and 2^64 for various uses.
+static const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
+static const uint64_t k1 = 0xb492b66fbe98f273ULL;
+static const uint64_t k2 = 0x9ae16a3b2f90404fULL;
+
+// Magic numbers for 32-bit hashing.  Copied from Murmur3.
+static const uint32_t c1 = 0xcc9e2d51;
+static const uint32_t c2 = 0x1b873593;
+
+/**
+ * @brief Get the low 64 bits of a uint128_t value.
+ *
+ * @param x uint128_t value
+ *
+ * @return The low 64 bits of x
+ */
 STATIC_INLINE uint64_t uint128_t_low64(const uint128_t x)
 {
     return x.lo;
 }
 
+/**
+ * @brief Get the high 64 bits of a uint128_t value.
+ *
+ * @param x uint128_t value
+ *
+ * @return The high 64 bits of x
+ */
 STATIC_INLINE uint64_t uint128_t_high64(const uint128_t x)
 {
     return x.hi;
 }
 
+/**
+ * @brief Create a uint128_t value from two 64-bit integers.
+ *
+ * @param lo Low 64 bits
+ * @param hi High 64 bits
+ *
+ * @return uint128_t value
+ */
 STATIC_INLINE uint128_t make_uint128_t(uint64_t lo, uint64_t hi)
 {
     uint128_t x = {lo, hi};
     return x;
 }
 
-// This is intended to be a reasonably good hash function.
-// May change from time to time, may differ on different platforms, may differ
-// depending on NDEBUG.
+/**
+ * @brief Convert a uint128_t value to a 64-bit hash code.
+ *
+ * This function is intended to be a reasonably good hash function.
+ * The result may change from time to time and may differ on different platforms.
+ * The result may also differ depending on the NDEBUG macro.
+ *
+ * @param x uint128_t value
+ *
+ * @return 64-bit hash code
+ */
 STATIC_INLINE uint64_t farmhash128_to_64(uint128_t x)
 {
     // Murmur-inspired hashing.
@@ -201,6 +238,13 @@ STATIC_INLINE uint64_t farmhash128_to_64(uint128_t x)
     return b;
 }
 
+/**
+ * @brief Fetch a 64-bit little-endian integer from a byte array.
+ *
+ * @param p Pointer to the byte array
+ *
+ * @return The fetched 64-bit integer
+ */
 STATIC_INLINE uint64_t fetch64(const char* p)
 {
     uint64_t result;
@@ -208,6 +252,12 @@ STATIC_INLINE uint64_t fetch64(const char* p)
     return uint64_t_in_expected_order(result);
 }
 
+/**
+ * @brief Fetch a 32-bit little-endian integer from a byte array.
+ *
+ * @param p Pointer to the byte array
+ * @return The fetched 32-bit integer
+ */
 STATIC_INLINE uint32_t fetch32(const char* p)
 {
     uint32_t result;
@@ -215,6 +265,12 @@ STATIC_INLINE uint32_t fetch32(const char* p)
     return uint32_t_in_expected_order(result);
 }
 
+/**
+ * @brief Swap the values of two 64-bit integers.
+ *
+ * @param a Pointer to the first integer
+ * @param b Pointer to the second integer
+ */
 STATIC_INLINE void swap64(uint64_t* a, uint64_t* b)
 {
     uint64_t t;
@@ -223,35 +279,61 @@ STATIC_INLINE void swap64(uint64_t* a, uint64_t* b)
     *b = t;
 }
 
+/**
+ * @brief Rotate a 32-bit integer right by a specified number of bits.
+ *
+ * @param val The value to rotate
+ * @param shift The number of bits to rotate by
+ *
+ * @return The rotated value
+ */
 STATIC_INLINE uint32_t ror32(uint32_t val, size_t shift)
 {
     // Avoid shifting by 32: doing so yields an undefined result.
     return shift == 0 ? val : (val >> shift) | (val << (32 - shift));
 }
 
+/**
+ * @brief Rotate a 64-bit integer right by a specified number of bits.
+ *
+ * @param val The value to rotate
+ * @param shift The number of bits to rotate by
+ *
+ * @return The rotated value
+ */
 STATIC_INLINE uint64_t ror64(uint64_t val, size_t shift)
 {
     // Avoid shifting by 64: doing so yields an undefined result.
     return shift == 0 ? val : (val >> shift) | (val << (64 - shift));
 }
 
-// Building blocks for hash functions
-
-// Some primes between 2^63 and 2^64 for various uses.
-static const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
-static const uint64_t k1 = 0xb492b66fbe98f273ULL;
-static const uint64_t k2 = 0x9ae16a3b2f90404fULL;
-
-// Magic numbers for 32-bit hashing.  Copied from Murmur3.
-static const uint32_t c1 = 0xcc9e2d51;
-static const uint32_t c2 = 0x1b873593;
-
+/**
+ * @brief Performs a bitwise XOR operation between a 64-bit value and its right-shifted value.
+ *
+ * This function takes a 64-bit value and performs a bitwise XOR operation between the value
+ * and its right-shifted value by 47 bits. The result is returned.
+ *
+ * @param val The input 64-bit value.
+ *
+ * @return The result of the bitwise XOR operation between the input value and its right-shifted value.
+ */
 STATIC_INLINE uint64_t smix(uint64_t val)
 {
     return val ^ (val >> 47);
 }
 
-// Helper from Murmur3 for combining two 32-bit values.
+/**
+ * @brief Performs the MurmurHash3 algorithm on a 32-bit input value.
+ *
+ * This function applies the MurmurHash3 algorithm on a 32-bit input value using the provided
+ * constants c1 and c2. It performs a series of bitwise operations and multiplications to
+ * generate a hash value.
+ *
+ * @param a The input value to be hashed.
+ * @param h The current hash value.
+ *
+ * @return The updated hash value after applying the MurmurHash3 algorithm.
+ */
 STATIC_INLINE uint32_t mur(uint32_t a, uint32_t h)
 {
     a *= c1;
@@ -262,17 +344,40 @@ STATIC_INLINE uint32_t mur(uint32_t a, uint32_t h)
     return h * 5 + 0xe6546b64;
 }
 
-// Merge a 64 bit integer into 32 bit
+/**
+ * @brief Static inline function that converts a 64-bit integer to a 32-bit integer using the MurmurHash algorithm.
+ *
+ * @param x The 64-bit integer to be converted.
+ *
+ * @return The converted 32-bit integer.
+ */
 STATIC_INLINE uint32_t mix_64_to_32(uint64_t x)
 {
     return mur((uint32_t)(x >> 32), (uint32_t)((x << 32) >> 32));
 }
 
+/**
+ * @brief Calculate a 64-bit hash code for a byte array of length 16.
+ *
+ * @param u First 64 bits of the byte array
+ * @param v Last 64 bits of the byte array
+ *
+ * @return 64-bit hash code
+ */
 STATIC_INLINE uint64_t farmhash_len_16(uint64_t u, uint64_t v)
 {
     return farmhash128_to_64(make_uint128_t(u, v));
 }
 
+/**
+ * @brief Calculate a 64-bit hash code for a byte array of length 16, multiplied by a constant.
+ *
+ * @param u First 64 bits of the byte array
+ * @param v Last 64 bits of the byte array
+ * @param mul The multiplication constant
+ *
+ * @return 64-bit hash code
+ */
 STATIC_INLINE uint64_t farmhash_len_16_mul(uint64_t u, uint64_t v, uint64_t mul)
 {
     // Murmur-inspired hashing.
@@ -284,8 +389,14 @@ STATIC_INLINE uint64_t farmhash_len_16_mul(uint64_t u, uint64_t v, uint64_t mul)
     return b;
 }
 
-// farmhash na
-
+/**
+ * @brief Calculate a 64-bit hash code for a byte array of length 0 to 16.
+ *
+ * @param s Pointer to the byte array
+ * @param len Length of the byte array
+ *
+ * @return 64-bit hash code
+ */
 STATIC_INLINE uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
 {
     if (len >= 8)
@@ -315,8 +426,14 @@ STATIC_INLINE uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
     return k2;
 }
 
-// This probably works well for 16-byte strings as well, but it may be overkill
-// in that case.
+/**
+ * @brief Calculate a 64-bit hash code for a byte array of length 17 to 32.
+ *
+ * @param s Pointer to the byte array
+ * @param len Length of the byte array
+ *
+ * @return 64-bit hash code
+ */
 STATIC_INLINE uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
 {
     uint64_t mul = k2 + len * 2;
@@ -327,8 +444,19 @@ STATIC_INLINE uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
     return farmhash_len_16_mul(ror64(a + b, 43) + ror64(c, 30) + d, a + ror64(b + k2, 18) + c, mul);
 }
 
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
-// Callers do best to use "random-looking" values for a and b.
+/**
+ * @brief Calculate a 16-byte (128-bit) weak hash code for a byte array of length 48, including seeds.
+ *        Callers do best to use "random-looking" values for a and b.
+ *
+ * @param w First 64 bits of the byte array
+ * @param x Second 64 bits of the byte array
+ * @param y Third 64 bits of the byte array
+ * @param z Fourth 64 bits of the byte array
+ * @param a First seed value
+ * @param b Second seed value
+ *
+ * @return 128-bit weak hash code
+ */
 STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint64_t x, uint64_t y, uint64_t z, uint64_t a, uint64_t b)
 {
     a += w;
@@ -340,7 +468,15 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint
     return make_uint128_t(a + z, b + c);
 }
 
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+/**
+ * @brief Calculate a 16-byte (128-bit) weak hash code for a byte array of length 32, including seeds.
+ *
+ * @param s Pointer to the byte array
+ * @param a First seed value
+ * @param b Second seed value
+ *
+ * @return 128-bit weak hash code
+ */
 STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64_t a, uint64_t b)
 {
     return weak_farmhash_na_len_32_with_seeds_vals(fetch64(s),
@@ -351,7 +487,14 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64
             b);
 }
 
-// Return an 8-byte hash for 33 to 64 bytes.
+/**
+ * @brief Calculate a 8-byte (64-bit) hash code for a byte array of length 33 to 64.
+ *
+ * @param s Pointer to the byte array
+ * @param len Length of the byte array
+ *
+ * @return 64-bit hash code
+ */
 STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
 {
     uint64_t mul = k2 + len * 2;
@@ -367,6 +510,10 @@ STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
     uint64_t h = (z + fetch64(s + len - 24)) * mul;
     return farmhash_len_16_mul(ror64(e + f, 43) + ror64(g, 30) + h, e + ror64(f + a, 18) + g, mul);
 }
+
+// =================================================================================================
+// PUBLIC FUNCTIONS
+// =================================================================================================
 
 /**
  * @brief 64 bit hash.
