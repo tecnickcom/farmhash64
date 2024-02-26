@@ -44,7 +44,7 @@ PROJECT_NUMBER = 1.4.0
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Portable C99 64-bit hash function"
+PROJECT_BRIEF          = "Portable C 64-bit hash function"
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55

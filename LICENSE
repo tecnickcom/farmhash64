@@ -1,6 +1,10 @@
-The code in this project is a C99 translation of the Fingerprint64
+The code in this project is a C port of the Fingerprint64
 (farmhashna::Hash64) code from Google's FarmHash
 (https://github.com/google/farmhash).
+
+This code has been ported/translated by Nicola Asuni to header-only C code.
+
+The original code is released under the MIT License:
 
 Copyright (c) 2014 Google, Inc.
 

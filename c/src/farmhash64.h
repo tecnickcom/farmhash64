@@ -10,10 +10,10 @@
  * All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
  * For more information please consult https://github.com/google/farmhash
  *
- * This is a C99 port of the Fingerprint64 (farmhashna::Hash64) code
+ * This is a C port of the Fingerprint64 (farmhashna::Hash64) code
  * from Google's FarmHash (https://github.com/google/farmhash).
  *
- * This code has been ported/translated by Nicola Asuni to header-only C99 code.
+ * This code has been ported/translated by Nicola Asuni to header-only C code.
  *
  * The original code is released under the MIT License:
  *

@@ -1,4 +1,4 @@
-The code in this project is a C99 translation of the Fingerprint64
+The code in this project is a C translation of the Fingerprint64
 (farmhashna::Hash64) code from Google's FarmHash
 (https://github.com/google/farmhash).
 

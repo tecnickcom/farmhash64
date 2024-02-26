@@ -58,7 +58,6 @@ doc:
 .PHONY: format
 format:
 	astyle --style=allman --recursive --suffix=none 'farmhash64/*.h'
-	astyle --style=allman --recursive --suffix=none 'farmhash64/*.c'
 	black setup.py
 
 # Set the version from VERSION file
