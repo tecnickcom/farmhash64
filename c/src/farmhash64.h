@@ -52,9 +52,17 @@ extern "C" {
 #include <assert.h>
 #include <string.h>
 
+
 // PORTABILITY LAYER: "static inline" or similar
 
 #ifndef STATIC_INLINE
+/**
+ * @brief Macro definition for static inline functions.
+ *
+ * This macro is used to define functions as static inline, which allows the compiler
+ * to optimize the function by inlining it at the call site. It is typically used for
+ * small, frequently called functions to improve performance.
+ */
 #define STATIC_INLINE static inline
 #endif
 
@@ -62,6 +70,12 @@ extern "C" {
 
 #ifdef WORDS_BIGENDIAN
 #undef FARMHASH_BIG_ENDIAN
+/**
+ * @brief Macro definition for indicating big endian architecture.
+ *
+ * This macro is used to indicate that the code is being compiled on a big endian architecture.
+ * It is defined as 1 to represent big endian architecture.
+ */
 #define FARMHASH_BIG_ENDIAN 1
 #endif
 
@@ -70,6 +84,12 @@ extern "C" {
 #endif
 
 #if !defined(FARMHASH_LITTLE_ENDIAN) && !defined(FARMHASH_BIG_ENDIAN)
+/**
+ * @brief Macro definition to indicate unknown endianness.
+ *
+ * This macro is used to indicate that the endianness of the system is unknown.
+ * It is defined as 1.
+ */
 #define FARMHASH_UNKNOWN_ENDIAN 1
 #endif
 
@@ -80,7 +100,32 @@ extern "C" {
 #if defined(HAVE_BUILTIN_BSWAP) || defined(__clang__) || \
 (defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ >= 8) || __GNUC__ >= 5))
 // Easy case for bswap: no header file needed.
+
+/**
+ * @brief Macro to swap the byte order of a 32-bit integer.
+ *
+ * This macro uses the __builtin_bswap32() function to swap the byte order of a 32-bit integer.
+ * It is typically used for converting between little-endian and big-endian byte orders.
+ *
+ * @param x The 32-bit integer to swap the byte order of.
+ *
+ * @return The 32-bit integer with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_32(x) __builtin_bswap32(x)
+
+/**
+ * @brief Macro to swap the byte order of a 64-bit value.
+ *
+ * This macro uses the __builtin_bswap64() function to swap the byte order of the given 64-bit value.
+ *
+ * @param x The 64-bit value to swap the byte order of.
+ *
+ * @return The 64-bit value with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_64(x) __builtin_bswap64(x)
 #endif
 
@@ -92,7 +137,32 @@ extern "C" {
 
 #undef bswap_32
 #undef bswap_64
+
+/**
+ * @brief Macro to swap the byte order of a 32-bit integer.
+ *
+ * This macro uses the _byteswap_ulong function to swap the byte order of a 32-bit integer.
+ *
+ * @param x The 32-bit integer to swap the byte order of.
+ *
+ * @return The 32-bit integer with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_32(x) _byteswap_ulong(x)
+
+
+/**
+ * @brief Macro to swap the byte order of a 64-bit integer.
+ *
+ * This macro uses the _byteswap_uint64 function to swap the byte order of a 64-bit integer.
+ *
+ * @param x The 64-bit integer to swap the byte order of.
+ *
+ * @return The 64-bit integer with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_64(x) _byteswap_uint64(x)
 
 #elif defined(__APPLE__)
@@ -101,7 +171,33 @@ extern "C" {
 #include <libkern/OSByteOrder.h>
 #undef bswap_32
 #undef bswap_64
+
+/**
+ * @brief Macro to swap the byte order of a 32-bit integer.
+ *
+ * This macro uses the OSSwapInt32 function to swap the byte order of a 32-bit integer.
+ * It is typically used for converting between little-endian and big-endian byte order.
+ *
+ * @param x The 32-bit integer to swap the byte order of.
+ *
+ * @return The 32-bit integer with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_32(x) OSSwapInt32(x)
+
+/**
+ * @brief Macro to swap the byte order of a 64-bit value.
+ *
+ * This macro uses the OSSwapInt64 function to swap the byte order of a 64-bit value.
+ * It is typically used for converting between little-endian and big-endian byte order.
+ *
+ * @param x The 64-bit value to swap the byte order of.
+ *
+ * @return The 64-bit value with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_64(x) OSSwapInt64(x)
 
 #elif defined(__sun) || defined(sun)
@@ -109,7 +205,32 @@ extern "C" {
 #include <sys/byteorder.h>
 #undef bswap_32
 #undef bswap_64
+
+/**
+ * @brief Macro to swap the byte order of a 32-bit integer.
+ *
+ * This macro uses the BSWAP_32 macro to swap the byte order of a 32-bit integer.
+ *
+ * @param x The 32-bit integer to swap the byte order of.
+ *
+ * @return The 32-bit integer with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_32(x) BSWAP_32(x)
+
+/**
+ * @brief Macro to swap the byte order of a 64-bit value.
+ *
+ * This macro is used to swap the byte order of a 64-bit value.
+ * It is defined as `BSWAP_64(x)`.
+ *
+ * @param x The 64-bit value to swap the byte order of.
+ *
+ * @return The 64-bit value with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_64(x) BSWAP_64(x)
 
 #elif defined(__FreeBSD__)
@@ -117,7 +238,31 @@ extern "C" {
 #include <sys/endian.h>
 #undef bswap_32
 #undef bswap_64
+
+/**
+ * @brief Macro to swap the byte order of a 32-bit integer.
+ *
+ * This macro swaps the byte order of a 32-bit integer using the bswap32 function.
+ *
+ * @param x The 32-bit integer to swap the byte order of.
+ *
+ * @return The 32-bit integer with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_32(x) bswap32(x)
+
+/**
+ * @brief Macro to swap the byte order of a 64-bit value.
+ *
+ * This macro swaps the byte order of a 64-bit value using the bswap64 function.
+ *
+ * @param x The 64-bit value to swap the byte order of.
+ *
+ * @return The 64-bit value with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_64(x) bswap64(x)
 
 #elif defined(__OpenBSD__)
@@ -125,7 +270,32 @@ extern "C" {
 #include <sys/types.h>
 #undef bswap_32
 #undef bswap_64
+
+/**
+ * @brief Macro definition to swap the byte order of a 32-bit integer.
+ *
+ * This macro is used to swap the byte order of a 32-bit integer.
+ * It is defined as `swap32(x)`, where `x` is the input value.
+ *
+ * @param x The 32-bit integer to swap the byte order of.
+ *
+ * @return The 32-bit integer with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_32(x) swap32(x)
+
+/**
+ * @brief Macro to swap the byte order of a 64-bit value.
+ *
+ * This macro is used to swap the byte order of a 64-bit value. It is defined as `swap64(x)`.
+ *
+ * @param x The 64-bit value to swap the byte order of.
+ *
+ * @return The 64-bit value with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_64(x) swap64(x)
 
 #elif defined(__NetBSD__)
@@ -135,7 +305,32 @@ extern "C" {
 #if defined(__BSWAP_RENAME) && !defined(__bswap_32)
 #undef bswap_32
 #undef bswap_64
+
+/**
+ * @brief Macro to swap the byte order of a 32-bit value.
+ *
+ * This macro swaps the byte order of a 32-bit value using the bswap32 function.
+ *
+ * @param x The 32-bit value to swap the byte order of.
+ *
+ * @return The 32-bit value with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_32(x) bswap32(x)
+
+/**
+ * @brief Macro to swap the byte order of a 64-bit value.
+ *
+ * This macro uses the bswap64 function to swap the byte order of the given 64-bit value.
+ * It is defined as a shorthand for the bswap64 function.
+ *
+ * @param x The 64-bit value to swap the byte order of.
+ *
+ * @return The 64-bit value with the byte order swapped.
+ *
+ * @private
+ */
 #define bswap_64(x) bswap64(x)
 #endif
 
@@ -148,16 +343,72 @@ extern "C" {
 #endif
 
 #ifdef WORDS_BIGENDIAN
+
+/**
+ * @brief Macro definition indicating that the system is big-endian.
+ *
+ * This macro is defined as 1 to indicate that the system is big-endian.
+ * Big-endian is a byte order in which the most significant byte is stored
+ * at the lowest memory address. This macro is used in the FarmHash64 library
+ * to handle endianness-specific operations.
+ */
 #define FARMHASH_BIG_ENDIAN 1
 #endif
 
 #endif
 
 #ifdef FARMHASH_BIG_ENDIAN
+
+/**
+ * @brief Macro to convert a 32-bit unsigned integer to the expected byte order.
+ *
+ * This macro uses the bswap_32 function to convert the given 32-bit unsigned integer
+ * to the expected byte order. It is used in the farmhash64 library for byte order conversion.
+ *
+ * @param x The 32-bit unsigned integer to convert.
+ *
+ * @return The converted 32-bit unsigned integer.
+ *
+ * @private
+ */
 #define uint32_t_in_expected_order(x) (bswap_32(x))
+
+/**
+ * @brief Macro to convert a 64-bit unsigned integer to the expected byte order.
+ *
+ * This macro uses the bswap_64 function to convert the given 64-bit unsigned integer
+ * to the expected byte order. The bswap_64 function swaps the byte order of the input
+ * value, ensuring that the result is in the expected byte order.
+ *
+ * @param x The 64-bit unsigned integer to convert.
+ *
+ * @return The converted 64-bit unsigned integer in the expected byte order.
+ *
+ * @private
+ */
 #define uint64_t_in_expected_order(x) (bswap_64(x))
 #else
+
+/**
+ * Macro to convert a 32-bit unsigned integer to the expected order.
+ *
+ * @param x The 32-bit unsigned integer to convert.
+ *
+ * @return The converted 32-bit unsigned integer.
+ *
+ * @private
+ */
 #define uint32_t_in_expected_order(x) (x)
+
+/**
+ * Macro to convert a 64-bit unsigned integer to the expected order.
+ *
+ * @param x The 64-bit unsigned integer to be converted.
+ *
+ * @return The converted 64-bit unsigned integer.
+ *
+ * @private
+ */
 #define uint64_t_in_expected_order(x) (x)
 #endif
 
