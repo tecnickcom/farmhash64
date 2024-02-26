@@ -161,7 +161,12 @@ extern "C" {
 #define uint64_t_in_expected_order(x) (x)
 #endif
 
-// Define a struct called uint128_t to represent a 128-bit unsigned integer.
+/**
+ * @brief Represents a 128-bit unsigned integer.
+ *
+ * The uint128_t struct is used to store a 128-bit integer, which consists of a lower 64 bits (lo) and a higher 64 bits (hi).
+ * This struct is typically used for operations that require a larger range of values than what can be represented by a standard 64-bit integer.
+ */
 typedef struct uint128_t
 {
     uint64_t lo; // Lower 64 bits of the 128-bit integer
