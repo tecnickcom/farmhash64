@@ -88,7 +88,6 @@ doc:
 .PHONY: format
 format:
 	astyle --style=allman --recursive --suffix=none 'src/*.h'
-	astyle --style=allman --recursive --suffix=none 'src/*.c'
 	astyle --style=allman --recursive --suffix=none 'test/*.c'
 
 # Build and run the unit tests
@@ -122,12 +121,12 @@ endif
 # Test C code compatibility with C++
 .PHONY: testcpp
 testcpp:
-	find ./src -type f -name '*.c' -exec gcc -c -pedantic -Werror -Wall -Wextra -Wcast-align -Wundef -Wformat-security -std=c++17 -x c++ -o /dev/null {} \;
+	find ./src -type f -name '*.h' -exec gcc -c -pedantic -Werror -Wall -Wextra -Wcast-align -Wundef -Wformat-security -std=c++17 -x c++ -o /dev/null {} \;
 
 # use clang-tidy
 .PHONY: tidy
 tidy:
-	clang-tidy -checks='*,-llvm-header-guard,-llvm-include-order,-android-cloexec-open,-hicpp-no-assembler,-hicpp-signed-bitwise,-clang-analyzer-alpha.*' -header-filter=.* -p . src/*.c
+	clang-tidy -checks='*,-llvm-header-guard,-llvm-include-order,-android-cloexec-open,-hicpp-no-assembler,-hicpp-signed-bitwise,-clang-analyzer-alpha.*' -header-filter=.* -p . src/*.h
 
 # Remove all installed files (excluding configuration files)
 .PHONY: uninstall

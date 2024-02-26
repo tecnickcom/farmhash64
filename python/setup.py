@@ -30,7 +30,7 @@ class RunTests(Command):
 
 setup(
     name="farmhash64",
-    version="1.3.0.0",
+    version="1.4.0.0",
     keywords=("farmhash64"),
     description="farmhash64 Bindings for Python",
     long_description=read("../README.md"),
@@ -43,12 +43,12 @@ setup(
     ext_modules=[
         Extension(
             "farmhash64",
-            ["../c/src/farmhash64.c", "farmhash64/pyfarmhash64.c"],
+            ["farmhash64/pyfarmhash64.c"],
             include_dirs=["../c/src", "farmhash64"],
             extra_compile_args=[
                 "-O3",
                 "-pedantic",
-                "-std=c99",
+                "-std=c17",
                 "-Wall",
                 "-Wextra",
                 "-Wno-strict-prototypes",
@@ -57,7 +57,8 @@ setup(
                 "-Wundef",
                 "-Wformat-security",
                 "-Wshadow",
-                "-I../src",
+                "-Wno-format-overflow",
+                "-I../c/src",
             ],
         )
     ],

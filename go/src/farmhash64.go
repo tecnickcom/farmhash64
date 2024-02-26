@@ -9,7 +9,7 @@ https://github.com/google/farmhash
 
   - Copyright (c) 2014 Google, Inc.
   - Copyright (c) 2014 Damian Gryski
-  - Copyright (c) 2016-2017 Nicola Asuni
+  - Copyright (c) 2016-2024 Nicola Asuni
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

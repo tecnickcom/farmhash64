@@ -1,6 +1,6 @@
 # FarmHash64
 
-*Provides farmhash64, a portable C99 64-bit hash function*
+*Provides farmhash64, a portable C 64-bit hash function*
 
 [![Donate via PayPal](https://img.shields.io/badge/donate-paypal-87ceeb.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&currency_code=GBP&business=paypal@tecnick.com&item_name=donation%20for%20farmhash64%20project)
 *Please consider supporting this project by making a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&currency_code=GBP&business=paypal@tecnick.com&item_name=donation%20for%20farmhash64%20project)*
@@ -19,7 +19,7 @@
 
 FarmHash is a family of hash functions.
 
-This is a C99 translation of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash
+This is a C port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash
 (https://github.com/google/farmhash).
 
 FarmHash64 provides a portable 64-bit hash function for strings (byte array).
