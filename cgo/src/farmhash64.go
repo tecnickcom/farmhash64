@@ -11,25 +11,6 @@ Usage:
 To use the FarmHash64 function, pass a byte slice representing the string to be hashed.
 The function returns a uint64 value representing the hash.
 
-Example:
-
-	package main
-
-	import (
-		"fmt"
-		"github.com/tecnickcom/farmhash64/cgo/src/farmhash64"
-	)
-
-	func main() {
-		str := "Hello, World!"
-		hash := farmhash64.FarmHash64([]byte(str))
-		fmt.Printf("Hash: %d\n", hash)
-	}
-
-Output:
-
-	Hash: 1234567890
-
 Note:
 The package uses cgo to interface with the C implementation of FarmHash64.
 
