@@ -12,7 +12,7 @@ Please include a summary of the change and include relevant motivation and conte
 - [ ] Any new code follows the style guidelines of this project.
 - [ ] The code changes have been self-reviewed.
 - [ ] Corresponding changes to the documentation have been made.
-- [ ] The version has been updated in the VERSION and examples/service/go.mod files.
+- [ ] The version has been updated in the VERSION file.
 
 ## Type of change:
 
