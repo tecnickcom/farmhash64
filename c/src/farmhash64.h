@@ -166,6 +166,8 @@ extern "C" {
  *
  * The uint128_t struct is used to store a 128-bit integer, which consists of a lower 64 bits (lo) and a higher 64 bits (hi).
  * This struct is typically used for operations that require a larger range of values than what can be represented by a standard 64-bit integer.
+ *
+ * @private
  */
 typedef struct uint128_t
 {
@@ -188,6 +190,8 @@ static const uint32_t c2 = 0x1b873593;
  * @param x uint128_t value
  *
  * @return The low 64 bits of x
+ *
+ * @private
  */
 STATIC_INLINE uint64_t uint128_t_low64(const uint128_t x)
 {
@@ -200,6 +204,8 @@ STATIC_INLINE uint64_t uint128_t_low64(const uint128_t x)
  * @param x uint128_t value
  *
  * @return The high 64 bits of x
+ *
+ * @private
  */
 STATIC_INLINE uint64_t uint128_t_high64(const uint128_t x)
 {
@@ -213,6 +219,8 @@ STATIC_INLINE uint64_t uint128_t_high64(const uint128_t x)
  * @param hi High 64 bits
  *
  * @return uint128_t value
+ *
+ * @private
  */
 STATIC_INLINE uint128_t make_uint128_t(uint64_t lo, uint64_t hi)
 {
@@ -230,6 +238,8 @@ STATIC_INLINE uint128_t make_uint128_t(uint64_t lo, uint64_t hi)
  * @param x uint128_t value
  *
  * @return 64-bit hash code
+ *
+ * @private
  */
 STATIC_INLINE uint64_t farmhash128_to_64(uint128_t x)
 {
@@ -249,6 +259,8 @@ STATIC_INLINE uint64_t farmhash128_to_64(uint128_t x)
  * @param p Pointer to the byte array
  *
  * @return The fetched 64-bit integer
+ *
+ * @private
  */
 STATIC_INLINE uint64_t fetch64(const char* p)
 {
@@ -261,7 +273,10 @@ STATIC_INLINE uint64_t fetch64(const char* p)
  * @brief Fetch a 32-bit little-endian integer from a byte array.
  *
  * @param p Pointer to the byte array
+ *
  * @return The fetched 32-bit integer
+ *
+ * @private
  */
 STATIC_INLINE uint32_t fetch32(const char* p)
 {
@@ -275,6 +290,8 @@ STATIC_INLINE uint32_t fetch32(const char* p)
  *
  * @param a Pointer to the first integer
  * @param b Pointer to the second integer
+ *
+ * @private
  */
 STATIC_INLINE void swap64(uint64_t* a, uint64_t* b)
 {
@@ -291,6 +308,8 @@ STATIC_INLINE void swap64(uint64_t* a, uint64_t* b)
  * @param shift The number of bits to rotate by
  *
  * @return The rotated value
+ *
+ * @private
  */
 STATIC_INLINE uint32_t ror32(uint32_t val, size_t shift)
 {
@@ -305,6 +324,8 @@ STATIC_INLINE uint32_t ror32(uint32_t val, size_t shift)
  * @param shift The number of bits to rotate by
  *
  * @return The rotated value
+ *
+ * @private
  */
 STATIC_INLINE uint64_t ror64(uint64_t val, size_t shift)
 {
@@ -321,6 +342,8 @@ STATIC_INLINE uint64_t ror64(uint64_t val, size_t shift)
  * @param val The input 64-bit value.
  *
  * @return The result of the bitwise XOR operation between the input value and its right-shifted value.
+ *
+ * @private
  */
 STATIC_INLINE uint64_t smix(uint64_t val)
 {
@@ -338,6 +361,8 @@ STATIC_INLINE uint64_t smix(uint64_t val)
  * @param h The current hash value.
  *
  * @return The updated hash value after applying the MurmurHash3 algorithm.
+ *
+ * @private
  */
 STATIC_INLINE uint32_t mur(uint32_t a, uint32_t h)
 {
@@ -355,6 +380,8 @@ STATIC_INLINE uint32_t mur(uint32_t a, uint32_t h)
  * @param x The 64-bit integer to be converted.
  *
  * @return The converted 32-bit integer.
+ *
+ * @private
  */
 STATIC_INLINE uint32_t mix_64_to_32(uint64_t x)
 {
@@ -368,6 +395,8 @@ STATIC_INLINE uint32_t mix_64_to_32(uint64_t x)
  * @param v Last 64 bits of the byte array
  *
  * @return 64-bit hash code
+ *
+ * @private
  */
 STATIC_INLINE uint64_t farmhash_len_16(uint64_t u, uint64_t v)
 {
@@ -382,6 +411,8 @@ STATIC_INLINE uint64_t farmhash_len_16(uint64_t u, uint64_t v)
  * @param mul The multiplication constant
  *
  * @return 64-bit hash code
+ *
+ * @private
  */
 STATIC_INLINE uint64_t farmhash_len_16_mul(uint64_t u, uint64_t v, uint64_t mul)
 {
@@ -401,6 +432,8 @@ STATIC_INLINE uint64_t farmhash_len_16_mul(uint64_t u, uint64_t v, uint64_t mul)
  * @param len Length of the byte array
  *
  * @return 64-bit hash code
+ *
+ * @private
  */
 STATIC_INLINE uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
 {
@@ -438,6 +471,8 @@ STATIC_INLINE uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
  * @param len Length of the byte array
  *
  * @return 64-bit hash code
+ *
+ * @private
  */
 STATIC_INLINE uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
 {
@@ -461,6 +496,8 @@ STATIC_INLINE uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
  * @param b Second seed value
  *
  * @return 128-bit weak hash code
+ *
+ * @private
  */
 STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint64_t x, uint64_t y, uint64_t z, uint64_t a, uint64_t b)
 {
@@ -481,6 +518,8 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint
  * @param b Second seed value
  *
  * @return 128-bit weak hash code
+ *
+ * @private
  */
 STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64_t a, uint64_t b)
 {
@@ -499,6 +538,8 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64
  * @param len Length of the byte array
  *
  * @return 64-bit hash code
+ *
+ * @private
  */
 STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
 {
@@ -531,6 +572,8 @@ STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
  * @param len string length
  *
  * @return 64-bit hash code
+ *
+ * @public
  */
 STATIC_INLINE uint64_t farmhash64(const char *s, size_t len)
 {
@@ -605,6 +648,8 @@ STATIC_INLINE uint64_t farmhash64(const char *s, size_t len)
  * @param len string length
  *
  * @return 32-bit hash code
+ *
+ * @public
  */
 STATIC_INLINE uint32_t farmhash32(const char *s, size_t len)
 {
