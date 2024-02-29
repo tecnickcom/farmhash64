@@ -19,7 +19,7 @@
  * - farmhash64: Returns a 64-bit fingerprint hash for a byte array.
  * - farmhash32: Returns a 32-bit fingerprint hash for a byte array.
  *
- * The original code is released under the MIT License:
+ * The original C++ code is released under the MIT License:
  *
  * The MIT License (MIT)
  *
