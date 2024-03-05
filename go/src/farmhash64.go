@@ -164,12 +164,14 @@ func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) (uint64, uint64) {
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
 func weakHashLen32WithSeeds(s []byte, a, b uint64) (uint64, uint64) {
-	return weakHashLen32WithSeedsWords(fetch64(s, 0),
+	return weakHashLen32WithSeedsWords(
+		fetch64(s, 0),
 		fetch64(s, 8),
 		fetch64(s, 16),
 		fetch64(s, 24),
 		a,
-		b)
+		b,
+	)
 }
 
 // Return an 8-byte hash for 33 to 64 bytes.
@@ -215,6 +217,7 @@ func FarmHash64(s []byte) uint64 {
 	x := seed*k2 + fetch64(s, 0)
 	y := seed*k1 + 113
 	z := shiftMix(y*k2+113) * k2
+
 	// Set end so that after the loop we have 1 to 64 bytes left to process.
 	endIdx := ((slen - 1) / 64) * 64
 	last64Idx := endIdx + ((slen - 1) & 63) - 63
