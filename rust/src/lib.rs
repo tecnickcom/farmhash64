@@ -1,10 +1,7 @@
 /*
 Package farmhash64 implements the FarmHash64 hash function.
 
-The code in this file is an extract from:
-https://github.com/dgryski/go-farm/commits/master
-
-That is a golang translation of the Google's C++ code:
+That is a Rust translation of the Google's C++ code:
 https://github.com/google/farmhash
 
     - Copyright (c) 2014 Google, Inc.
