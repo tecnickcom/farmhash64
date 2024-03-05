@@ -214,7 +214,7 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
 }
 
 // FarmHash64 returns a 64-bit fingerprint hash for a string.
-pub fn farmhash64(s: &[u8]) -> u64 {
+pub fn farmhash64(mut s: &[u8]) -> u64 {
     let slen = s.len();
     let seed: u64 = 81;
 
@@ -242,8 +242,6 @@ pub fn farmhash64(s: &[u8]) -> u64 {
     let end_idx = ((slen - 1) / 64) * 64;
     let last64_idx = end_idx + ((slen - 1) & 63) - 63;
     let last64 = &s[last64_idx..];
-
-    let mut s = s;
 
     while s.len() > 64 {
         x = (rotate64(
