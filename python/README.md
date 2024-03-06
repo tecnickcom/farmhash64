@@ -19,16 +19,22 @@
 
 FarmHash is a family of hash functions.
 
-This is a C port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash
-(https://github.com/google/farmhash).
+FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
+It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
 
-FarmHash64 provides a portable 64-bit hash function for strings (byte array).
-The function mix the input bits thoroughly but is not suitable for cryptography.
+The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
 
 All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
+This is a Java port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
 
-For more information please consult https://github.com/google/farmhash
+This code has been ported/translated by Nicola Asuni (Tecnick.com) to multiple languages:
 
+- C (header-only)
+- CGO
+- GO
+- Java
+- Python
+- Rust
 
 
 ## Getting Started
@@ -44,19 +50,3 @@ make help
 ```
 
 use the command ```make all``` to build and test all the implementations.
-
-
-### Python Usage Example
-
-```
-# copy this code in the same directory of farmhash64 library
-
-import farmhash64 as vh
-
-print('\nUSAGE EXAMPLE:\n')
-
-vhash = vh.farmhash64("Lorem ipsum dolor sit amet")
-print('vh.farmhash64("Lorem ipsum dolor sit amet")')
-print("Variant Hash (DEC): %d" % vhash)
-print("Variant Hash (HEX): %x\n" % vhash)
-```

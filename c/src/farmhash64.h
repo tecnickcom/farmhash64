@@ -1,47 +1,18 @@
 /**
  * @file farmhash64.h
  * @brief File containing the definition of public functions.
- *
+ * 
  * FarmHash is a family of hash functions.
- *
- * FarmHash64 provides a portable 64-bit hash function for strings (byte array).
- * The function mix the input bits thoroughly but is not suitable for cryptography.
- *
+ * 
+ * FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
+ * It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
+ * 
+ * The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
+ * 
  * All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
- * For more information please consult https://github.com/google/farmhash
- *
- * This is a C port of the Fingerprint64 (farmhashna::Hash64) code
- * from Google's FarmHash (https://github.com/google/farmhash).
- *
- * This code has been ported/translated by Nicola Asuni to header-only C code.
- *
- * The public functions are:
- * - farmhash64: Returns a 64-bit fingerprint hash for a byte array.
- * - farmhash32: Returns a 32-bit fingerprint hash for a byte array.
- *
- * The original C++ code is released under the MIT License:
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014 Google, Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * This is a C port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
+ * 
+ * This code has been ported/translated by Nicola Asuni (Tecnick.com) to header-only C code.
  */
 
 #ifndef FARMHASH64_H

@@ -1,33 +1,17 @@
 /*
-Package farmhash64 implements the FarmHash64 hash function.
+Package farmhash64 implements the FarmHash64 and FarmHash32 hash functions for strings.
 
-The code in this file is an extract from:
-https://github.com/dgryski/go-farm/commits/master
+FarmHash is a family of hash functions.
 
-That is a golang translation of the Google's C++ code:
-https://github.com/google/farmhash
+FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
+It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
 
-  - Copyright (c) 2014 Google, Inc.
-  - Copyright (c) 2014 Damian Gryski
-  - Copyright (c) 2016-2024 Nicola Asuni
+The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
+This is a GO port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This code has been ported/translated by Nicola Asuni (Tecnick.com) to GO code.
 */
 package farmhash64
 
