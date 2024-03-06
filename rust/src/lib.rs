@@ -32,18 +32,22 @@ struct Uint128 {
 
 // PLATFORM
 
+#[inline]
 fn rotate32(val: u32, shift: u32) -> u32 {
     val.rotate_right(shift)
 }
 
+#[inline]
 fn rotate64(val: u64, shift: u32) -> u64 {
     val.rotate_right(shift)
 }
 
+#[inline]
 fn fetch32(s: &[u8], idx: usize) -> u32 {
     u32::from_le_bytes([s[idx], s[idx + 1], s[idx + 2], s[idx + 3]])
 }
 
+#[inline]
 fn fetch64(s: &[u8], idx: usize) -> u64 {
     u64::from(s[idx + 0])
         | (u64::from(s[idx + 1]) << 8)
@@ -57,10 +61,12 @@ fn fetch64(s: &[u8], idx: usize) -> u64 {
 
 // FARMHASH NA
 
+#[inline]
 fn shift_mix(val: u64) -> u64 {
     val ^ (val >> 47)
 }
 
+#[inline]
 fn mur(a: u32, h: u32) -> u32 {
     let mut a: u32 = u32::from(a);
     let mut h: u32 = u32::from(h);
@@ -73,10 +79,12 @@ fn mur(a: u32, h: u32) -> u32 {
 }
 
 // Merge a 64 bit integer into 32 bit.
+#[inline]
 fn mix_64_to_32(x: u64) -> u32 {
     mur((x >> 32) as u32, ((x << 32) >> 32) as u32)
 }
 
+#[inline]
 fn hash_len_16_mul(u: u64, v: u64, mul: u64) -> u64 {
     let a = (u ^ v).wrapping_mul(mul);
     let a = a ^ (a >> 47);
@@ -85,6 +93,7 @@ fn hash_len_16_mul(u: u64, v: u64, mul: u64) -> u64 {
     b.wrapping_mul(mul)
 }
 
+#[inline]
 fn hash_len_0_to_16(s: &[u8]) -> u64 {
     let slen = s.len() as u64;
 
@@ -125,6 +134,7 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
 
 // This probably works well for 16-byte strings as well, but it may be overkill
 // in that case.
+#[inline]
 fn hash_len_17_to_32(s: &[u8]) -> u64 {
     let slen = s.len();
     let mul = K2.wrapping_add((slen * 2) as u64);
@@ -145,6 +155,7 @@ fn hash_len_17_to_32(s: &[u8]) -> u64 {
 
 // Return a 16-byte hash for 48 bytes.  Quick and dirty.
 // Callers do best to use "random-looking" values for a and b.
+#[inline]
 fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> (u64, u64) {
     let a = a.wrapping_add(w);
     let b = rotate64(b.wrapping_add(a).wrapping_add(z), 21);
@@ -157,6 +168,7 @@ fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: 
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+#[inline]
 fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
     weak_hash_len_32_with_seeds_words(
         fetch64(s, 0),
@@ -169,6 +181,7 @@ fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
 }
 
 // Return an 8-byte hash for 33 to 64 bytes.
+#[inline]
 fn hash_len_33_to_64(s: &[u8]) -> u64 {
     let slen = s.len();
     let mul = K2.wrapping_add((slen as u64).wrapping_mul(2));
@@ -201,6 +214,7 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
 }
 
 // FarmHash64 returns a 64-bit fingerprint hash for a string.
+#[inline]
 pub fn farmhash64(mut s: &[u8]) -> u64 {
     let slen = s.len();
     let seed: u64 = 81;
@@ -299,6 +313,7 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
 
 // FarmHash32 returns a 32-bit fingerprint hash for a string.
 // NOTE: This is NOT equivalent to the original Fingerprint32 function.
+#[inline]
 pub fn farmhash32(s: &[u8]) -> u32 {
     mix_64_to_32(farmhash64(s))
 }
