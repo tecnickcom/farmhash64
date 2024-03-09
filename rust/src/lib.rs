@@ -1,30 +1,17 @@
 /*
-Package farmhash64 implements the FarmHash64 hash function.
+This library implements the farmhash64 and farmhash32 hash functions for strings.
 
-That is a Rust translation of the Google's C++ code:
-https://github.com/google/farmhash
+FarmHash is a family of hash functions.
 
-    - Copyright (c) 2014 Google, Inc.
-    - Copyright (c) 2014 Damian Gryski
-    - Copyright (c) 2016-2024 Nicola Asuni
+FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
+It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
+This is a Rust port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This code has been ported/translated by Nicola Asuni (Tecnick.com) to Rust code.
 */
 
 // BASICS
@@ -45,18 +32,25 @@ struct Uint128 {
 
 // PLATFORM
 
+#[inline]
 fn rotate32(val: u32, shift: u32) -> u32 {
     val.rotate_right(shift)
 }
 
+#[inline]
 fn rotate64(val: u64, shift: u32) -> u64 {
     val.rotate_right(shift)
 }
 
-fn fetch32(s: &[u8], idx: usize) -> u32 {
-    u32::from_le_bytes([s[idx], s[idx + 1], s[idx + 2], s[idx + 3]])
+#[inline]
+fn fetch32(s: &[u8], idx: usize) -> u64 {
+    u64::from(s[idx + 0])
+        | (u64::from(s[idx + 1]) << 8)
+        | (u64::from(s[idx + 2]) << 16)
+        | (u64::from(s[idx + 3]) << 24)
 }
 
+#[inline]
 fn fetch64(s: &[u8], idx: usize) -> u64 {
     u64::from(s[idx + 0])
         | (u64::from(s[idx + 1]) << 8)
@@ -70,10 +64,12 @@ fn fetch64(s: &[u8], idx: usize) -> u64 {
 
 // FARMHASH NA
 
+#[inline]
 fn shift_mix(val: u64) -> u64 {
     val ^ (val >> 47)
 }
 
+#[inline]
 fn mur(a: u32, h: u32) -> u32 {
     let mut a: u32 = u32::from(a);
     let mut h: u32 = u32::from(h);
@@ -86,10 +82,12 @@ fn mur(a: u32, h: u32) -> u32 {
 }
 
 // Merge a 64 bit integer into 32 bit.
+#[inline]
 fn mix_64_to_32(x: u64) -> u32 {
     mur((x >> 32) as u32, ((x << 32) >> 32) as u32)
 }
 
+#[inline]
 fn hash_len_16_mul(u: u64, v: u64, mul: u64) -> u64 {
     let a = (u ^ v).wrapping_mul(mul);
     let a = a ^ (a >> 47);
@@ -98,6 +96,7 @@ fn hash_len_16_mul(u: u64, v: u64, mul: u64) -> u64 {
     b.wrapping_mul(mul)
 }
 
+#[inline]
 fn hash_len_0_to_16(s: &[u8]) -> u64 {
     let slen = s.len() as u64;
 
@@ -116,8 +115,8 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
         let a = fetch32(s, 0);
 
         return hash_len_16_mul(
-            slen.wrapping_add(u64::from(a) << 3),
-            u64::from(fetch32(s, (slen - 4) as usize)),
+            slen.wrapping_add(a << 3),
+            fetch32(s, (slen - 4) as usize),
             mul,
         );
     }
@@ -138,6 +137,7 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
 
 // This probably works well for 16-byte strings as well, but it may be overkill
 // in that case.
+#[inline]
 fn hash_len_17_to_32(s: &[u8]) -> u64 {
     let slen = s.len();
     let mul = K2.wrapping_add((slen * 2) as u64);
@@ -158,6 +158,7 @@ fn hash_len_17_to_32(s: &[u8]) -> u64 {
 
 // Return a 16-byte hash for 48 bytes.  Quick and dirty.
 // Callers do best to use "random-looking" values for a and b.
+#[inline]
 fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> (u64, u64) {
     let a = a.wrapping_add(w);
     let b = rotate64(b.wrapping_add(a).wrapping_add(z), 21);
@@ -170,6 +171,7 @@ fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: 
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+#[inline]
 fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
     weak_hash_len_32_with_seeds_words(
         fetch64(s, 0),
@@ -182,6 +184,7 @@ fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
 }
 
 // Return an 8-byte hash for 33 to 64 bytes.
+#[inline]
 fn hash_len_33_to_64(s: &[u8]) -> u64 {
     let slen = s.len();
     let mul = K2.wrapping_add((slen as u64).wrapping_mul(2));
@@ -214,9 +217,9 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
 }
 
 // FarmHash64 returns a 64-bit fingerprint hash for a string.
+#[inline]
 pub fn farmhash64(mut s: &[u8]) -> u64 {
     let slen = s.len();
-    let seed: u64 = 81;
 
     if slen <= 16 {
         return hash_len_0_to_16(s);
@@ -229,6 +232,8 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
     if slen <= 64 {
         return hash_len_33_to_64(s);
     }
+
+    let seed: u64 = 81;
 
     // For strings over 64 bytes we loop.
     // Internal state consists of 56 bytes: v, w, x, y, and z.
@@ -312,6 +317,7 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
 
 // FarmHash32 returns a 32-bit fingerprint hash for a string.
 // NOTE: This is NOT equivalent to the original Fingerprint32 function.
+#[inline]
 pub fn farmhash32(s: &[u8]) -> u32 {
     mix_64_to_32(farmhash64(s))
 }
