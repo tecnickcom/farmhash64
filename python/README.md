@@ -1,6 +1,6 @@
 # FarmHash64
 
-*Provides farmhash64, a portable C 64-bit hash function*
+*Provides farmhash64 and farmhash32 hash functions in multiple languages*
 
 [![Donate via PayPal](https://img.shields.io/badge/donate-paypal-87ceeb.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&currency_code=GBP&business=paypal@tecnick.com&item_name=donation%20for%20farmhash64%20project)
 *Please consider supporting this project by making a donation via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&currency_code=GBP&business=paypal@tecnick.com&item_name=donation%20for%20farmhash64%20project)*
@@ -35,7 +35,6 @@ This code has been ported/translated by Nicola Asuni (Tecnick.com) to multiple l
 - Java
 - Python
 - Rust
-
 
 ## Getting Started
 

@@ -46,7 +46,7 @@ build: clean version
 # Remove any build artifact
 .PHONY: clean
 clean:
-	rm -rf venv target c Dockerfile htmlcov build dist .pytest_cache .cache .benchmarks ./test/*.so ./test/__pycache__ ./farmhash64/__pycache__ ./farmhash64.egg-info
+	rm -rf venv target c Dockerfile htmlcov build dist .pytest_cache .cache .benchmarks ./test/*.so ./test/__pycache__ ./farmhash64/__pycache__ ./farmhash64.egg-info farmhash64.*.so
 	find . -type f -name '*.pyc' -exec rm -f {} \;
 
 # Generate source code documentation

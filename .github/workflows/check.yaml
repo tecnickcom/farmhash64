@@ -57,6 +57,21 @@ jobs:
       - name: test
         run: cd go && make mod deps linter test GOPATH=$(go env GOPATH)
 
+  java:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: setup java build environment
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd java && make build test
+
   python:
     runs-on: ubuntu-latest
     steps:

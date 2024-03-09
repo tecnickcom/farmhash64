@@ -1,3 +1,8 @@
+.benchmarks
+.pytest_cache
+c
+farmhash64.egg-info
+
 .cache
 .coverage*
 

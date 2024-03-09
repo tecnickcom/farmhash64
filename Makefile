@@ -51,6 +51,7 @@ help:
 	@echo "    make c      : Build and test the C version"
 	@echo "    make cgo    : Build and test the GO C-wrapper version"
 	@echo "    make go     : Build and test the GO version"
+	@echo "    make java   : Build and test the Java version"
 	@echo "    make python : Build and test the Python version"
 	@echo "    make rust   : Build and test the Rust version"
 	@echo "    make clean  : Remove any build artifact"
@@ -58,7 +59,7 @@ help:
 	@echo "    make tag    : Tag the Git repository"
 	@echo ""
 
-all: clean c cgo go python rust
+all: clean c cgo go java python rust
 
 # Build and test the C version
 .PHONY: c
@@ -74,6 +75,11 @@ cgo:
 .PHONY: go
 go:
 	cd go && make all
+
+# Build and test the Java version
+.PHONY: java
+java:
+	cd java && make all
 
 # Build and test the Python version
 .PHONY: python
@@ -92,6 +98,7 @@ clean:
 	cd c && make clean
 	cd cgo && make clean
 	cd go && make clean
+	cd java && make clean
 	cd python && make clean
 	cd rust && make clean
 	@mkdir -p $(TARGETDIR)
