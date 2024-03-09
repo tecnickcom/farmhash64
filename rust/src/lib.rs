@@ -43,8 +43,11 @@ fn rotate64(val: u64, shift: u32) -> u64 {
 }
 
 #[inline]
-fn fetch32(s: &[u8], idx: usize) -> u32 {
-    u32::from_le_bytes([s[idx], s[idx + 1], s[idx + 2], s[idx + 3]])
+fn fetch32(s: &[u8], idx: usize) -> u64 {
+    u64::from(s[idx + 0])
+        | (u64::from(s[idx + 1]) << 8)
+        | (u64::from(s[idx + 2]) << 16)
+        | (u64::from(s[idx + 3]) << 24)
 }
 
 #[inline]
@@ -112,8 +115,8 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
         let a = fetch32(s, 0);
 
         return hash_len_16_mul(
-            slen.wrapping_add(u64::from(a) << 3),
-            u64::from(fetch32(s, (slen - 4) as usize)),
+            slen.wrapping_add(a << 3),
+            fetch32(s, (slen - 4) as usize),
             mul,
         );
     }
@@ -217,7 +220,6 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
 #[inline]
 pub fn farmhash64(mut s: &[u8]) -> u64 {
     let slen = s.len();
-    let seed: u64 = 81;
 
     if slen <= 16 {
         return hash_len_0_to_16(s);
@@ -230,6 +232,8 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
     if slen <= 64 {
         return hash_len_33_to_64(s);
     }
+
+    let seed: u64 = 81;
 
     // For strings over 64 bytes we loop.
     // Internal state consists of 56 bytes: v, w, x, y, and z.

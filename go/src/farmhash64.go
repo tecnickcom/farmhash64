@@ -38,15 +38,23 @@ type uint128 struct {
 // PLATFORM
 
 func rotate32(val uint32, shift uint) uint32 {
+	if shift == 0 {
+		return val
+	}
+
 	return ((val >> shift) | (val << (32 - shift)))
 }
 
 func rotate64(val uint64, shift uint) uint64 {
+	if shift == 0 {
+		return val
+	}
+
 	return ((val >> shift) | (val << (64 - shift)))
 }
 
-func fetch32(s []byte, idx int) uint32 {
-	return uint32(s[idx+0]) | uint32(s[idx+1])<<8 | uint32(s[idx+2])<<16 | uint32(s[idx+3])<<24
+func fetch32(s []byte, idx int) uint64 {
+	return uint64(s[idx+0]) | uint64(s[idx+1])<<8 | uint64(s[idx+2])<<16 | uint64(s[idx+3])<<24
 }
 
 func fetch64(s []byte, idx int) uint64 {
@@ -104,7 +112,7 @@ func hashLen0to16(s []byte) uint64 {
 		mul := k2 + slen*2
 		a := fetch32(s, 0)
 
-		return hashLen16Mul(slen+(uint64(a)<<3), uint64(fetch32(s, int(slen-4))), mul)
+		return hashLen16Mul(slen+(a<<3), fetch32(s, int(slen-4)), mul)
 	}
 
 	if slen > 0 {
@@ -180,8 +188,6 @@ func hashLen33to64(s []byte) uint64 {
 func FarmHash64(s []byte) uint64 {
 	slen := len(s)
 
-	var seed uint64 = 81
-
 	if slen <= 16 {
 		return hashLen0to16(s)
 	}
@@ -194,8 +200,11 @@ func FarmHash64(s []byte) uint64 {
 		return hashLen33to64(s)
 	}
 
+	var seed uint64 = 81
+
 	// For strings over 64 bytes we loop.
 	// Internal state consists of 56 bytes: v, w, x, y, and z.
+
 	v := uint128{0, 0}
 	w := uint128{0, 0}
 	x := seed*k2 + fetch64(s, 0)
