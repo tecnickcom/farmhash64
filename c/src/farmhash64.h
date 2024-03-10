@@ -517,8 +517,7 @@ STATIC_INLINE void swap64(uint64_t* a, uint64_t* b)
  */
 STATIC_INLINE uint32_t ror32(uint32_t val, size_t shift)
 {
-    // Avoid shifting by 32: doing so yields an undefined result.
-    return shift == 0 ? val : (val >> shift) | (val << (32 - shift));
+    return (val >> shift) | (val << (32 - shift));
 }
 
 /**
@@ -533,8 +532,7 @@ STATIC_INLINE uint32_t ror32(uint32_t val, size_t shift)
  */
 STATIC_INLINE uint64_t ror64(uint64_t val, size_t shift)
 {
-    // Avoid shifting by 64: doing so yields an undefined result.
-    return shift == 0 ? val : (val >> shift) | (val << (64 - shift));
+    return (val >> shift) | (val << (64 - shift));
 }
 
 /**
