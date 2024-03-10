@@ -30,11 +30,11 @@ public class FarmHash64 {
 	}
 
 	private static int rotate32(int val, int shift) {
-		return shift == 0 ? val : (val >>> shift) | (val << (32 - shift));
+		return (val >>> shift) | (val << (32 - shift));
 	}
 
 	private static long rotate64(long val, int shift) {
-		return shift == 0 ? val : (val >>> shift) | (val << (64 - shift));
+		return (val >>> shift) | (val << (64 - shift));
 	}
 
 	private static long fetch32(byte[] s, int idx) {

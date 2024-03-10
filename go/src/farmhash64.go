@@ -38,18 +38,10 @@ type uint128 struct {
 // PLATFORM
 
 func rotate32(val uint32, shift uint) uint32 {
-	if shift == 0 {
-		return val
-	}
-
 	return ((val >> shift) | (val << (32 - shift)))
 }
 
 func rotate64(val uint64, shift uint) uint64 {
-	if shift == 0 {
-		return val
-	}
-
 	return ((val >> shift) | (val << (64 - shift)))
 }
 
