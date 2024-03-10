@@ -2,6 +2,7 @@
 .pytest_cache
 c
 farmhash64.egg-info
+README.md
 
 .cache
 .coverage*
