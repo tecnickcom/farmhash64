@@ -27,4 +27,3 @@ nosetests.xml
 pip-delete-this-directory.txt
 pip-log.txt
 target
-README.md
