@@ -13,9 +13,6 @@ OWNER=tecnickcom
 # Project vendor
 VENDOR=${OWNER}
 
-# Lowercase VENDOR name for Docker
-LCVENDOR=$(shell echo "${VENDOR}" | tr '[:upper:]' '[:lower:]')
-
 # CVS path (path to the parent dir containing the project)
 CVSPATH=github.com/${VENDOR}
 

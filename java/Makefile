@@ -7,11 +7,14 @@
 SHELL=/bin/bash
 .SHELLFLAGS=-o pipefail -c
 
+# Project name
+PROJECT=farmhash64
+
 # Display general help about this command
 .PHONY: help
 help:
 	@echo ""
-	@echo "FarmHash64 Java Makefile."
+	@echo "$(PROJECT) Java Makefile."
 	@echo "The following commands are available:"
 	@echo ""
 	@echo "    make build        : Build the library"

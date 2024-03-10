@@ -8,18 +8,6 @@
 SHELL=/bin/bash
 .SHELLFLAGS=-o pipefail -c
 
-# Project owner
-OWNER=tecnickcom
-
-# Project vendor
-VENDOR=${OWNER}
-
-# Lowercase VENDOR name for Docker
-LCVENDOR=$(shell echo "${VENDOR}" | tr '[:upper:]' '[:lower:]')
-
-# CVS path (path to the parent dir containing the project)
-CVSPATH=github.com/${VENDOR}
-
 # Project name
 PROJECT=farmhash64
 
@@ -27,10 +15,7 @@ PROJECT=farmhash64
 VERSION=$(shell cat ../VERSION)
 
 # Project release number (packaging build number)
-RELEASE=$(shell cat ../RELEASE)
-
-# Current directory
-CURRENTDIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+# RELEASE=$(shell cat ../RELEASE)
 
 # --- MAKE TARGETS ---
 
