@@ -15,8 +15,6 @@ This code has been ported/translated by Nicola Asuni (Tecnick.com) to Java code.
 */
 package com.tecnick.farmhash64;
 
-import java.util.Arrays;
-
 public class FarmHash64 {
 
 	private static final int c1 = 0xcc9e2d51;
@@ -146,12 +144,12 @@ public class FarmHash64 {
 		return result;
 	}
 
-	private static UInt128 weakHashLen32WithSeeds(byte[] s, long a, long b) {
+	private static UInt128 weakHashLen32WithSeeds(byte[] s, int idx, long a, long b) {
 		return weakHashLen32WithSeedsWords(
-				fetch64(s, 0),
-				fetch64(s, 8),
-				fetch64(s, 16),
-				fetch64(s, 24),
+				fetch64(s, idx + 0),
+				fetch64(s, idx + 8),
+				fetch64(s, idx + 16),
+				fetch64(s, idx + 24),
 				a,
 				b);
 	}
@@ -205,35 +203,37 @@ public class FarmHash64 {
 		// Set end so that after the loop we have 1 to 64 bytes left to process.
 		int endIdx = ((slen - 1) / 64) * 64;
 		int last64Idx = endIdx + ((slen - 1) & 63) - 63;
-		byte[] last64 = Arrays.copyOfRange(s, last64Idx, slen);
+		int idx = 0;
 
-		while (s.length > 64) {
-			x = rotate64(x + y + v.lo + fetch64(s, 8), 37) * k1;
-			y = rotate64(y + v.hi + fetch64(s, 48), 42) * k1;
+		while (slen > 64) {
+			x = rotate64(x + y + v.lo + fetch64(s, idx + 8), 37) * k1;
+			y = rotate64(y + v.hi + fetch64(s, idx + 48), 42) * k1;
 			x ^= w.hi;
-			y += v.lo + fetch64(s, 40);
+			y += v.lo + fetch64(s, idx + 40);
 			z = rotate64(z + w.lo, 33) * k1;
-			v = weakHashLen32WithSeeds(s, v.hi * k1, x + w.lo);
-			w = weakHashLen32WithSeeds(Arrays.copyOfRange(s, 32, s.length), z + w.hi, y + fetch64(s, 16));
+			v = weakHashLen32WithSeeds(s, idx, v.hi * k1, x + w.lo);
+			w = weakHashLen32WithSeeds(s, idx + 32, z + w.hi, y + fetch64(s, idx + 16));
 			tmp = x;
 			x = z;
 			z = tmp;
-			s = Arrays.copyOfRange(s, 64, s.length);
+			idx += 64;
+			slen -= 64;
 		}
 
 		long mul = k1 + ((z & 0xFFL) << 1);
+
 		// Make s point to the last 64 bytes of input.
-		s = last64;
+		idx = last64Idx;
 		w.lo += ((long) slen - 1) & 63;
 		v.lo += w.lo;
 		w.lo += v.lo;
-		x = rotate64(x + y + v.lo + fetch64(s, 8), 37) * mul;
-		y = rotate64(y + v.hi + fetch64(s, 48), 42) * mul;
+		x = rotate64(x + y + v.lo + fetch64(s, idx + 8), 37) * mul;
+		y = rotate64(y + v.hi + fetch64(s, idx + 48), 42) * mul;
 		x ^= w.hi * 9;
-		y += v.lo * 9 + fetch64(s, 40);
+		y += v.lo * 9 + fetch64(s, idx + 40);
 		z = rotate64(z + w.lo, 33) * mul;
-		v = weakHashLen32WithSeeds(s, v.hi * mul, x + w.lo);
-		w = weakHashLen32WithSeeds(Arrays.copyOfRange(s, 32, s.length), z + w.hi, y + fetch64(s, 16));
+		v = weakHashLen32WithSeeds(s, idx, v.hi * mul, x + w.lo);
+		w = weakHashLen32WithSeeds(s, idx + 32, z + w.hi, y + fetch64(s, idx + 16));
 		tmp = x;
 		x = z;
 		z = tmp;
