@@ -156,33 +156,6 @@ fn hash_len_17_to_32(s: &[u8]) -> u64 {
     )
 }
 
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
-// Callers do best to use "random-looking" values for a and b.
-#[inline]
-fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> (u64, u64) {
-    let a = a.wrapping_add(w);
-    let b = rotate64(b.wrapping_add(a).wrapping_add(z), 21);
-    let c = a;
-    let a = a.wrapping_add(x);
-    let a = a.wrapping_add(y);
-    let b = b.wrapping_add(rotate64(a, 44));
-
-    (a.wrapping_add(z), b.wrapping_add(c))
-}
-
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
-#[inline]
-fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
-    weak_hash_len_32_with_seeds_words(
-        fetch64(s, 0),
-        fetch64(s, 8),
-        fetch64(s, 16),
-        fetch64(s, 24),
-        a,
-        b,
-    )
-}
-
 // Return an 8-byte hash for 33 to 64 bytes.
 #[inline]
 fn hash_len_33_to_64(s: &[u8]) -> u64 {
@@ -213,6 +186,33 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
         e.wrapping_add(rotate64(f.wrapping_add(a), 18))
             .wrapping_add(g),
         mul,
+    )
+}
+
+// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Callers do best to use "random-looking" values for a and b.
+#[inline]
+fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> (u64, u64) {
+    let a = a.wrapping_add(w);
+    let b = rotate64(b.wrapping_add(a).wrapping_add(z), 21);
+    let c = a;
+    let a = a.wrapping_add(x);
+    let a = a.wrapping_add(y);
+    let b = b.wrapping_add(rotate64(a, 44));
+
+    (a.wrapping_add(z), b.wrapping_add(c))
+}
+
+// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+#[inline]
+fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
+    weak_hash_len_32_with_seeds_words(
+        fetch64(s, 0),
+        fetch64(s, 8),
+        fetch64(s, 16),
+        fetch64(s, 24),
+        a,
+        b,
     )
 }
 

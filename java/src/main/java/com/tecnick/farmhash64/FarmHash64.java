@@ -102,7 +102,10 @@ public class FarmHash64 {
 			long mul = k2 + slen * 2;
 			long a = fetch32(s, 0);
 
-			return hashLen16Mul(slen + (a << 3), fetch32(s, (int) (slen - 4)), mul);
+			return hashLen16Mul(
+					slen + (a << 3),
+					fetch32(s, (int) (slen - 4)),
+					mul);
 		}
 
 		if (slen > 0) {
@@ -126,7 +129,30 @@ public class FarmHash64 {
 		long c = fetch64(s, slen - 8) * mul;
 		long d = fetch64(s, slen - 16) * k2;
 
-		return hashLen16Mul(rotate64(a + b, 43) + rotate64(c, 30) + d, a + rotate64(b + k2, 18) + c, mul);
+		return hashLen16Mul(
+				rotate64(a + b, 43) + rotate64(c, 30) + d,
+				a + rotate64(b + k2, 18) + c,
+				mul);
+	}
+
+	private static long hashLen33to64(byte[] s) {
+		int slen = s.length;
+		long mul = k2 + (long) slen * 2;
+		long a = fetch64(s, 0) * k2;
+		long b = fetch64(s, 8);
+		long c = fetch64(s, slen - 8) * mul;
+		long d = fetch64(s, slen - 16) * k2;
+		long y = rotate64(a + b, 43) + rotate64(c, 30) + d;
+		long z = hashLen16Mul(y, a + rotate64(b + k2, 18) + c, mul);
+		long e = fetch64(s, 16) * mul;
+		long f = fetch64(s, 24);
+		long g = (y + fetch64(s, slen - 32)) * mul;
+		long h = (z + fetch64(s, slen - 24)) * mul;
+
+		return hashLen16Mul(
+				rotate64(e + f, 43) + rotate64(g, 30) + h,
+				e + rotate64(f + a, 18) + g,
+				mul);
 	}
 
 	private static UInt128 weakHashLen32WithSeedsWords(long w, long x, long y, long z, long a, long b) {
@@ -152,26 +178,6 @@ public class FarmHash64 {
 				fetch64(s, idx + 24),
 				a,
 				b);
-	}
-
-	private static long hashLen33to64(byte[] s) {
-		int slen = s.length;
-		long mul = k2 + (long) slen * 2;
-		long a = fetch64(s, 0) * k2;
-		long b = fetch64(s, 8);
-		long c = fetch64(s, slen - 8) * mul;
-		long d = fetch64(s, slen - 16) * k2;
-		long y = rotate64(a + b, 43) + rotate64(c, 30) + d;
-		long z = hashLen16Mul(y, a + rotate64(b + k2, 18) + c, mul);
-		long e = fetch64(s, 16) * mul;
-		long f = fetch64(s, 24);
-		long g = (y + fetch64(s, slen - 32)) * mul;
-		long h = (z + fetch64(s, slen - 24)) * mul;
-
-		return hashLen16Mul(
-			rotate64(e + f, 43) + rotate64(g, 30) + h, e + rotate64(f + a, 18) + g, 
-			mul
-		);
 	}
 
 	public static long farmhash64(byte[] s) {
@@ -239,14 +245,12 @@ public class FarmHash64 {
 		z = tmp;
 
 		return hashLen16Mul(
-			hashLen16Mul(v.lo, w.lo, mul) + shiftMix(y) * k0 + z, 
-			hashLen16Mul(v.hi, w.hi, mul) + x,
-			mul
-		);
+				hashLen16Mul(v.lo, w.lo, mul) + shiftMix(y) * k0 + z,
+				hashLen16Mul(v.hi, w.hi, mul) + x,
+				mul);
 	}
 
 	public static int farmhash32(byte[] s) {
 		return mix64To32(farmhash64(s));
 	}
-
 }

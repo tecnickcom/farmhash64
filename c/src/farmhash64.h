@@ -687,6 +687,32 @@ STATIC_INLINE uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
 }
 
 /**
+ * @brief Calculate a 8-byte (64-bit) hash code for a byte array of length 33 to 64.
+ *
+ * @param s Pointer to the byte array
+ * @param len Length of the byte array
+ *
+ * @return 64-bit hash code
+ *
+ * @private
+ */
+STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
+{
+    uint64_t mul = k2 + len * 2;
+    uint64_t a = fetch64(s) * k2;
+    uint64_t b = fetch64(s + 8);
+    uint64_t c = fetch64(s + len - 8) * mul;
+    uint64_t d = fetch64(s + len - 16) * k2;
+    uint64_t y = ror64(a + b, 43) + ror64(c, 30) + d;
+    uint64_t z = farmhash_len_16_mul(y, a + ror64(b + k2, 18) + c, mul);
+    uint64_t e = fetch64(s + 16) * mul;
+    uint64_t f = fetch64(s + 24);
+    uint64_t g = (y + fetch64(s + len - 32)) * mul;
+    uint64_t h = (z + fetch64(s + len - 24)) * mul;
+    return farmhash_len_16_mul(ror64(e + f, 43) + ror64(g, 30) + h, e + ror64(f + a, 18) + g, mul);
+}
+
+/**
  * @brief Calculate a 16-byte (128-bit) weak hash code for a byte array of length 48, including seeds.
  *        Callers do best to use "random-looking" values for a and b.
  *
@@ -731,32 +757,6 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64
             fetch64(s + 24),
             a,
             b);
-}
-
-/**
- * @brief Calculate a 8-byte (64-bit) hash code for a byte array of length 33 to 64.
- *
- * @param s Pointer to the byte array
- * @param len Length of the byte array
- *
- * @return 64-bit hash code
- *
- * @private
- */
-STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
-{
-    uint64_t mul = k2 + len * 2;
-    uint64_t a = fetch64(s) * k2;
-    uint64_t b = fetch64(s + 8);
-    uint64_t c = fetch64(s + len - 8) * mul;
-    uint64_t d = fetch64(s + len - 16) * k2;
-    uint64_t y = ror64(a + b, 43) + ror64(c, 30) + d;
-    uint64_t z = farmhash_len_16_mul(y, a + ror64(b + k2, 18) + c, mul);
-    uint64_t e = fetch64(s + 16) * mul;
-    uint64_t f = fetch64(s + 24);
-    uint64_t g = (y + fetch64(s + len - 32)) * mul;
-    uint64_t h = (z + fetch64(s + len - 24)) * mul;
-    return farmhash_len_16_mul(ror64(e + f, 43) + ror64(g, 30) + h, e + ror64(f + a, 18) + g, mul);
 }
 
 // =================================================================================================
