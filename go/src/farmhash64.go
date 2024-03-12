@@ -114,7 +114,7 @@ func hashLen0to16(s []byte) uint64 {
 		y := uint32(a) + (uint32(b) << 8)
 		z := uint32(slen) + (uint32(c) << 2)
 
-		return shiftMix(uint64(y)*k2^uint64(z)*k0) * k2
+		return shiftMix((uint64(y)*k2)^(uint64(z)*k0)) * k2
 	}
 
 	return k2

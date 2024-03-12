@@ -661,7 +661,7 @@ STATIC_INLINE uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
         uint8_t c = s[len - 1];
         uint32_t y = (uint32_t) a + ((uint32_t) b << 8);
         uint32_t z = len + ((uint32_t) c << 2);
-        return smix(y * k2 ^ z * k0) * k2;
+        return smix((y * k2) ^ (z * k0)) * k2;
     }
     return k2;
 }

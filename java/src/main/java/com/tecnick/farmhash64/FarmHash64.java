@@ -115,7 +115,7 @@ public class FarmHash64 {
 			long y = a + (b << 8);
 			long z = slen + (c << 2);
 
-			return shiftMix(y * k2 ^ z * k0) * k2;
+			return shiftMix((y * k2) ^ (z * k0)) * k2;
 		}
 
 		return k2;

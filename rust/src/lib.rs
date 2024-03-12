@@ -128,7 +128,7 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
         let y = u32::from(a).wrapping_add(u32::from(b) << 8);
         let z = u32::from(slen as u32).wrapping_add(u32::from(c) << 2);
 
-        return shift_mix(u64::from(y).wrapping_mul(K2) ^ u64::from(z).wrapping_mul(K0))
+        return shift_mix((u64::from(y).wrapping_mul(K2)) ^ (u64::from(z).wrapping_mul(K0)))
             .wrapping_mul(K2);
     }
 
