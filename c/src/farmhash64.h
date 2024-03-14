@@ -746,7 +746,7 @@ static inline uint64_t farmhash64(const char *s, size_t len)
     uint128_t w = make_uint128_t(0, 0);
     x = x * k2 + fetch64(s);
     // Set end so that after the loop we have 1 to 64 bytes left to process.
-    const char* end = s + ((len - 1) / 64) * 64;
+    const char* end = s + (((len - 1) >> 6) << 6);
     const char* last64 = end + ((len - 1) & 63) - 63;
     assert(s + len - 64 == last64);
     do

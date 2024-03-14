@@ -244,7 +244,7 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
     let mut z = (shift_mix((y.wrapping_mul(K2)).wrapping_add(113))).wrapping_mul(K2);
 
     // Set end so that after the loop we have 1 to 64 bytes left to process.
-    let end_idx = ((slen - 1) / 64) * 64;
+    let end_idx = ((slen - 1) >> 6) << 6;
     let last64_idx = end_idx + ((slen - 1) & 63) - 63;
     let last64 = &s[last64_idx..];
 

@@ -214,7 +214,7 @@ func FarmHash64(s []byte) uint64 {
 	z := shiftMix(y*k2+113) * k2
 
 	// Set end so that after the loop we have 1 to 64 bytes left to process.
-	endIdx := ((slen - 1) / 64) * 64
+	endIdx := ((slen - 1) >> 6) << 6
 	last64Idx := endIdx + ((slen - 1) & 63) - 63
 	last64 := s[last64Idx:]
 

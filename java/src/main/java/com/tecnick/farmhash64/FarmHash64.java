@@ -207,7 +207,7 @@ public class FarmHash64 {
 		long tmp = 0;
 
 		// Set end so that after the loop we have 1 to 64 bytes left to process.
-		int endIdx = ((slen - 1) / 64) * 64;
+		int endIdx = ((slen - 1) >> 6) << 6;
 		int last64Idx = endIdx + ((slen - 1) & 63) - 63;
 		int idx = 0;
 
