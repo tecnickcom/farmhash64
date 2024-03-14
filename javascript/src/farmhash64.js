@@ -208,13 +208,12 @@ function shiftMix(v) {
 }
 
 function mur(a, h) {
-    a *= c1;
+    a = u32Mul(a, c1);
     a = u32RotR(a, 17);
-    a *= c2;
-    h ^= a;
+    a = u32Mul(a, c2);
+    h = h ^ a;
     h = u32RotR(h, 19);
-
-    return (h * 5 + 0xe6546b64) >>> 0;
+    return (u32Mul(h, 5) + 0xe6546b64) >>> 0;
 }
 
 function mix64To32(v) {

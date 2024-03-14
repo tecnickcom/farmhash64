@@ -254,13 +254,26 @@ function test_farmhash64() {
     return errors;
 }
 
+function test_farmhash32() {
+    var errors = 0;
+    var h = 0;
+    var i = 0;
+    for (i = 0; i < test_data.length; i++) {
+        h = farmhash32(test_data[i][3]);
+        if (h != test_data[i][0]) {
+            console.error("farmhash32: (" + i + ") expected " + test_data[i][0] + " but got " + h);
+            ++errors;
+        }
+    }
+    return errors;
+}
 
 var errors = 0;
 
 errors += test_parseHex();
 errors += test_toString();
 errors += test_farmhash64();
-//errors += test_farmhash32();
+errors += test_farmhash32();
 
 if (errors > 0) {
     console.log("FAILED: " + errors);
