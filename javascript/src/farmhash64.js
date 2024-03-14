@@ -98,7 +98,7 @@ function u32RotR(a, s) {
     if (s <= 0 || s >= 32) {
         return a >>> 0;
     }
-    return (a << (32 - s)) | (a >>> s);
+    return ((a << (32 - s)) >>> 0) | (a >>> s);
 }
 
 function u64RotR(a, s) {
@@ -109,9 +109,10 @@ function u64RotR(a, s) {
         };
     }
     if (s < 32) {
+        const sl = 32 - s;
         return {
-            hi: (a.hi << (32 - s)) | (a.lo >>> s),
-            lo: (a.lo << (32 - s)) | (a.hi >>> s),
+            hi: (((a.lo << sl) >>> 0) | (a.hi >>> s)) >>> 0,
+            lo: (((a.hi << sl) >>> 0) | (a.lo >>> s)) >>> 0,
         };
     }
     if (s === 32) {
@@ -120,9 +121,11 @@ function u64RotR(a, s) {
             lo: a.hi >>> 0,
         };
     }
+    const sl = 64 - s;
+    const sr = s - 32;
     return {
-        hi: (a.lo << (64 - s)) | (a.hi >>> (s - 32)),
-        lo: (a.hi << (64 - s)) | (a.lo >>> (s - 32)),
+        hi: (((a.hi << sl) >>> 0) | (a.lo >>> sr)) >>> 0,
+        lo: (((a.lo << sl) >>> 0) | (a.hi >>> sr)) >>> 0,
     };
 }
 
@@ -228,59 +231,62 @@ function hashLen16Mul(u, v, mul) {
 }
 
 function hashLen0to16(s) {
-    slen = s.length;
+    const slen = s.length;
+    const slen64 = {
+        hi: 0,
+        lo: slen >>> 0
+    };
+
     if (slen >= 8) {
-        mul = u64Add(
+        const mul = u64Add(
             k2,
-            u64Mul(slen, {
+            u64Mul(slen64, {
                 hi: 0,
                 lo: 2,
             })
         );
-        a = u64Add(fetchU64(s, 0), k2);
-        b = fetchU64(s, slen - 8);
-        c = u64Add(u64Mul(u64RotR(b, 37), mul), a);
-        d = u64Mul(u64Add(u64RotR(a, 25), b), mul);
+        const a = u64Add(fetchU64(s, 0), k2);
+        const b = fetchU64(s, slen - 8);
+        const br = u64RotR(b, 37);
+        const dr = u64RotR(a, 25);
+        const c = u64Add(u64Mul(br, mul), a);
+        const d = u64Mul(u64Add(dr, b), mul);
+
         return hashLen16Mul(c, d, mul);
     }
+
     if (slen >= 4) {
-        mul = u64Add(
+        const mul = u64Add(
             k2,
-            u64Mul(slen, {
+            u64Mul(slen64, {
                 hi: 0,
                 lo: 2,
             })
         );
-        a = fetchU32(s, 0);
-        return hashLen16Mul(
-            u64Add(slen, u64ShiftL(a, 3)),
-            fetchU32(s, slen - 4),
-            mul
-        );
+        const a = fetchU32(s, 0);
+        const u = u64Add(slen64, u64ShiftL(a, 3));
+        const v = fetchU32(s, slen - 4);
+        return hashLen16Mul(u, v, mul);
     }
 
     if (slen > 0) {
-        a = s.charCodeAt(0) >>> 0;
-        b = s.charCodeAt(slen >>> 1) >>> 0;
-        c = s.charCodeAt(slen - 1) >>> 0;
-        y = (a + (b << 8)) >>> 0;
-        z = (slen + (c << 2)) >>> 0;
+        const a = s.charCodeAt(0) >>> 0;
+        const b = s.charCodeAt(slen >>> 1) >>> 0;
+        const c = s.charCodeAt(slen - 1) >>> 0;
+        const y = (a + (b << 8)) >>> 0;
+        const z = (slen + (c << 2)) >>> 0;
 
         return u64Mul(
             shiftMix(
                 u64XOR(
                     u64Mul({
-                            hi: 0,
-                            lo: y,
-                        },
-                        k2
-                    ),
+                        hi: 0,
+                        lo: y
+                    }, k2),
                     u64Mul({
-                            hi: 0,
-                            lo: z,
-                        },
-                        k0
-                    )
+                        hi: 0,
+                        lo: z
+                    }, k0)
                 )
             ),
             k2
