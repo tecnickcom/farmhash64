@@ -171,7 +171,7 @@ func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) (uint64, uint64) {
 	a += y
 	b += rotate64(a, 44)
 
-	return a + z, b + c
+	return b + c, a + z
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
@@ -224,8 +224,8 @@ func FarmHash64(s []byte) uint64 {
 		x ^= w.hi
 		y += v.lo + fetch64(s, 40)
 		z = rotate64(z+w.lo, 33) * k1
-		v.lo, v.hi = weakHashLen32WithSeeds(s, v.hi*k1, x+w.lo)
-		w.lo, w.hi = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
+		v.hi, v.lo = weakHashLen32WithSeeds(s, v.hi*k1, x+w.lo)
+		w.hi, w.lo = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
 		x, z = z, x
 		s = s[64:]
 	}
@@ -241,8 +241,8 @@ func FarmHash64(s []byte) uint64 {
 	x ^= w.hi * 9
 	y += v.lo*9 + fetch64(s, 40)
 	z = rotate64(z+w.lo, 33) * mul
-	v.lo, v.hi = weakHashLen32WithSeeds(s, v.hi*mul, x+w.lo)
-	w.lo, w.hi = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
+	v.hi, v.lo = weakHashLen32WithSeeds(s, v.hi*mul, x+w.lo)
+	w.hi, w.lo = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
 	x, z = z, x
 
 	return hashLen16Mul(hashLen16Mul(v.lo, w.lo, mul)+shiftMix(y)*k0+z, hashLen16Mul(v.hi, w.hi, mul)+x, mul)
