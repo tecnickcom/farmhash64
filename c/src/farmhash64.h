@@ -28,21 +28,6 @@ extern "C" {
 #include <string.h>
 
 
-// PORTABILITY LAYER: "static inline" or similar
-
-#ifndef STATIC_INLINE
-/**
- * @brief Macro definition for static inline functions.
- *
- * This macro is used to define functions as static inline, which allows the compiler
- * to optimize the function by inlining it at the call site. It is typically used for
- * small, frequently called functions to improve performance.
- *
- * @private
- */
-#define STATIC_INLINE static inline
-#endif
-
 // PORTABILITY LAYER: endianness and byteswapping functions
 
 #ifdef WORDS_BIGENDIAN
@@ -403,8 +388,8 @@ extern "C" {
  */
 typedef struct uint128_t
 {
-    uint64_t lo; // Lower 64 bits of the 128-bit integer
     uint64_t hi; // Higher 64 bits of the 128-bit integer
+    uint64_t lo; // Lower 64 bits of the 128-bit integer
 } uint128_t;
 
 // Some primes between 2^63 and 2^64 for various uses.
@@ -419,42 +404,17 @@ static const uint32_t c2 = 0x1b873593;
 /**
  * @brief Create a uint128_t value from two 64-bit integers.
  *
- * @param lo Low 64 bits
  * @param hi High 64 bits
+ * @param lo Low 64 bits
  *
  * @return uint128_t value
  *
  * @private
  */
-STATIC_INLINE uint128_t make_uint128_t(uint64_t lo, uint64_t hi)
+static inline uint128_t make_uint128_t(uint64_t hi, uint64_t lo)
 {
-    uint128_t x = {lo, hi};
+    uint128_t x = {hi, lo};
     return x;
-}
-
-/**
- * @brief Convert a uint128_t value to a 64-bit hash code.
- *
- * This function is intended to be a reasonably good hash function.
- * The result may change from time to time and may differ on different platforms.
- * The result may also differ depending on the NDEBUG macro.
- *
- * @param x uint128_t value
- *
- * @return 64-bit hash code
- *
- * @private
- */
-STATIC_INLINE uint64_t farmhash128_to_64(uint128_t x)
-{
-    // Murmur-inspired hashing.
-    const uint64_t k_mul = 0x9ddfea08eb382d69ULL;
-    uint64_t a = (x.lo ^ x.hi) * k_mul;
-    a ^= (a >> 47);
-    uint64_t b = (x.hi ^ a) * k_mul;
-    b ^= (b >> 47);
-    b *= k_mul;
-    return b;
 }
 
 /**
@@ -466,7 +426,7 @@ STATIC_INLINE uint64_t farmhash128_to_64(uint128_t x)
  *
  * @private
  */
-STATIC_INLINE uint64_t fetch64(const char* p)
+static inline uint64_t fetch64(const char* p)
 {
     uint64_t result;
     memcpy(&result, p, sizeof(result));
@@ -482,7 +442,7 @@ STATIC_INLINE uint64_t fetch64(const char* p)
  *
  * @private
  */
-STATIC_INLINE uint64_t fetch32(const char* p)
+static inline uint64_t fetch32(const char* p)
 {
     uint32_t result;
     memcpy(&result, p, sizeof(result));
@@ -497,7 +457,7 @@ STATIC_INLINE uint64_t fetch32(const char* p)
  *
  * @private
  */
-STATIC_INLINE void swap64(uint64_t* a, uint64_t* b)
+static inline void swap64(uint64_t* a, uint64_t* b)
 {
     uint64_t t;
     t = *a;
@@ -515,7 +475,7 @@ STATIC_INLINE void swap64(uint64_t* a, uint64_t* b)
  *
  * @private
  */
-STATIC_INLINE uint32_t ror32(uint32_t val, size_t shift)
+static inline uint32_t ror32(uint32_t val, size_t shift)
 {
     return (val >> shift) | (val << (32 - shift));
 }
@@ -530,7 +490,7 @@ STATIC_INLINE uint32_t ror32(uint32_t val, size_t shift)
  *
  * @private
  */
-STATIC_INLINE uint64_t ror64(uint64_t val, size_t shift)
+static inline uint64_t ror64(uint64_t val, size_t shift)
 {
     return (val >> shift) | (val << (64 - shift));
 }
@@ -547,7 +507,7 @@ STATIC_INLINE uint64_t ror64(uint64_t val, size_t shift)
  *
  * @private
  */
-STATIC_INLINE uint64_t smix(uint64_t val)
+static inline uint64_t smix(uint64_t val)
 {
     return val ^ (val >> 47);
 }
@@ -566,7 +526,7 @@ STATIC_INLINE uint64_t smix(uint64_t val)
  *
  * @private
  */
-STATIC_INLINE uint32_t mur(uint32_t a, uint32_t h)
+static inline uint32_t mur(uint32_t a, uint32_t h)
 {
     a *= c1;
     a = ror32(a, 17);
@@ -585,24 +545,9 @@ STATIC_INLINE uint32_t mur(uint32_t a, uint32_t h)
  *
  * @private
  */
-STATIC_INLINE uint32_t mix_64_to_32(uint64_t x)
+static inline uint32_t mix_64_to_32(uint64_t x)
 {
     return mur((uint32_t)(x >> 32), (uint32_t)((x << 32) >> 32));
-}
-
-/**
- * @brief Calculate a 64-bit hash code for a byte array of length 16.
- *
- * @param u First 64 bits of the byte array
- * @param v Last 64 bits of the byte array
- *
- * @return 64-bit hash code
- *
- * @private
- */
-STATIC_INLINE uint64_t farmhash_len_16(uint64_t u, uint64_t v)
-{
-    return farmhash128_to_64(make_uint128_t(u, v));
 }
 
 /**
@@ -616,7 +561,7 @@ STATIC_INLINE uint64_t farmhash_len_16(uint64_t u, uint64_t v)
  *
  * @private
  */
-STATIC_INLINE uint64_t farmhash_len_16_mul(uint64_t u, uint64_t v, uint64_t mul)
+static inline uint64_t farmhash_len_16_mul(uint64_t u, uint64_t v, uint64_t mul)
 {
     // Murmur-inspired hashing.
     uint64_t a = (u ^ v) * mul;
@@ -637,7 +582,7 @@ STATIC_INLINE uint64_t farmhash_len_16_mul(uint64_t u, uint64_t v, uint64_t mul)
  *
  * @private
  */
-STATIC_INLINE uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
+static inline uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
 {
     if (len >= 8)
     {
@@ -676,7 +621,7 @@ STATIC_INLINE uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
  *
  * @private
  */
-STATIC_INLINE uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
+static inline uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
 {
     uint64_t mul = k2 + len * 2;
     uint64_t a = fetch64(s) * k1;
@@ -696,7 +641,7 @@ STATIC_INLINE uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
  *
  * @private
  */
-STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
+static inline uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
 {
     uint64_t mul = k2 + len * 2;
     uint64_t a = fetch64(s) * k2;
@@ -727,7 +672,7 @@ STATIC_INLINE uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
  *
  * @private
  */
-STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint64_t x, uint64_t y, uint64_t z, uint64_t a, uint64_t b)
+static inline uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint64_t x, uint64_t y, uint64_t z, uint64_t a, uint64_t b)
 {
     a += w;
     b = ror64(b + a + z, 21);
@@ -735,7 +680,7 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint
     a += x;
     a += y;
     b += ror64(a, 44);
-    return make_uint128_t(a + z, b + c);
+    return make_uint128_t(b + c, a + z);
 }
 
 /**
@@ -749,7 +694,7 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds_vals(uint64_t w, uint
  *
  * @private
  */
-STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64_t a, uint64_t b)
+static inline uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64_t a, uint64_t b)
 {
     return weak_farmhash_na_len_32_with_seeds_vals(fetch64(s),
             fetch64(s + 8),
@@ -777,7 +722,7 @@ STATIC_INLINE uint128_t weak_farmhash_na_len_32_with_seeds(const char* s, uint64
  *
  * @public
  */
-STATIC_INLINE uint64_t farmhash64(const char *s, size_t len)
+static inline uint64_t farmhash64(const char *s, size_t len)
 {
     const uint64_t seed = 81;
     if (len <= 32)
@@ -853,7 +798,7 @@ STATIC_INLINE uint64_t farmhash64(const char *s, size_t len)
  *
  * @public
  */
-STATIC_INLINE uint32_t farmhash32(const char *s, size_t len)
+static inline uint32_t farmhash32(const char *s, size_t len)
 {
     return mix_64_to_32(farmhash64(s, len));
 }
