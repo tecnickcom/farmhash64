@@ -334,7 +334,7 @@ function hashLen33to64(s) {
             lo: 2,
         })
     );
-    const a = u64Add(fetchU64(s, 0), k2);
+    const a = u64Mul(fetchU64(s, 0), k2);
     const b = fetchU64(s, 8);
     const c = u64Mul(fetchU64(s, slen - 8), mul);
     const d = u64Mul(fetchU64(s, slen - 16), k2);
@@ -342,8 +342,8 @@ function hashLen33to64(s) {
     const z = hashLen16Mul(y, u64Add(u64Add(a, u64RotR(u64Add(b, k2), 18)), c), mul);
     const e = u64Mul(fetchU64(s, 16), mul);
     const f = fetchU64(s, 24);
-    const g = u64Add(y, u64Mul(fetchU64(s, slen - 32), mul));
-    const h = u64Add(z, u64Mul(fetchU64(s, slen - 24), mul));
+    const g = u64Mul(u64Add(y, fetchU64(s, slen - 32)), mul);
+    const h = u64Mul(u64Add(z, fetchU64(s, slen - 24)), mul);
     return hashLen16Mul(
         u64Add(u64Add(u64RotR(u64Add(e, f), 43), u64RotR(g, 30)), h),
         u64Add(u64Add(e, u64RotR(u64Add(f, a), 18)), g),
@@ -472,8 +472,8 @@ function farmhash64(str) {
     );
 }
 
-function farmhash32(s) {
-    return mix64To32(farmhash64(s));
+function farmhash32(str) {
+    return mix64To32(farmhash64(str));
 }
 
 function padL08(s) {
