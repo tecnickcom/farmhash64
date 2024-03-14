@@ -176,30 +176,30 @@ function u64XOR(a, b) {
 
 function fetchU32(s, i) {
     const lo =
-        s[i + 0] |
-        (s[i + 1] << 8) |
-        (s[i + 2] << 16) |
-        (s[i + 3] << 24);
+        (s[i + 0] >>> 0) |
+        ((s[i + 1] << 8) >>> 0) |
+        ((s[i + 2] << 16) >>> 0) |
+        ((s[i + 3] << 24) >>> 0);
     return {
         hi: 0,
-        lo: lo,
+        lo: lo >>> 0,
     };
 }
 
 function fetchU64(s, i) {
     const lo =
-        s[i + 0] |
-        (s[i + 1] << 8) |
-        (s[i + 2] << 16) |
-        (s[i + 3] << 24);
+        (s[i + 0] >>> 0) |
+        ((s[i + 1] << 8) >>> 0) |
+        ((s[i + 2] << 16) >>> 0) |
+        ((s[i + 3] << 24) >>> 0);
     const hi =
-        (s[i + 4] << 32) |
-        (s[i + 5] << 40) |
-        (s[i + 6] << 48) |
-        (s[i + 7] << 56);
+        ((s[i + 4] << 32) >>> 0) |
+        ((s[i + 5] << 40) >>> 0) |
+        ((s[i + 6] << 48) >>> 0) |
+        ((s[i + 7] << 56) >>> 0);
     return {
-        hi: hi,
-        lo: lo,
+        hi: hi >>> 0,
+        lo: lo >>> 0,
     };
 }
 
@@ -375,10 +375,24 @@ function weakHashLen32WithSeeds(s, idx, a, b) {
     );
 }
 
-function farmhash64(str) {
-    s = new TextEncoder().encode(str);
-    slen = s.length;
+function padL08(s) {
+    return ("00000000" + s).slice(-8);
+}
 
+function toString(h) {
+    return padL08(h.hi.toString(16)) + padL08(h.lo.toString(16));
+}
+
+function parseHex(hs) {
+    return {
+        hi: parseInt(hs.substring(0, 8), 16) >>> 0,
+        lo: parseInt(hs.substring(8, 16), 16) >>> 0,
+    };
+}
+
+function farmhash64(str) {
+    const s = new TextEncoder().encode(str);
+    var slen = s.length;
 
     if (slen <= 16) {
         return hashLen0to16(s);
@@ -392,25 +406,46 @@ function farmhash64(str) {
         return hashLen33to64(s);
     }
 
-    v = {
-        hi: 0,
-        lo: 0,
+    var v = {
+        hi: {
+            hi: 0,
+            lo: 0,
+        },
+        lo: {
+            hi: 0,
+            lo: 0,
+        },
     };
 
-    w = {
-        hi: 0,
-        lo: 0,
+    var w = {
+        hi: {
+            hi: 0,
+            lo: 0,
+        },
+        lo: {
+            hi: 0,
+            lo: 0,
+        },
     };
 
-    const seed = 81;
+    const seed = {
+        hi: 0,
+        lo: 81,
+    };
 
-    x = u64Add(u64Mul(seed, k2), fetchU64(s, 0));
-    y = u64Add(u64Mul(seed, k1), 113);
-    z = u64Mul(shiftMix(u64Add(u64Mul(y, k2), 113)), k2);
+    const a113 = {
+        hi: 0,
+        lo: 113,
+    };
 
-    endIdx = ((slen - 1) / 64) * 64;
-    last64Idx = endIdx + ((slen - 1) & 63) - 63;
-    idx = 0;
+    var x = u64Add(u64Mul(seed, k2), fetchU64(s, 0));
+    var y = u64Add(u64Mul(seed, k1), a113);
+    var z = u64Mul(shiftMix(u64Add(u64Mul(y, k2), a113)), k2);
+
+    const endIdx = ((slen - 1) >>> 6) << 6;
+    const last64Idx = endIdx + (((slen - 1) >>> 0) & 63) - 63;
+
+    var idx = 0;
 
     while (slen > 64) {
         x = u64Mul(
@@ -446,13 +481,16 @@ function farmhash64(str) {
     });
     v.lo = u64Add(v.lo, w.lo);
     w.lo = u64Add(w.lo, v.lo);
-    x = u64Mul(
-        u64RotR(u64Add(u64Add(u64Add(x, y), v.lo), fetchU64(s, idx + 8)), 37),
-        mul
-    );
+    x = u64Mul(u64RotR(u64Add(u64Add(u64Add(x, y), v.lo), fetchU64(s, idx + 8)), 37), mul);
     y = u64Mul(u64RotR(u64Add(u64Add(y, v.hi), fetchU64(s, idx + 48)), 42), mul);
-    x = u64XOR(x, u64Mul(w.hi, 9));
-    y = u64Add(y, u64Add(u64Mul(v.lo, 9), fetchU64(s, idx + 40)));
+    x = u64XOR(x, u64Mul(w.hi, {
+        hi: 0,
+        lo: 9
+    }));
+    y = u64Add(y, u64Add(u64Mul(v.lo, {
+        hi: 0,
+        lo: 9
+    }), fetchU64(s, idx + 40)));
     z = u64Mul(u64RotR(u64Add(z, w.lo), 33), mul);
     v = weakHashLen32WithSeeds(s, idx, u64Mul(v.hi, mul), u64Add(x, w.lo));
     w = weakHashLen32WithSeeds(
@@ -474,21 +512,6 @@ function farmhash64(str) {
 
 function farmhash32(str) {
     return mix64To32(farmhash64(str));
-}
-
-function padL08(s) {
-    return ("00000000" + s).slice(-8);
-}
-
-function toString(h) {
-    return padL08(h.hi.toString(16)) + padL08(h.lo.toString(16));
-}
-
-function parseHex(hs) {
-    return {
-        hi: parseInt(hs.substring(0, 8), 16) >>> 0,
-        lo: parseInt(hs.substring(8, 16), 16) >>> 0,
-    };
 }
 
 if (typeof module !== "undefined") {

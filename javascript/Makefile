@@ -24,14 +24,13 @@ help:
 	@echo "    make test    : Run the unit tests against source code"
 	@echo ""
 
-all: clean format test build
+all: clean format build
 
 # Build a minified version of the library
 .PHONY: build
-build:
+build: test
 	@mkdir -p target/build
 	uglifyjs --compress --keep-fnames --comments --output target/build/farmhash64.js src/farmhash64.js 
-	cd test && node test_farmhash64.js '../target/build/farmhash64.js'
 
 # Remove any build artifact
 .PHONY: clean
