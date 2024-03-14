@@ -176,10 +176,10 @@ function u64XOR(a, b) {
 
 function fetchU32(s, i) {
     const lo =
-        s.charCodeAt(i + 0) |
-        (s.charCodeAt(i + 1) << 8) |
-        (s.charCodeAt(i + 2) << 16) |
-        (s.charCodeAt(i + 3) << 24);
+        s[i + 0] |
+        (s[i + 1] << 8) |
+        (s[i + 2] << 16) |
+        (s[i + 3] << 24);
     return {
         hi: 0,
         lo: lo,
@@ -188,15 +188,15 @@ function fetchU32(s, i) {
 
 function fetchU64(s, i) {
     const lo =
-        s.charCodeAt(i + 0) |
-        (s.charCodeAt(i + 1) << 8) |
-        (s.charCodeAt(i + 2) << 16) |
-        (s.charCodeAt(i + 3) << 24);
+        s[i + 0] |
+        (s[i + 1] << 8) |
+        (s[i + 2] << 16) |
+        (s[i + 3] << 24);
     const hi =
-        (s.charCodeAt(i + 4) << 32) |
-        (s.charCodeAt(i + 5) << 40) |
-        (s.charCodeAt(i + 6) << 48) |
-        (s.charCodeAt(i + 7) << 56);
+        (s[i + 4] << 32) |
+        (s[i + 5] << 40) |
+        (s[i + 6] << 48) |
+        (s[i + 7] << 56);
     return {
         hi: hi,
         lo: lo,
@@ -234,7 +234,7 @@ function hashLen0to16(s) {
     const slen = s.length;
     const slen64 = {
         hi: 0,
-        lo: slen >>> 0
+        lo: slen >>> 0,
     };
 
     if (slen >= 8) {
@@ -270,9 +270,9 @@ function hashLen0to16(s) {
     }
 
     if (slen > 0) {
-        const a = s.charCodeAt(0) >>> 0;
-        const b = s.charCodeAt(slen >>> 1) >>> 0;
-        const c = s.charCodeAt(slen - 1) >>> 0;
+        const a = s[0] >>> 0;
+        const b = s[slen >>> 1] >>> 0;
+        const c = s[slen - 1] >>> 0;
         const y = (a + (b << 8)) >>> 0;
         const z = (slen + (c << 2)) >>> 0;
 
@@ -281,11 +281,11 @@ function hashLen0to16(s) {
                 u64XOR(
                     u64Mul({
                         hi: 0,
-                        lo: y
+                        lo: y,
                     }, k2),
                     u64Mul({
                         hi: 0,
-                        lo: z
+                        lo: z,
                     }, k0)
                 )
             ),
@@ -297,18 +297,23 @@ function hashLen0to16(s) {
 }
 
 function hashLen17to32(s) {
-    slen = s.length;
-    mul = u64Add(
+    const slen = s.length;
+    const slen64 = {
+        hi: 0,
+        lo: slen >>> 0,
+    };
+    const mul = u64Add(
         k2,
-        u64Mul(slen, {
+        u64Mul(slen64, {
             hi: 0,
             lo: 2,
         })
     );
-    a = u64Mul(fetchU64(s, 0), k1);
-    b = fetchU64(s, 8);
-    c = u64Mul(fetchU64(s, slen - 8), mul);
-    d = u64Mul(fetchU64(s, slen - 16), k2);
+    const a = u64Mul(fetchU64(s, 0), k1);
+    const b = fetchU64(s, 8);
+    const c = u64Mul(fetchU64(s, slen - 8), mul);
+    const d = u64Mul(fetchU64(s, slen - 16), k2);
+
     return hashLen16Mul(
         u64Add(u64Add(u64RotR(u64Add(a, b), 43), u64RotR(c, 30)), d),
         u64Add(u64Add(a, u64RotR(u64Add(b, k2), 18)), c),
@@ -317,24 +322,28 @@ function hashLen17to32(s) {
 }
 
 function hashLen33to64(s) {
-    slen = s.length;
-    mul = u64Add(
+    const slen = s.length;
+    const slen64 = {
+        hi: 0,
+        lo: slen >>> 0,
+    };
+    const mul = u64Add(
         k2,
-        u64Mul(slen, {
+        u64Mul(slen64, {
             hi: 0,
             lo: 2,
         })
     );
-    a = u64Add(fetchU64(s, 0), k2);
-    b = fetchU64(s, 8);
-    c = u64Mul(fetchU64(s, slen - 8), mul);
-    d = u64Mul(fetchU64(s, slen - 16), k2);
-    y = u64Add(u64Add(u64RotR(u64Add(a, b), 43), u64RotR(c, 30)), d);
-    z = hashLen16Mul(y, u64Add(u64Add(a, u64RotR(u64Add(b, k2), 18)), c), mul);
-    e = u64Mul(fetchU64(s, 16), mul);
-    f = fetchU64(s, 24);
-    g = u64Add(y, u64Mul(fetchU64(s, slen - 32), mul));
-    h = u64Add(z, u64Mul(fetchU64(s, slen - 24), mul));
+    const a = u64Add(fetchU64(s, 0), k2);
+    const b = fetchU64(s, 8);
+    const c = u64Mul(fetchU64(s, slen - 8), mul);
+    const d = u64Mul(fetchU64(s, slen - 16), k2);
+    const y = u64Add(u64Add(u64RotR(u64Add(a, b), 43), u64RotR(c, 30)), d);
+    const z = hashLen16Mul(y, u64Add(u64Add(a, u64RotR(u64Add(b, k2), 18)), c), mul);
+    const e = u64Mul(fetchU64(s, 16), mul);
+    const f = fetchU64(s, 24);
+    const g = u64Add(y, u64Mul(fetchU64(s, slen - 32), mul));
+    const h = u64Add(z, u64Mul(fetchU64(s, slen - 24), mul));
     return hashLen16Mul(
         u64Add(u64Add(u64RotR(u64Add(e, f), 43), u64RotR(g, 30)), h),
         u64Add(u64Add(e, u64RotR(u64Add(f, a), 18)), g),
@@ -366,7 +375,9 @@ function weakHashLen32WithSeeds(s, idx, a, b) {
     );
 }
 
-function farmhash64(s) {
+function farmhash64(str) {
+    s = new TextEncoder().encode(str);
+
     slen = s.length;
 
     const seed = 81;
@@ -484,7 +495,5 @@ if (typeof module !== "undefined") {
         farmhash64: farmhash64,
         parseHex: parseHex,
         toString: toString,
-
-        u32Mul: u32Mul,
     };
 }
