@@ -377,10 +377,8 @@ function weakHashLen32WithSeeds(s, idx, a, b) {
 
 function farmhash64(str) {
     s = new TextEncoder().encode(str);
-
     slen = s.length;
 
-    const seed = 81;
 
     if (slen <= 16) {
         return hashLen0to16(s);
@@ -398,10 +396,14 @@ function farmhash64(str) {
         hi: 0,
         lo: 0,
     };
+
     w = {
         hi: 0,
         lo: 0,
     };
+
+    const seed = 81;
+
     x = u64Add(u64Mul(seed, k2), fetchU64(s, 0));
     y = u64Add(u64Mul(seed, k1), 113);
     z = u64Mul(shiftMix(u64Add(u64Mul(y, k2), 113)), k2);
