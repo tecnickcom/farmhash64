@@ -31,8 +31,8 @@ const (
 )
 
 type uint128 struct {
-	lo uint64
 	hi uint64
+	lo uint64
 }
 
 // PLATFORM
@@ -103,8 +103,10 @@ func hashLen0to16(s []byte) uint64 {
 	if slen >= 4 {
 		mul := k2 + slen*2
 		a := fetch32(s, 0)
+		u := slen + (a << 3)
+		v := fetch32(s, int(slen-4))
 
-		return hashLen16Mul(slen+(a<<3), fetch32(s, int(slen-4)), mul)
+		return hashLen16Mul(u, v, mul)
 	}
 
 	if slen > 0 {
@@ -130,7 +132,11 @@ func hashLen17to32(s []byte) uint64 {
 	c := fetch64(s, slen-8) * mul
 	d := fetch64(s, slen-16) * k2
 
-	return hashLen16Mul(rotate64(a+b, 43)+rotate64(c, 30)+d, a+rotate64(b+k2, 18)+c, mul)
+	return hashLen16Mul(
+		rotate64(a+b, 43)+rotate64(c, 30)+d,
+		a+rotate64(b+k2, 18)+c,
+		mul,
+	)
 }
 
 // Return an 8-byte hash for 33 to 64 bytes.
@@ -148,7 +154,11 @@ func hashLen33to64(s []byte) uint64 {
 	g := (y + fetch64(s, slen-32)) * mul
 	h := (z + fetch64(s, slen-24)) * mul
 
-	return hashLen16Mul(rotate64(e+f, 43)+rotate64(g, 30)+h, e+rotate64(f+a, 18)+g, mul)
+	return hashLen16Mul(
+		rotate64(e+f, 43)+rotate64(g, 30)+h,
+		e+rotate64(f+a, 18)+g,
+		mul,
+	)
 }
 
 // Return a 16-byte hash for 48 bytes.  Quick and dirty.
