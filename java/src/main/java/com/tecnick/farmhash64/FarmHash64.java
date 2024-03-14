@@ -25,8 +25,8 @@ public class FarmHash64 {
 	private static final long k2 = 0x9ae16a3b2f90404fL;
 
 	private static class UInt128 {
-		public long lo;
 		public long hi;
+		public long lo;
 	}
 
 	private static int rotate32(int val, int shift) {
@@ -164,8 +164,8 @@ public class FarmHash64 {
 		b += rotate64(a, 44);
 
 		UInt128 result = new UInt128();
-		result.lo = a + z;
 		result.hi = b + c;
+		result.lo = a + z;
 
 		return result;
 	}
