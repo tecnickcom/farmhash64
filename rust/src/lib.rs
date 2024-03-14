@@ -26,8 +26,8 @@ const C1: u32 = 0xcc9e2d51;
 const C2: u32 = 0x1b873593;
 
 struct Uint128 {
-    lo: u64,
     hi: u64,
+    lo: u64,
 }
 
 // PLATFORM
@@ -200,7 +200,7 @@ fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: 
     let a = a.wrapping_add(y);
     let b = b.wrapping_add(rotate64(a, 44));
 
-    (a.wrapping_add(z), b.wrapping_add(c))
+    (b.wrapping_add(c), a.wrapping_add(z))
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
@@ -237,8 +237,8 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
 
     // For strings over 64 bytes we loop.
     // Internal state consists of 56 bytes: v, w, x, y, and z.
-    let mut v = Uint128 { lo: 0, hi: 0 };
-    let mut w = Uint128 { lo: 0, hi: 0 };
+    let mut v = Uint128 { hi: 0, lo: 0 };
+    let mut w = Uint128 { hi: 0, lo: 0 };
     let mut x = (seed.wrapping_mul(K2)).wrapping_add(fetch64(s, 0));
     let mut y = (seed.wrapping_mul(K1)).wrapping_add(113);
     let mut z = (shift_mix((y.wrapping_mul(K2)).wrapping_add(113))).wrapping_mul(K2);
@@ -260,11 +260,11 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
         x ^= w.hi;
         y = y.wrapping_add(v.lo).wrapping_add(fetch64(s, 40));
         z = (rotate64(z.wrapping_add(w.lo), 33)).wrapping_mul(K1);
-        let (v_lo, v_hi) =
+        let (v_hi, v_lo) =
             weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(K1), x.wrapping_add(w.lo));
         v.lo = v_lo;
         v.hi = v_hi;
-        let (w_lo, w_hi) = weak_hash_len_32_with_seeds(
+        let (w_hi, w_lo) = weak_hash_len_32_with_seeds(
             &s[32..],
             z.wrapping_add(w.hi),
             y.wrapping_add(fetch64(s, 16)),
@@ -294,10 +294,10 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
         .wrapping_add(v.lo.wrapping_mul(9))
         .wrapping_add(fetch64(s, 40));
     z = (rotate64(z.wrapping_add(w.lo), 33)).wrapping_mul(mul);
-    let (v_lo, v_hi) = weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(mul), x.wrapping_add(w.lo));
+    let (v_hi, v_lo) = weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(mul), x.wrapping_add(w.lo));
     v.lo = v_lo;
     v.hi = v_hi;
-    let (w_lo, w_hi) = weak_hash_len_32_with_seeds(
+    let (w_hi, w_lo) = weak_hash_len_32_with_seeds(
         &s[32..],
         z.wrapping_add(w.hi),
         y.wrapping_add(fetch64(s, 16)),
