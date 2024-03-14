@@ -42,19 +42,22 @@ const k2 = {
 const c1 = 0xcc9e2d51;
 const c2 = 0x1b873593;
 
+const MASK32BIT = 0xffffffff;
+
+
 function u64Add(a, b) {
-    const rst =
-        ((a.lo & 0x7fffffff) + (b.lo & 0x7fffffff)) >>> 0 > 0x7fffffff ? 1 : 0;
+    const losum = a.lo + b.lo;
+    const cb = (((losum >>> 0) < (a.lo >>> 0)) || ((losum >>> 0) < (b.lo >>> 0))) ? 1 : 0;
     return {
-        hi: (a.hi + b.hi + rst) >>> 0,
+        hi: (a.hi + b.hi + cb) >>> 0,
         lo: (a.lo + b.lo) >>> 0,
     };
 }
 
 function u32Split16(a) {
     return {
-        hi: ((a >>> 16) & 0xffff) >>> 0,
-        lo: (a & 0xffff) >>> 0,
+        hi: ((a >>> 16) & 0xffff),
+        lo: ((a >>> 0) & 0xffff),
     };
 }
 
@@ -69,7 +72,7 @@ function u32Mul64(a, b) {
     const y = u32Split16(b);
     const s = {
         hi: u32Mul(x.hi, y.hi),
-        lo: u32Mul(x.lo, y.lo)
+        lo: u32Mul(x.lo, y.lo),
     };
     const t = u32Mul(x.hi, y.lo);
     const u = u32Mul(x.lo, y.hi);
@@ -86,11 +89,9 @@ function u32Mul64(a, b) {
 
 function u64Mul(a, b) {
     return u64Add({
-            hi: (u32Mul(a.hi, b.lo) + u32Mul(a.lo, b.hi)) >>> 0,
-            lo: 0,
-        },
-        u32Mul64(a.lo, b.lo)
-    );
+        hi: (u32Mul(a.hi, b.lo) + u32Mul(a.lo, b.hi)) >>> 0,
+        lo: 0
+    }, u32Mul64(a.lo, b.lo));
 }
 
 function u32RotR(a, s) {
@@ -265,31 +266,6 @@ function hashLen0to16(s) {
         y = (a + (b << 8)) >>> 0;
         z = (slen + (c << 2)) >>> 0;
 
-
-        yk2 = u64Mul({
-                hi: 0,
-                lo: y,
-            },
-            k2
-        );
-
-        zk0 = u64Mul({
-                hi: 0,
-                lo: z,
-            },
-            k0
-        );
-
-        xor = u64XOR(yk2, zk0);
-
-        sm = shiftMix(xor);
-
-        console.error(s, toString(yk2), toString(zk0), toString(xor), toString(sm)); //DEBUG
-
-        return u64Mul(sm, k2);
-
-
-        /*
         return u64Mul(
             shiftMix(
                 u64XOR(
@@ -309,7 +285,6 @@ function hashLen0to16(s) {
             ),
             k2
         );
-        */
     }
 
     return k2;
