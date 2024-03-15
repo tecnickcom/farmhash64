@@ -73,6 +73,22 @@ jobs:
       - name: test
         run: cd java && make build test
 
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: setup node build environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: install dependencies
+        run: npm install --global uglify-js js-beautify
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd javascript && make build
+
   python:
     runs-on: ubuntu-latest
     steps:

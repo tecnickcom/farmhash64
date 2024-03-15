@@ -38,7 +38,7 @@ linters-settings:
           - "!$test"
         allow:
           - $gostd
-          - github.com/Vonage
+          - github.com/tecnickcom
       test:
         files:
           - "$test"

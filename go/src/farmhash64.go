@@ -31,8 +31,8 @@ const (
 )
 
 type uint128 struct {
-	lo uint64
 	hi uint64
+	lo uint64
 }
 
 // PLATFORM
@@ -103,8 +103,10 @@ func hashLen0to16(s []byte) uint64 {
 	if slen >= 4 {
 		mul := k2 + slen*2
 		a := fetch32(s, 0)
+		u := slen + (a << 3)
+		v := fetch32(s, int(slen-4))
 
-		return hashLen16Mul(slen+(a<<3), fetch32(s, int(slen-4)), mul)
+		return hashLen16Mul(u, v, mul)
 	}
 
 	if slen > 0 {
@@ -114,7 +116,7 @@ func hashLen0to16(s []byte) uint64 {
 		y := uint32(a) + (uint32(b) << 8)
 		z := uint32(slen) + (uint32(c) << 2)
 
-		return shiftMix(uint64(y)*k2^uint64(z)*k0) * k2
+		return shiftMix((uint64(y)*k2)^(uint64(z)*k0)) * k2
 	}
 
 	return k2
@@ -130,31 +132,10 @@ func hashLen17to32(s []byte) uint64 {
 	c := fetch64(s, slen-8) * mul
 	d := fetch64(s, slen-16) * k2
 
-	return hashLen16Mul(rotate64(a+b, 43)+rotate64(c, 30)+d, a+rotate64(b+k2, 18)+c, mul)
-}
-
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
-// Callers do best to use "random-looking" values for a and b.
-func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) (uint64, uint64) {
-	a += w
-	b = rotate64(b+a+z, 21)
-	c := a
-	a += x
-	a += y
-	b += rotate64(a, 44)
-
-	return a + z, b + c
-}
-
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
-func weakHashLen32WithSeeds(s []byte, a, b uint64) (uint64, uint64) {
-	return weakHashLen32WithSeedsWords(
-		fetch64(s, 0),
-		fetch64(s, 8),
-		fetch64(s, 16),
-		fetch64(s, 24),
-		a,
-		b,
+	return hashLen16Mul(
+		rotate64(a+b, 43)+rotate64(c, 30)+d,
+		a+rotate64(b+k2, 18)+c,
+		mul,
 	)
 }
 
@@ -173,7 +154,36 @@ func hashLen33to64(s []byte) uint64 {
 	g := (y + fetch64(s, slen-32)) * mul
 	h := (z + fetch64(s, slen-24)) * mul
 
-	return hashLen16Mul(rotate64(e+f, 43)+rotate64(g, 30)+h, e+rotate64(f+a, 18)+g, mul)
+	return hashLen16Mul(
+		rotate64(e+f, 43)+rotate64(g, 30)+h,
+		e+rotate64(f+a, 18)+g,
+		mul,
+	)
+}
+
+// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Callers do best to use "random-looking" values for a and b.
+func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) (uint64, uint64) {
+	a += w
+	b = rotate64(b+a+z, 21)
+	c := a
+	a += x
+	a += y
+	b += rotate64(a, 44)
+
+	return b + c, a + z
+}
+
+// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+func weakHashLen32WithSeeds(s []byte, a, b uint64) (uint64, uint64) {
+	return weakHashLen32WithSeedsWords(
+		fetch64(s, 0),
+		fetch64(s, 8),
+		fetch64(s, 16),
+		fetch64(s, 24),
+		a,
+		b,
+	)
 }
 
 // FarmHash64 returns a 64-bit fingerprint hash for a string.
@@ -204,7 +214,7 @@ func FarmHash64(s []byte) uint64 {
 	z := shiftMix(y*k2+113) * k2
 
 	// Set end so that after the loop we have 1 to 64 bytes left to process.
-	endIdx := ((slen - 1) / 64) * 64
+	endIdx := ((slen - 1) >> 6) << 6
 	last64Idx := endIdx + ((slen - 1) & 63) - 63
 	last64 := s[last64Idx:]
 
@@ -214,8 +224,8 @@ func FarmHash64(s []byte) uint64 {
 		x ^= w.hi
 		y += v.lo + fetch64(s, 40)
 		z = rotate64(z+w.lo, 33) * k1
-		v.lo, v.hi = weakHashLen32WithSeeds(s, v.hi*k1, x+w.lo)
-		w.lo, w.hi = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
+		v.hi, v.lo = weakHashLen32WithSeeds(s, v.hi*k1, x+w.lo)
+		w.hi, w.lo = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
 		x, z = z, x
 		s = s[64:]
 	}
@@ -231,8 +241,8 @@ func FarmHash64(s []byte) uint64 {
 	x ^= w.hi * 9
 	y += v.lo*9 + fetch64(s, 40)
 	z = rotate64(z+w.lo, 33) * mul
-	v.lo, v.hi = weakHashLen32WithSeeds(s, v.hi*mul, x+w.lo)
-	w.lo, w.hi = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
+	v.hi, v.lo = weakHashLen32WithSeeds(s, v.hi*mul, x+w.lo)
+	w.hi, w.lo = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
 	x, z = z, x
 
 	return hashLen16Mul(hashLen16Mul(v.lo, w.lo, mul)+shiftMix(y)*k0+z, hashLen16Mul(v.hi, w.hi, mul)+x, mul)

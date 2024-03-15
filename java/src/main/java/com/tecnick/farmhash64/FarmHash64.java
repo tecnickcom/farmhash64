@@ -25,8 +25,8 @@ public class FarmHash64 {
 	private static final long k2 = 0x9ae16a3b2f90404fL;
 
 	private static class UInt128 {
-		public long lo;
 		public long hi;
+		public long lo;
 	}
 
 	private static int rotate32(int val, int shift) {
@@ -102,7 +102,10 @@ public class FarmHash64 {
 			long mul = k2 + slen * 2;
 			long a = fetch32(s, 0);
 
-			return hashLen16Mul(slen + (a << 3), fetch32(s, (int) (slen - 4)), mul);
+			return hashLen16Mul(
+					slen + (a << 3),
+					fetch32(s, (int) (slen - 4)),
+					mul);
 		}
 
 		if (slen > 0) {
@@ -112,7 +115,7 @@ public class FarmHash64 {
 			long y = a + (b << 8);
 			long z = slen + (c << 2);
 
-			return shiftMix(y * k2 ^ z * k0) * k2;
+			return shiftMix((y * k2) ^ (z * k0)) * k2;
 		}
 
 		return k2;
@@ -126,32 +129,10 @@ public class FarmHash64 {
 		long c = fetch64(s, slen - 8) * mul;
 		long d = fetch64(s, slen - 16) * k2;
 
-		return hashLen16Mul(rotate64(a + b, 43) + rotate64(c, 30) + d, a + rotate64(b + k2, 18) + c, mul);
-	}
-
-	private static UInt128 weakHashLen32WithSeedsWords(long w, long x, long y, long z, long a, long b) {
-		a += w;
-		b = rotate64(b + a + z, 21);
-		long c = a;
-		a += x;
-		a += y;
-		b += rotate64(a, 44);
-
-		UInt128 result = new UInt128();
-		result.lo = a + z;
-		result.hi = b + c;
-
-		return result;
-	}
-
-	private static UInt128 weakHashLen32WithSeeds(byte[] s, int idx, long a, long b) {
-		return weakHashLen32WithSeedsWords(
-				fetch64(s, idx + 0),
-				fetch64(s, idx + 8),
-				fetch64(s, idx + 16),
-				fetch64(s, idx + 24),
-				a,
-				b);
+		return hashLen16Mul(
+				rotate64(a + b, 43) + rotate64(c, 30) + d,
+				a + rotate64(b + k2, 18) + c,
+				mul);
 	}
 
 	private static long hashLen33to64(byte[] s) {
@@ -169,9 +150,34 @@ public class FarmHash64 {
 		long h = (z + fetch64(s, slen - 24)) * mul;
 
 		return hashLen16Mul(
-			rotate64(e + f, 43) + rotate64(g, 30) + h, e + rotate64(f + a, 18) + g, 
-			mul
-		);
+				rotate64(e + f, 43) + rotate64(g, 30) + h,
+				e + rotate64(f + a, 18) + g,
+				mul);
+	}
+
+	private static UInt128 weakHashLen32WithSeedsWords(long w, long x, long y, long z, long a, long b) {
+		a += w;
+		b = rotate64(b + a + z, 21);
+		long c = a;
+		a += x;
+		a += y;
+		b += rotate64(a, 44);
+
+		UInt128 result = new UInt128();
+		result.hi = b + c;
+		result.lo = a + z;
+
+		return result;
+	}
+
+	private static UInt128 weakHashLen32WithSeeds(byte[] s, int idx, long a, long b) {
+		return weakHashLen32WithSeedsWords(
+				fetch64(s, idx + 0),
+				fetch64(s, idx + 8),
+				fetch64(s, idx + 16),
+				fetch64(s, idx + 24),
+				a,
+				b);
 	}
 
 	public static long farmhash64(byte[] s) {
@@ -201,7 +207,7 @@ public class FarmHash64 {
 		long tmp = 0;
 
 		// Set end so that after the loop we have 1 to 64 bytes left to process.
-		int endIdx = ((slen - 1) / 64) * 64;
+		int endIdx = ((slen - 1) >> 6) << 6;
 		int last64Idx = endIdx + ((slen - 1) & 63) - 63;
 		int idx = 0;
 
@@ -239,14 +245,12 @@ public class FarmHash64 {
 		z = tmp;
 
 		return hashLen16Mul(
-			hashLen16Mul(v.lo, w.lo, mul) + shiftMix(y) * k0 + z, 
-			hashLen16Mul(v.hi, w.hi, mul) + x,
-			mul
-		);
+				hashLen16Mul(v.lo, w.lo, mul) + shiftMix(y) * k0 + z,
+				hashLen16Mul(v.hi, w.hi, mul) + x,
+				mul);
 	}
 
 	public static int farmhash32(byte[] s) {
 		return mix64To32(farmhash64(s));
 	}
-
 }

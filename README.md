@@ -25,27 +25,27 @@ It is designed to be fast and provide good hash distribution but is not suitable
 The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
 
 All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
-This is a Java port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
 
-This code has been ported/translated by Nicola Asuni (Tecnick.com) to multiple languages:
+This is a port of the original Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash) in multiple languages by Nicola Asuni (Tecnick.com):
 
-- C (header-only)
+- C (header-only compatible with CPP)
 - CGO
 - GO
 - Java
+- Javascript
 - Python
 - Rust
 
 ## Getting Started
 
-The reference code of this application is written in C language and includes wrappers for GO and Python.
+The reference code of this application is written in header-only C language.
 
-A wrapper Makefile is available to allows building the project in a Linux-compatible system with simple commands.  
-All the artifacts and reports produced using this Makefile are stored in the *target* folder.  
+A Makefile is available to allows building the project in a Linux-compatible system with simple commands.  
+All the artifacts and reports produced using this Makefile are stored in the *target* folder inside each language directory.  
 
 To see all available options:
 ```
 make help
 ```
 
-use the command ```make all``` to build and test all the implementations.
+Use the command ```make all``` to build and test all the implementations.

@@ -26,8 +26,8 @@ const C1: u32 = 0xcc9e2d51;
 const C2: u32 = 0x1b873593;
 
 struct Uint128 {
-    lo: u64,
     hi: u64,
+    lo: u64,
 }
 
 // PLATFORM
@@ -128,7 +128,7 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
         let y = u32::from(a).wrapping_add(u32::from(b) << 8);
         let z = u32::from(slen as u32).wrapping_add(u32::from(c) << 2);
 
-        return shift_mix(u64::from(y).wrapping_mul(K2) ^ u64::from(z).wrapping_mul(K0))
+        return shift_mix((u64::from(y).wrapping_mul(K2)) ^ (u64::from(z).wrapping_mul(K0)))
             .wrapping_mul(K2);
     }
 
@@ -153,33 +153,6 @@ fn hash_len_17_to_32(s: &[u8]) -> u64 {
         a.wrapping_add(rotate64(b.wrapping_add(K2), 18))
             .wrapping_add(c),
         mul,
-    )
-}
-
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
-// Callers do best to use "random-looking" values for a and b.
-#[inline]
-fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> (u64, u64) {
-    let a = a.wrapping_add(w);
-    let b = rotate64(b.wrapping_add(a).wrapping_add(z), 21);
-    let c = a;
-    let a = a.wrapping_add(x);
-    let a = a.wrapping_add(y);
-    let b = b.wrapping_add(rotate64(a, 44));
-
-    (a.wrapping_add(z), b.wrapping_add(c))
-}
-
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
-#[inline]
-fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
-    weak_hash_len_32_with_seeds_words(
-        fetch64(s, 0),
-        fetch64(s, 8),
-        fetch64(s, 16),
-        fetch64(s, 24),
-        a,
-        b,
     )
 }
 
@@ -216,6 +189,33 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
     )
 }
 
+// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Callers do best to use "random-looking" values for a and b.
+#[inline]
+fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> (u64, u64) {
+    let a = a.wrapping_add(w);
+    let b = rotate64(b.wrapping_add(a).wrapping_add(z), 21);
+    let c = a;
+    let a = a.wrapping_add(x);
+    let a = a.wrapping_add(y);
+    let b = b.wrapping_add(rotate64(a, 44));
+
+    (b.wrapping_add(c), a.wrapping_add(z))
+}
+
+// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+#[inline]
+fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
+    weak_hash_len_32_with_seeds_words(
+        fetch64(s, 0),
+        fetch64(s, 8),
+        fetch64(s, 16),
+        fetch64(s, 24),
+        a,
+        b,
+    )
+}
+
 // FarmHash64 returns a 64-bit fingerprint hash for a string.
 #[inline]
 pub fn farmhash64(mut s: &[u8]) -> u64 {
@@ -237,14 +237,14 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
 
     // For strings over 64 bytes we loop.
     // Internal state consists of 56 bytes: v, w, x, y, and z.
-    let mut v = Uint128 { lo: 0, hi: 0 };
-    let mut w = Uint128 { lo: 0, hi: 0 };
+    let mut v = Uint128 { hi: 0, lo: 0 };
+    let mut w = Uint128 { hi: 0, lo: 0 };
     let mut x = (seed.wrapping_mul(K2)).wrapping_add(fetch64(s, 0));
     let mut y = (seed.wrapping_mul(K1)).wrapping_add(113);
     let mut z = (shift_mix((y.wrapping_mul(K2)).wrapping_add(113))).wrapping_mul(K2);
 
     // Set end so that after the loop we have 1 to 64 bytes left to process.
-    let end_idx = ((slen - 1) / 64) * 64;
+    let end_idx = ((slen - 1) >> 6) << 6;
     let last64_idx = end_idx + ((slen - 1) & 63) - 63;
     let last64 = &s[last64_idx..];
 
@@ -260,11 +260,11 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
         x ^= w.hi;
         y = y.wrapping_add(v.lo).wrapping_add(fetch64(s, 40));
         z = (rotate64(z.wrapping_add(w.lo), 33)).wrapping_mul(K1);
-        let (v_lo, v_hi) =
+        let (v_hi, v_lo) =
             weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(K1), x.wrapping_add(w.lo));
         v.lo = v_lo;
         v.hi = v_hi;
-        let (w_lo, w_hi) = weak_hash_len_32_with_seeds(
+        let (w_hi, w_lo) = weak_hash_len_32_with_seeds(
             &s[32..],
             z.wrapping_add(w.hi),
             y.wrapping_add(fetch64(s, 16)),
@@ -294,10 +294,10 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
         .wrapping_add(v.lo.wrapping_mul(9))
         .wrapping_add(fetch64(s, 40));
     z = (rotate64(z.wrapping_add(w.lo), 33)).wrapping_mul(mul);
-    let (v_lo, v_hi) = weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(mul), x.wrapping_add(w.lo));
+    let (v_hi, v_lo) = weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(mul), x.wrapping_add(w.lo));
     v.lo = v_lo;
     v.hi = v_hi;
-    let (w_lo, w_hi) = weak_hash_len_32_with_seeds(
+    let (w_hi, w_lo) = weak_hash_len_32_with_seeds(
         &s[32..],
         z.wrapping_add(w.hi),
         y.wrapping_add(fetch64(s, 16)),
