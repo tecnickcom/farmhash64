@@ -42,12 +42,32 @@ const k2 = {
 const c1 = 0xcc9e2d51;
 const c2 = 0x1b873593;
 
-const MASK32BIT = 0xffffffff;
+function padL08(s) {
+    return ("00000000" + s).slice(-8);
+}
 
+function toHex(h) {
+    return padL08(h.hi.toString(16)) + padL08(h.lo.toString(16));
+}
+
+/**
+ * Represents a 64-bit unsigned integer.
+ * @typedef {Object} Uint64
+ * @property {number} hi - The high 32 bits of the 64-bit integer.
+ * @property {number} lo - The low 32 bits of the 64-bit integer.
+ * @property {function} hex - Converts the 64-bit integer to a fixed-length hexadecimal string.
+ */
+const Uint64 = {
+    hi: 0,
+    lo: 0,
+    hex() {
+        return toHex(this);
+    }
+}
 
 function u64Add(a, b) {
     const losum = a.lo + b.lo;
-    const cb = (((losum >>> 0) < (a.lo >>> 0)) || ((losum >>> 0) < (b.lo >>> 0))) ? 1 : 0;
+    const cb = losum >>> 0 < a.lo >>> 0 || losum >>> 0 < b.lo >>> 0 ? 1 : 0;
     return {
         hi: (a.hi + b.hi + cb) >>> 0,
         lo: (a.lo + b.lo) >>> 0,
@@ -56,8 +76,8 @@ function u64Add(a, b) {
 
 function u32Split16(a) {
     return {
-        hi: ((a >>> 16) & 0xffff),
-        lo: ((a >>> 0) & 0xffff),
+        hi: (a >>> 16) & 0xffff,
+        lo: (a >>> 0) & 0xffff,
     };
 }
 
@@ -89,9 +109,11 @@ function u32Mul64(a, b) {
 
 function u64Mul(a, b) {
     return u64Add({
-        hi: (u32Mul(a.hi, b.lo) + u32Mul(a.lo, b.hi)) >>> 0,
-        lo: 0
-    }, u32Mul64(a.lo, b.lo));
+            hi: (u32Mul(a.hi, b.lo) + u32Mul(a.lo, b.hi)) >>> 0,
+            lo: 0,
+        },
+        u32Mul64(a.lo, b.lo)
+    );
 }
 
 function u32RotR(a, s) {
@@ -279,13 +301,17 @@ function hashLen0to16(s) {
             shiftMix(
                 u64XOR(
                     u64Mul({
-                        hi: 0,
-                        lo: y,
-                    }, k2),
+                            hi: 0,
+                            lo: y,
+                        },
+                        k2
+                    ),
                     u64Mul({
-                        hi: 0,
-                        lo: z,
-                    }, k0)
+                            hi: 0,
+                            lo: z,
+                        },
+                        k0
+                    )
                 )
             ),
             k2
@@ -338,7 +364,11 @@ function hashLen33to64(s) {
     const c = u64Mul(fetchU64(s, slen - 8), mul);
     const d = u64Mul(fetchU64(s, slen - 16), k2);
     const y = u64Add(u64Add(u64RotR(u64Add(a, b), 43), u64RotR(c, 30)), d);
-    const z = hashLen16Mul(y, u64Add(u64Add(a, u64RotR(u64Add(b, k2), 18)), c), mul);
+    const z = hashLen16Mul(
+        y,
+        u64Add(u64Add(a, u64RotR(u64Add(b, k2), 18)), c),
+        mul
+    );
     const e = u64Mul(fetchU64(s, 16), mul);
     const f = fetchU64(s, 24);
     const g = u64Mul(u64Add(y, fetchU64(s, slen - 32)), mul);
@@ -374,23 +404,40 @@ function weakHashLen32WithSeeds(s, idx, a, b) {
     );
 }
 
-function padL08(s) {
-    return ("00000000" + s).slice(-8);
-}
-
-function toString(h) {
-    return padL08(h.hi.toString(16)) + padL08(h.lo.toString(16));
-}
-
-function parseHex(hs) {
-    return {
-        hi: parseInt(hs.substring(0, 8), 16) >>> 0,
-        lo: parseInt(hs.substring(8, 16), 16) >>> 0,
+function _testData(size) {
+    const k0 = {
+        hi: 0xc3a5c85c,
+        lo: 0x97cb3127,
     };
+    const data = new Uint8Array(size);
+    var a = {
+        hi: 0,
+        lo: 9,
+    };
+    var b = {
+        hi: 0,
+        lo: 777,
+    };
+    for (let i = 0; i < size; i++) {
+        a = u64Add(a, b);
+        b = u64Add(b, a);
+        a = u64Mul(u64XOR(a, u64ShiftR(a, 41)), k0);
+        b = u64Add(u64Mul(u64XOR(b, u64ShiftR(b, 41)), k0), {
+            hi: 0,
+            lo: i,
+        });
+        data[i] = (u64ShiftR(b, 37).lo & 0xff);
+    }
+    return data;
 }
 
-function farmhash64(str) {
-    const s = new TextEncoder().encode(str);
+/**
+ * Calculates the 64-bit FarmHash hash value for the given byte array.
+ *
+ * @param {Uint8Array} s - The input byte array to be hashed.
+ * @returns {object} The 64-bit hash value as an object with properties `hi` and `lo`, representing the high and low 32 bits respectively.
+ */
+function farmhash64(s) {
     var slen = s.length;
 
     if (slen <= 16) {
@@ -480,16 +527,28 @@ function farmhash64(str) {
     });
     v.lo = u64Add(v.lo, w.lo);
     w.lo = u64Add(w.lo, v.lo);
-    x = u64Mul(u64RotR(u64Add(u64Add(u64Add(x, y), v.lo), fetchU64(s, idx + 8)), 37), mul);
+    x = u64Mul(
+        u64RotR(u64Add(u64Add(u64Add(x, y), v.lo), fetchU64(s, idx + 8)), 37),
+        mul
+    );
     y = u64Mul(u64RotR(u64Add(u64Add(y, v.hi), fetchU64(s, idx + 48)), 42), mul);
-    x = u64XOR(x, u64Mul(w.hi, {
-        hi: 0,
-        lo: 9
-    }));
-    y = u64Add(y, u64Add(u64Mul(v.lo, {
-        hi: 0,
-        lo: 9
-    }), fetchU64(s, idx + 40)));
+    x = u64XOR(
+        x,
+        u64Mul(w.hi, {
+            hi: 0,
+            lo: 9,
+        })
+    );
+    y = u64Add(
+        y,
+        u64Add(
+            u64Mul(v.lo, {
+                hi: 0,
+                lo: 9,
+            }),
+            fetchU64(s, idx + 40)
+        )
+    );
     z = u64Mul(u64RotR(u64Add(z, w.lo), 33), mul);
     v = weakHashLen32WithSeeds(s, idx, u64Mul(v.hi, mul), u64Add(x, w.lo));
     w = weakHashLen32WithSeeds(
@@ -509,15 +568,27 @@ function farmhash64(str) {
     );
 }
 
-function farmhash32(str) {
-    return mix64To32(farmhash64(str));
+function farmhash32(s) {
+    return mix64To32(farmhash64(s));
+}
+
+function strFarmhash64(str) {
+    const s = new TextEncoder().encode(str);
+    return farmhash64(s);
+}
+
+function strFarmhash32(str) {
+    const s = new TextEncoder().encode(str);
+    return farmhash32(s);
 }
 
 if (typeof module !== "undefined") {
     module.exports = {
         farmhash32: farmhash32,
         farmhash64: farmhash64,
-        parseHex: parseHex,
-        toString: toString,
+        strFarmhash32: strFarmhash32,
+        strFarmhash64: strFarmhash64,
+        toHex: toHex,
+        _testData: _testData,
     };
 }
