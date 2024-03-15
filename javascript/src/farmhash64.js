@@ -17,9 +17,8 @@
  *
  * This code has been ported/translated by Nicola Asuni (Tecnick.com) to JavaScript code.
  *
- * NOTE: Javascript has no support for unsigned integers, so the 64-bit integers are
- *       represented as objects with two properties: hi and lo.
- *       The function toString() is provided to convert the 64-bit integer to an hexadecimal string.
+ * NOTE: Javascript has no support for unsigned integers.
+ *       The function strFarmhash64Hex is provided to calculate the 64-bit hash value from a string and return it as a fixed-length hexadecimal string.
  *
  * @category   Libraries
  * @license    see LICENSE file
@@ -41,29 +40,6 @@ const k2 = {
 
 const c1 = 0xcc9e2d51;
 const c2 = 0x1b873593;
-
-function padL08(s) {
-    return ("00000000" + s).slice(-8);
-}
-
-function toHex(h) {
-    return padL08(h.hi.toString(16)) + padL08(h.lo.toString(16));
-}
-
-/**
- * Represents a 64-bit unsigned integer.
- * @typedef {Object} Uint64
- * @property {number} hi - The high 32 bits of the 64-bit integer.
- * @property {number} lo - The low 32 bits of the 64-bit integer.
- * @property {function} hex - Converts the 64-bit integer to a fixed-length hexadecimal string.
- */
-const Uint64 = {
-    hi: 0,
-    lo: 0,
-    hex() {
-        return toHex(this);
-    }
-}
 
 function u64Add(a, b) {
     const losum = a.lo + b.lo;
@@ -568,18 +544,80 @@ function farmhash64(s) {
     );
 }
 
+/**
+ * Calculates a 32-bit hash value using the FarmHash64 algorithm.
+ *
+ * @param {string} s - The input string to hash.
+ * @returns {number} The 32-bit hash value.
+ */
 function farmhash32(s) {
     return mix64To32(farmhash64(s));
 }
 
+/**
+ * Calculates the farmhash64 hash value for a given string.
+ *
+ * @param {string} str - The input string to be hashed.
+ * @returns {object} The 64-bit hash value as an object with properties `hi` and `lo`, representing the high and low 32 bits respectively.
+ */
 function strFarmhash64(str) {
     const s = new TextEncoder().encode(str);
     return farmhash64(s);
 }
 
+/**
+ * Calculates the farmhash32 hash value for a given string.
+ *
+ * @param {string} str - The input string to be hashed.
+ * @returns {number} The 32-bit hash value.
+ */
 function strFarmhash32(str) {
     const s = new TextEncoder().encode(str);
     return farmhash32(s);
+}
+
+function padL08(s) {
+    return ("00000000" + s).slice(-8);
+}
+
+/**
+ * Converts a 32 bit number to a fixed-length hexadecimal string representation.
+ *
+ * @param {number} n - The number to convert
+ * @returns {string} The fixed-length hexadecimal string representation of the FarmHash object.
+ */
+function hex32(n) {
+    return padL08(n.toString(16));
+}
+
+/**
+ * Converts a 64 bit {hi,lo} FarmHash64 object to a hexadecimal string representation.
+ *
+ * @param {Object} h - The FarmHash64 object to convert.
+ * @returns {string} The fixed-length hexadecimal string representation of the FarmHash object.
+ */
+function hex64(h) {
+    return padL08(h.hi.toString(16)) + padL08(h.lo.toString(16));
+}
+
+/**
+ * Calculates the farmhash64 hash value for a given string.
+ *
+ * @param {string} str - The input string to be hashed.
+ * @returns {string} The 64-bit hash value as a fixed-length hexadecimal string.
+ */
+function strFarmhash64Hex(str) {
+    return hex64(strFarmhash64(str));
+}
+
+/**
+ * Calculates the farmhash32 hash value for a given string.
+ *
+ * @param {string} str - The input string to be hashed.
+ * @returns {string} The 32-bit hash value as a fixed-length hexadecimal string.
+ */
+function strFarmhash32Hex(str) {
+    return hex32(strFarmhash32(str));
 }
 
 if (typeof module !== "undefined") {
@@ -588,7 +626,10 @@ if (typeof module !== "undefined") {
         farmhash64: farmhash64,
         strFarmhash32: strFarmhash32,
         strFarmhash64: strFarmhash64,
-        toHex: toHex,
+        strFarmhash32Hex: strFarmhash32Hex,
+        strFarmhash64Hex: strFarmhash64Hex,
+        hex32: hex32,
+        hex64: hex64,
         _testData: _testData,
     };
 }

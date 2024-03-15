@@ -205,7 +205,9 @@ func dataSetup() []byte {
 func testDataItemFarmHash64(t *testing.T, data []byte, offset int, hlen int, index int) {
 	t.Helper()
 
-	h := FarmHash64(data[offset : offset+hlen])
+	s := data[offset : offset+hlen]
+
+	h := FarmHash64(s)
 	a := (uint32)(h >> 32)
 
 	exp := expectedFarmHash64()

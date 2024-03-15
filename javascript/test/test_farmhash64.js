@@ -8,10 +8,14 @@
  */
 
 const {
+    // farmhash32,
     farmhash64,
     strFarmhash32,
     strFarmhash64,
-    toHex,
+    strFarmhash32Hex,
+    strFarmhash64Hex,
+    hex32,
+    hex64,
     _testData,
 } = require(process.argv[2]);
 
@@ -546,15 +550,15 @@ const exphash = [
     1053371241, 3717104621, 1144474110, 4166253320, 2747410691,
 ];
 
-function test_toHex() {
+function test_hex64() {
     var errors = 0;
     var hs = "";
     var i;
     for (i = 0; i < test_data.length; i++) {
-        hs = toHex(test_data[i][1]);
+        hs = hex64(test_data[i][1]);
         if (hs !== test_data[i][2]) {
             console.error(
-                "toHex: (" + i + ") expected ",
+                "hex64: (" + i + ") expected ",
                 test_data[i][2],
                 ", got ",
                 hs
@@ -576,9 +580,30 @@ function test_strFarmhash64() {
                 "strFarmhash64: (" +
                 i +
                 ") expected " +
-                toHex(test_data[i][1]) +
+                hex64(test_data[i][1]) +
                 " but got " +
-                toHex(h)
+                hex64(h)
+            );
+            ++errors;
+        }
+    }
+    return errors;
+}
+
+function test_strFarmhash64Hex() {
+    var errors = 0;
+    var h = 0;
+    var i = 0;
+    for (i = 0; i < test_data.length; i++) {
+        h = strFarmhash64Hex(test_data[i][3]);
+        if (h != test_data[i][2]) {
+            console.error(
+                "strFarmhash64Hex: (" +
+                i +
+                ") expected " +
+                test_data[i][2] +
+                " but got " +
+                h
             );
             ++errors;
         }
@@ -598,6 +623,28 @@ function test_strFarmhash32() {
                 i +
                 ") expected " +
                 test_data[i][0] +
+                " but got " +
+                h
+            );
+            ++errors;
+        }
+    }
+    return errors;
+}
+
+function test_strFarmhash32Hex() {
+    var errors = 0;
+    var h = 0;
+    var i = 0;
+    for (i = 0; i < test_data.length; i++) {
+        h = strFarmhash32Hex(test_data[i][3]);
+        exp = hex32(test_data[i][0]);
+        if (h != exp) {
+            console.error(
+                "strFarmhash32: (" +
+                i +
+                ") expected " +
+                exp +
                 " but got " +
                 h
             );
@@ -648,7 +695,7 @@ function test_farmhash64() {
     while (i < dataSize) {
         errors += testDataItemFarmHash64(data, 0, i, index);
         index += 2;
-        i += i / 7;
+        i += (i / 7) >>> 0;
     }
 
     errors += testDataItemFarmHash64(data, 0, dataSize, index);
@@ -658,9 +705,11 @@ function test_farmhash64() {
 
 var errors = 0;
 
-errors += test_toHex();
+errors += test_hex64();
 errors += test_strFarmhash64();
+errors += test_strFarmhash64Hex();
 errors += test_strFarmhash32();
+errors += test_strFarmhash32Hex();
 errors += test_farmhash64();
 
 if (errors > 0) {
