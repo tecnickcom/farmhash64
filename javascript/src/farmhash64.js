@@ -13,7 +13,7 @@
  * The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
  *
  * All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
- * This is a Java port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
+ * This is a Javascript port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
  *
  * This code has been ported/translated by Nicola Asuni (Tecnick.com) to JavaScript code.
  *
