@@ -381,16 +381,14 @@ extern "C" {
 /**
  * @brief Represents a 128-bit unsigned integer.
  *
- * The uint128_t struct is used to store a 128-bit integer, which consists of a lower 64 bits (lo) and a higher 64 bits (hi).
+ * The `uint128_t` struct is used to store a 128-bit integer, which consists of a lower 64 bits (`lo`) and a higher 64 bits (`hi`).
  * This struct is typically used for operations that require a larger range of values than what can be represented by a standard 64-bit integer.
- *
- * @private
  */
 typedef struct uint128_t
 {
-    uint64_t hi; // Higher 64 bits of the 128-bit integer
-    uint64_t lo; // Lower 64 bits of the 128-bit integer
-} uint128_t;
+    uint64_t hi; /**< The higher 64 bits of the 128-bit integer. */
+    uint64_t lo; /**< The lower 64 bits of the 128-bit integer. */
+} __attribute__((aligned(16))) uint128_t;
 
 // Some primes between 2^63 and 2^64 for various uses.
 static const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
@@ -428,7 +426,7 @@ static inline uint128_t make_uint128_t(uint64_t hi, uint64_t lo)
  */
 static inline uint64_t fetch64(const char* p)
 {
-    uint64_t result;
+    uint64_t result = 0;
     memcpy(&result, p, sizeof(result));
     return uint64_t_in_expected_order(result);
 }
@@ -444,7 +442,7 @@ static inline uint64_t fetch64(const char* p)
  */
 static inline uint64_t fetch32(const char* p)
 {
-    uint32_t result;
+    uint32_t result = 0;
     memcpy(&result, p, sizeof(result));
     return uint64_t_in_expected_order(result);
 }
@@ -459,8 +457,7 @@ static inline uint64_t fetch32(const char* p)
  */
 static inline void swap64(uint64_t* a, uint64_t* b)
 {
-    uint64_t t;
-    t = *a;
+    uint64_t t = *a;
     *a = *b;
     *b = t;
 }
@@ -749,7 +746,7 @@ static inline uint64_t farmhash64(const char *s, size_t len)
     const char* end = s + (((len - 1) >> 6) << 6);
     const char* last64 = end + ((len - 1) & 63) - 63;
     assert(s + len - 64 == last64);
-    do
+    while (s != end)
     {
         x = ror64(x + y + v.lo + fetch64(s + 8), 37) * k1;
         y = ror64(y + v.hi + fetch64(s + 48), 42) * k1;
@@ -761,7 +758,6 @@ static inline uint64_t farmhash64(const char *s, size_t len)
         swap64(&z, &x);
         s += 64;
     }
-    while (s != end);
     uint64_t mul = k1 + ((z & 0xff) << 1);
     // Make s point to the last 64 bytes of input.
     s = last64;

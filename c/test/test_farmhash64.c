@@ -169,15 +169,15 @@ uint64_t get_time()
 // Initialize data to pseudorandom values.
 void data_setup()
 {
-    static const uint64_t k0 = 0xc3a5c85c97cb3127ULL;
+    static const uint64_t kt = 0xc3a5c85c97cb3127ULL;
     uint64_t a = 9;
     uint64_t b = 777;
     for (int i = 0; i < k_data_size; i++)
     {
         a += b;
         b += a;
-        a = (a ^ (a >> 41)) * k0;
-        b = (b ^ (b >> 41)) * k0 + i;
+        a = (a ^ (a >> 41)) * kt;
+        b = (b ^ (b >> 41)) * kt + i;
         uint8_t u = b >> 37;
         memcpy(data + i, &u, 1);  // uint8_t -> char
     }

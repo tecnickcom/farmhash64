@@ -176,7 +176,7 @@ public class FarmHash64Test {
     }
 
     private byte[] dataSetup() {
-        final long k0 = 0xc3a5c85c97cb3127L;
+        final long kt = 0xc3a5c85c97cb3127L;
 
         byte[] data = new byte[dataSize];
 
@@ -187,8 +187,8 @@ public class FarmHash64Test {
         for (int i = 0; i < dataSize; i++) {
             a += b;
             b += a;
-            a = (a ^ (a >>> 41)) * k0;
-            b = (b ^ (b >>> 41)) * k0 + (long) i;
+            a = (a ^ (a >>> 41)) * kt;
+            b = (b ^ (b >>> 41)) * kt + (long) i;
             u = (byte) (b >>> 37);
             data[i] = u;
         }

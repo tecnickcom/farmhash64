@@ -191,7 +191,7 @@ mod tests {
     }
 
     fn data_setup() -> Vec<u8> {
-        const K0: u64 = 0xc3a5c85c97cb3127;
+        const KT: u64 = 0xc3a5c85c97cb3127;
 
         let mut data = vec![0; DATA_SIZE];
         let mut a: u64 = 9;
@@ -201,8 +201,8 @@ mod tests {
         for i in 0..DATA_SIZE {
             a = a.overflowing_add(b).0;
             b = b.overflowing_add(a).0;
-            a = (a ^ (a >> 41)).overflowing_mul(K0).0;
-            b = (b ^ (b >> 41)).overflowing_mul(K0).0 + i as u64;
+            a = (a ^ (a >> 41)).overflowing_mul(KT).0;
+            b = (b ^ (b >> 41)).overflowing_mul(KT).0 + i as u64;
             u = (b >> 37) as u8;
             data[i] = u;
         }

@@ -381,7 +381,7 @@ function weakHashLen32WithSeeds(s, idx, a, b) {
 }
 
 function _testData(size) {
-    const k0 = {
+    const kt = {
         hi: 0xc3a5c85c,
         lo: 0x97cb3127,
     };
@@ -397,8 +397,8 @@ function _testData(size) {
     for (let i = 0; i < size; i++) {
         a = u64Add(a, b);
         b = u64Add(b, a);
-        a = u64Mul(u64XOR(a, u64ShiftR(a, 41)), k0);
-        b = u64Add(u64Mul(u64XOR(b, u64ShiftR(b, 41)), k0), {
+        a = u64Mul(u64XOR(a, u64ShiftR(a, 41)), kt);
+        b = u64Add(u64Mul(u64XOR(b, u64ShiftR(b, 41)), kt), {
             hi: 0,
             lo: i,
         });

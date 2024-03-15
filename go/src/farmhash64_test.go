@@ -180,7 +180,7 @@ func BenchmarkFarmHash64(b *testing.B) {
 }
 
 func dataSetup() []byte {
-	const k0 uint64 = 0xc3a5c85c97cb3127
+	const kt uint64 = 0xc3a5c85c97cb3127
 
 	data := make([]byte, dataSize)
 
@@ -193,8 +193,8 @@ func dataSetup() []byte {
 	for i := 0; i < dataSize; i++ {
 		a += b
 		b += a
-		a = (a ^ (a >> 41)) * k0
-		b = (b^(b>>41))*k0 + uint64(i)
+		a = (a ^ (a >> 41)) * kt
+		b = (b^(b>>41))*kt + uint64(i)
 		u = byte(b >> 37)
 		data[i] = u
 	}
