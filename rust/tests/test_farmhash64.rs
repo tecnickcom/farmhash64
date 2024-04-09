@@ -196,13 +196,13 @@ mod tests {
         let mut data = vec![0; DATA_SIZE];
         let mut a: u64 = 9;
         let mut b: u64 = 777;
-        let mut u: u8;
+        let mut u: u8 = 0;
 
         for i in 0..DATA_SIZE {
-            a = a.overflowing_add(b).0;
-            b = b.overflowing_add(a).0;
-            a = (a ^ (a >> 41)).overflowing_mul(KT).0;
-            b = (b ^ (b >> 41)).overflowing_mul(KT).0 + i as u64;
+            a = a.wrapping_add(b);
+            b = b.wrapping_add(a);
+            a = (a ^ (a >> 41)).wrapping_mul(KT);
+            b = (b ^ (b >> 41)).wrapping_mul(KT) + i as u64;
             u = (b >> 37) as u8;
             data[i] = u;
         }
@@ -211,7 +211,7 @@ mod tests {
     }
 
     fn test_data_item_farmhash64(data: &[u8], offset: usize, hlen: usize, index: usize) {
-        let h = farmhash64(&data[offset..offset + hlen]);
+        let h = farmhash64(&data[offset..(offset + hlen)]);
         let a = (h >> 32) as u32;
 
         let exp = expected_farmhash64();

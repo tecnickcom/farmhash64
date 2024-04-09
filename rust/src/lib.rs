@@ -192,7 +192,7 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
 // Return a 16-byte hash for 48 bytes.  Quick and dirty.
 // Callers do best to use "random-looking" values for a and b.
 #[inline]
-fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> (u64, u64) {
+fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> Uint128 {
     let a = a.wrapping_add(w);
     let b = rotate64(b.wrapping_add(a).wrapping_add(z), 21);
     let c = a;
@@ -200,12 +200,15 @@ fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: 
     let a = a.wrapping_add(y);
     let b = b.wrapping_add(rotate64(a, 44));
 
-    (b.wrapping_add(c), a.wrapping_add(z))
+    Uint128 {
+        hi: b.wrapping_add(c),
+        lo: a.wrapping_add(z),
+    }
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
 #[inline]
-fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
+fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> Uint128 {
     weak_hash_len_32_with_seeds_words(
         fetch64(s, 0),
         fetch64(s, 8),
@@ -221,11 +224,11 @@ fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> (u64, u64) {
 pub fn farmhash64(mut s: &[u8]) -> u64 {
     let slen = s.len();
 
-    if slen <= 16 {
-        return hash_len_0_to_16(s);
-    }
-
     if slen <= 32 {
+        if slen <= 16 {
+            return hash_len_0_to_16(s);
+        }
+
         return hash_len_17_to_32(s);
     }
 
@@ -260,17 +263,12 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
         x ^= w.hi;
         y = y.wrapping_add(v.lo).wrapping_add(fetch64(s, 40));
         z = (rotate64(z.wrapping_add(w.lo), 33)).wrapping_mul(K1);
-        let (v_hi, v_lo) =
-            weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(K1), x.wrapping_add(w.lo));
-        v.lo = v_lo;
-        v.hi = v_hi;
-        let (w_hi, w_lo) = weak_hash_len_32_with_seeds(
+        v = weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(K1), x.wrapping_add(w.lo));
+        w = weak_hash_len_32_with_seeds(
             &s[32..],
             z.wrapping_add(w.hi),
             y.wrapping_add(fetch64(s, 16)),
         );
-        w.lo = w_lo;
-        w.hi = w_hi;
         std::mem::swap(&mut x, &mut z);
         s = &s[64..];
     }
@@ -294,16 +292,12 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
         .wrapping_add(v.lo.wrapping_mul(9))
         .wrapping_add(fetch64(s, 40));
     z = (rotate64(z.wrapping_add(w.lo), 33)).wrapping_mul(mul);
-    let (v_hi, v_lo) = weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(mul), x.wrapping_add(w.lo));
-    v.lo = v_lo;
-    v.hi = v_hi;
-    let (w_hi, w_lo) = weak_hash_len_32_with_seeds(
+    v = weak_hash_len_32_with_seeds(s, v.hi.wrapping_mul(mul), x.wrapping_add(w.lo));
+    w = weak_hash_len_32_with_seeds(
         &s[32..],
         z.wrapping_add(w.hi),
         y.wrapping_add(fetch64(s, 16)),
     );
-    w.lo = w_lo;
-    w.hi = w_hi;
     std::mem::swap(&mut x, &mut z);
 
     return hash_len_16_mul(
