@@ -8,7 +8,7 @@ MIT License:
 
   - Copyright (c) 2014 Google, Inc (original C++ version).
   - Copyright (c) 2014 Damian Gryski (original GO version)
-  - Copyright (c) 2016-2024 Nicola Asuni (versions in C, CGO, GO, Java, Javascript, Python, Rust)
+  - Copyright (c) 2016-2024 Nicola Asuni (versions in C, CGO, GO, Java, Javascript, Python, R, Rust, Zig)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

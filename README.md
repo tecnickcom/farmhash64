@@ -29,12 +29,14 @@ All members of the FarmHash family were designed with heavy reliance on previous
 This is a port of the original Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash) in multiple languages by Nicola Asuni (Tecnick.com):
 
 - C (header-only compatible with CPP)
-- CGO
+- CGO (C wrapper)
 - GO
 - Java
 - Javascript
-- Python
+- Python (C wrapper)
+- R (C wrapper)
 - Rust
+- Zig
 
 ## Getting Started
 

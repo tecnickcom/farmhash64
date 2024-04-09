@@ -38,11 +38,13 @@ help:
 	@echo "    make java       : Build and test the Java version"
 	@echo "    make javascript : Build and test the Javascript version"
 	@echo "    make python     : Build and test the Python version"
+	@echo "    make r          : Build and test the R version"
 	@echo "    make rust       : Build and test the Rust version"
+	@echo "    make zig        : Build and test the Zig version"
 	@echo "    make tag        : Tag the Git repository"
 	@echo ""
 
-all: clean c cgo go java javascript python rust
+all: clean c cgo go java javascript python r rust zig
 
 # Build and test the C version
 .PHONY: c
@@ -74,10 +76,20 @@ javascript:
 python:
 	cd python && make all
 
+# Build and test the R version
+.PHONY: r
+r:
+	cd r && make all
+
 # Build and test the Rust version
 .PHONY: rust
 rust:
 	cd rust && make all
+
+# Build and test the Zig version
+.PHONY: zig
+zig:
+	cd zig && make all
 
 # Remove any build artifact
 .PHONY: clean
@@ -89,7 +101,9 @@ clean:
 	cd java && make clean
 	cd javascript && make clean
 	cd python && make clean
+	cd r && make clean
 	cd rust && make clean
+	cd zig && make clean
 	@mkdir -p $(TARGETDIR)
 
 # Tag the Git repository
