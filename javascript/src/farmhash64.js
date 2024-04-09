@@ -416,11 +416,12 @@ function _testData(size) {
 function farmhash64(s) {
     var slen = s.length;
 
-    if (slen <= 16) {
-        return hashLen0to16(s);
-    }
 
     if (slen <= 32) {
+        if (slen <= 16) {
+            return hashLen0to16(s);
+        }
+
         return hashLen17to32(s);
     }
 

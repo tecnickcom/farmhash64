@@ -185,11 +185,12 @@ public class FarmHash64 {
 
 		long seed = 81;
 
-		if (slen <= 16) {
-			return hashLen0to16(s);
-		}
 
 		if (slen <= 32) {
+			if (slen <= 16) {
+				return hashLen0to16(s);
+			}
+			
 			return hashLen17to32(s);
 		}
 
