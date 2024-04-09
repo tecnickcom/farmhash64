@@ -530,7 +530,7 @@ static inline uint32_t mur(uint32_t a, uint32_t h)
     a *= c2;
     h ^= a;
     h = ror32(h, 19);
-    return h * 5 + 0xe6546b64;
+    return (h * 5) + 0xe6546b64;
 }
 
 /**
@@ -736,12 +736,11 @@ static inline uint64_t farmhash64(const char *s, size_t len)
     }
     // For strings over 64 bytes we loop.
     // Internal state consists of 56 bytes: v, w, x, y, and z.
-    uint64_t x = seed;
-    uint64_t y = seed * k1 + 113;
-    uint64_t z = smix(y * k2 + 113) * k2;
     uint128_t v = make_uint128_t(0, 0);
     uint128_t w = make_uint128_t(0, 0);
-    x = x * k2 + fetch64(s);
+    uint64_t x = seed * k2 + fetch64(s);
+    uint64_t y = seed * k1 + 113;
+    uint64_t z = smix(y * k2 + 113) * k2;
     // Set end so that after the loop we have 1 to 64 bytes left to process.
     const char* end = s + (((len - 1) >> 6) << 6);
     const char* last64 = end + ((len - 1) & 63) - 63;
