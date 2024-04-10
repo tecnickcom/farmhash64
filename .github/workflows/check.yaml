@@ -37,7 +37,7 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
       - name: setup go build environment
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
           check-latest: true
@@ -52,7 +52,7 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
       - name: setup go build environment
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
           check-latest: true
@@ -103,7 +103,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           ini-values: display_errors=on, error_reporting=-1, zend.assertions=1
       - name: Cache module
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache/
           key: composer-cache
