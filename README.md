@@ -33,6 +33,7 @@ This is a port of the original Fingerprint64 (farmhashna::Hash64) code from Goog
 - GO
 - Java
 - Javascript
+- PHP
 - Python (C wrapper)
 - R (C wrapper)
 - Rust

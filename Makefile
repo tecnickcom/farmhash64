@@ -19,9 +19,6 @@ RELEASE=$(shell cat RELEASE)
 # Current directory
 CURRENTDIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
-# Target directory
-TARGETDIR=$(CURRENTDIR)target
-
 # --- MAKE TARGETS ---
 
 # Display general help about this command
@@ -37,6 +34,7 @@ help:
 	@echo "    make go         : Build and test the GO version"
 	@echo "    make java       : Build and test the Java version"
 	@echo "    make javascript : Build and test the Javascript version"
+	@echo "    make php        : Build and test the PHP version"
 	@echo "    make python     : Build and test the Python version"
 	@echo "    make r          : Build and test the R version"
 	@echo "    make rust       : Build and test the Rust version"
@@ -44,7 +42,7 @@ help:
 	@echo "    make tag        : Tag the Git repository"
 	@echo ""
 
-all: clean c cgo go java javascript python r rust zig
+all: clean c cgo go java javascript php python r rust zig
 
 # Build and test the C version
 .PHONY: c
@@ -71,6 +69,11 @@ java:
 javascript:
 	cd javascript && make all
 
+# Build and test the PHP version
+.PHONY: php
+php:
+	cd php && make all
+
 # Build and test the Python version
 .PHONY: python
 python:
@@ -94,17 +97,16 @@ zig:
 # Remove any build artifact
 .PHONY: clean
 clean:
-	rm -rf target
 	cd c && make clean
 	cd cgo && make clean
 	cd go && make clean
 	cd java && make clean
 	cd javascript && make clean
+	cd php && make clean
 	cd python && make clean
 	cd r && make clean
 	cd rust && make clean
 	cd zig && make clean
-	@mkdir -p $(TARGETDIR)
 
 # Tag the Git repository
 .PHONY: tag

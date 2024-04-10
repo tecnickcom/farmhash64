@@ -11,6 +11,7 @@ on:
 env:
   PYTHON_VERSION: 3.x
   JAVA_VERSION: '11'
+  XDEBUG_MODE: coverage
 
 permissions:
   contents: read
@@ -88,6 +89,37 @@ jobs:
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
         run: cd javascript && make build
+
+  php:
+    name: Test on php ${{ matrix.php-version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+        fail-fast: false
+        matrix:
+            php-version: ["8.1"]
+            experimental: [false]
+            os: [ubuntu-latest]
+            coverage-extension: [pcov]
+    steps:
+        - uses: actions/checkout@v4
+        - name: Use php ${{ matrix.php-version }}
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: ${{ matrix.php-version }}
+              coverage: ${{ matrix.coverage-extension }}
+              ini-values: display_errors=on, error_reporting=-1, zend.assertions=1
+        - name: List php modules
+          run: php -m
+        - name: List php modules using "no php ini" mode
+          run: php -m -n
+        - name: Cache module
+          uses: actions/cache@v3
+          with:
+              path: ~/.composer/cache/
+              key: composer-cache
+        - name: Run all tests
+          run: make build
 
   python:
     runs-on: ubuntu-latest
