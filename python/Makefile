@@ -66,5 +66,5 @@ version:
 .PHONY: vbuild
 vbuild: clean version
 	rm -rf venv
-	python3 -m venv venv
+	virtualenv -p /usr/bin/python3 venv
 	source venv/bin/activate && python --version && pip install --pre black && pip install -e .[test] && python setup.py sdist bdist_wheel install test
