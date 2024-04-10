@@ -196,7 +196,7 @@ mod tests {
         let mut data = vec![0; DATA_SIZE];
         let mut a: u64 = 9;
         let mut b: u64 = 777;
-        let mut u: u8 = 0;
+        let mut u: u8;
 
         for i in 0..DATA_SIZE {
             a = a.wrapping_add(b);
