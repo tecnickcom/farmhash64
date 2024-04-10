@@ -46,7 +46,7 @@ function u64Add(a, b) {
     const cb = losum >>> 0 < a.lo >>> 0 || losum >>> 0 < b.lo >>> 0 ? 1 : 0;
     return {
         hi: (a.hi + b.hi + cb) >>> 0,
-        lo: (a.lo + b.lo) >>> 0,
+        lo: (losum) >>> 0,
     };
 }
 
@@ -191,10 +191,10 @@ function fetchU64(s, i) {
         ((s[i + 2] << 16) >>> 0) |
         ((s[i + 3] << 24) >>> 0);
     const hi =
-        ((s[i + 4] << 32) >>> 0) |
-        ((s[i + 5] << 40) >>> 0) |
-        ((s[i + 6] << 48) >>> 0) |
-        ((s[i + 7] << 56) >>> 0);
+        ((s[i + 4]) >>> 0) |
+        ((s[i + 5] << 8) >>> 0) |
+        ((s[i + 6] << 16) >>> 0) |
+        ((s[i + 7] << 24) >>> 0);
     return {
         hi: hi >>> 0,
         lo: lo >>> 0,
@@ -416,11 +416,12 @@ function _testData(size) {
 function farmhash64(s) {
     var slen = s.length;
 
-    if (slen <= 16) {
-        return hashLen0to16(s);
-    }
 
     if (slen <= 32) {
+        if (slen <= 16) {
+            return hashLen0to16(s);
+        }
+
         return hashLen17to32(s);
     }
 

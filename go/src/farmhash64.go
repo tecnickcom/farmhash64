@@ -163,7 +163,7 @@ func hashLen33to64(s []byte) uint64 {
 
 // Return a 16-byte hash for 48 bytes.  Quick and dirty.
 // Callers do best to use "random-looking" values for a and b.
-func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) (uint64, uint64) {
+func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) uint128 {
 	a += w
 	b = rotate64(b+a+z, 21)
 	c := a
@@ -171,11 +171,11 @@ func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) (uint64, uint64) {
 	a += y
 	b += rotate64(a, 44)
 
-	return b + c, a + z
+	return uint128{hi: b + c, lo: a + z}
 }
 
 // Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
-func weakHashLen32WithSeeds(s []byte, a, b uint64) (uint64, uint64) {
+func weakHashLen32WithSeeds(s []byte, a, b uint64) uint128 {
 	return weakHashLen32WithSeedsWords(
 		fetch64(s, 0),
 		fetch64(s, 8),
@@ -190,11 +190,11 @@ func weakHashLen32WithSeeds(s []byte, a, b uint64) (uint64, uint64) {
 func FarmHash64(s []byte) uint64 {
 	slen := len(s)
 
-	if slen <= 16 {
-		return hashLen0to16(s)
-	}
-
 	if slen <= 32 {
+		if slen <= 16 {
+			return hashLen0to16(s)
+		}
+
 		return hashLen17to32(s)
 	}
 
@@ -224,8 +224,8 @@ func FarmHash64(s []byte) uint64 {
 		x ^= w.hi
 		y += v.lo + fetch64(s, 40)
 		z = rotate64(z+w.lo, 33) * k1
-		v.hi, v.lo = weakHashLen32WithSeeds(s, v.hi*k1, x+w.lo)
-		w.hi, w.lo = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
+		v = weakHashLen32WithSeeds(s, v.hi*k1, x+w.lo)
+		w = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
 		x, z = z, x
 		s = s[64:]
 	}
@@ -241,8 +241,8 @@ func FarmHash64(s []byte) uint64 {
 	x ^= w.hi * 9
 	y += v.lo*9 + fetch64(s, 40)
 	z = rotate64(z+w.lo, 33) * mul
-	v.hi, v.lo = weakHashLen32WithSeeds(s, v.hi*mul, x+w.lo)
-	w.hi, w.lo = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
+	v = weakHashLen32WithSeeds(s, v.hi*mul, x+w.lo)
+	w = weakHashLen32WithSeeds(s[32:], z+w.hi, y+fetch64(s, 16))
 	x, z = z, x
 
 	return hashLen16Mul(hashLen16Mul(v.lo, w.lo, mul)+shiftMix(y)*k0+z, hashLen16Mul(v.hi, w.hi, mul)+x, mul)

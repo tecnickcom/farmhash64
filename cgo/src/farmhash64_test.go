@@ -184,11 +184,11 @@ func dataSetup() []byte {
 
 	data := make([]byte, dataSize)
 
-	var a uint64 = 9
-
-	var b uint64 = 777
-
-	var u byte
+	var (
+		a uint64 = 9
+		b uint64 = 777
+		u byte
+	)
 
 	for i := 0; i < dataSize; i++ {
 		a += b

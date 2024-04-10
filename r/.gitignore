@@ -1,0 +1,14 @@
+**/*.o
+**/*.so
+**/.RData
+**/.Rbuildignore
+**/.Rhistory
+**/.Rprofile
+**/.Rproj.user
+**/renv
+**/renv.lock
+docs
+farmhash64.Rcheck
+farmhash64/LICENSE
+farmhash64/libs
+farmhash64_*.tar.gz

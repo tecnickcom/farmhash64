@@ -1,0 +1,7 @@
+target
+zig-*/
+/release/
+/debug/
+/build/
+/build-*/
+/docgen_tmp/

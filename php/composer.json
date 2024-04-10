@@ -1,0 +1,45 @@
+{
+  "name": "tecnickcom/farmhash64",
+  "description": "FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.",
+  "type": "library",
+  "homepage": "http://www.tecnick.com",
+  "license": "MIT",
+  "keywords": [
+    "farmhash64",
+    "farmhash32",
+    "hashing",
+    "hash",
+    "farmhash"
+  ],
+  "authors": [
+    {
+      "name": "Nicola Asuni",
+      "email": "info@tecnick.com",
+      "role": "lead"
+    }
+  ],
+  "require": {
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "pdepend/pdepend": "2.13.0",
+    "phpmd/phpmd": "2.13.0",
+    "phpunit/phpunit": "10.1.2 || 9.6.13",
+    "squizlabs/php_codesniffer": "3.7.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Com\\Tecnick\\FarmHash64\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Test\\": "test"
+    }
+  },
+  "archive": {
+    "exclude": [
+      "/example"
+    ]
+  }
+}

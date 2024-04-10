@@ -9,8 +9,11 @@ on:
       - 'main'
 
 env:
-  PYTHON_VERSION: 3.x
+  NODE_VERSION: '14'
+  PHP_VERSION: '8.1'
+  PYTHON_VERSION: '3.x'
   JAVA_VERSION: '11'
+  XDEBUG_MODE: coverage
 
 permissions:
   contents: read
@@ -20,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt install -y lcov astyle
       - name: set RELEASE number
@@ -32,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup go build environment
         uses: actions/setup-go@v3
         with:
@@ -47,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup go build environment
         uses: actions/setup-go@v3
         with:
@@ -62,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup java build environment
         uses: actions/setup-java@v2
         with:
@@ -77,11 +80,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup node build environment
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: ${{ env.NODE_VERSION }}
       - name: install dependencies
         run: npm install --global uglify-js js-beautify
       - name: set RELEASE number
@@ -89,11 +92,31 @@ jobs:
       - name: test
         run: cd javascript && make build
 
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+      - name: setup php build environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          ini-values: display_errors=on, error_reporting=-1, zend.assertions=1
+      - name: Cache module
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache/
+          key: composer-cache
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd php && make build
+
   python:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup python build environment
         uses: actions/setup-python@v2
         with:
@@ -107,12 +130,52 @@ jobs:
       - name: test
         run: cd python && make vbuild
 
+  r:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+      - name: setup R build environment
+        uses: r-lib/actions/setup-r@v2
+      - name: Install dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: './r/farmhash64/'
+          cache-version: 2
+          extra-packages: |
+            any::Rcpp
+            any::devtools
+            any::inline
+            any::pryr
+            any::renv
+            any::roxygen2
+            any::testthat
+            any::pkgdown
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd r && make build test
+
   rust:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
         run: cd rust && make test
+
+  zig:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+      - name: setup zig build environment
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: '0.11.0'
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd zig && make test
