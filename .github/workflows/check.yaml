@@ -9,7 +9,9 @@ on:
       - 'main'
 
 env:
-  PYTHON_VERSION: 3.x
+  NODE_VERSION: '14'
+  PHP_VERSION: '8.1'
+  PYTHON_VERSION: '3.x'
   JAVA_VERSION: '11'
   XDEBUG_MODE: coverage
 
@@ -21,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt install -y lcov astyle
       - name: set RELEASE number
@@ -33,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup go build environment
         uses: actions/setup-go@v3
         with:
@@ -48,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup go build environment
         uses: actions/setup-go@v3
         with:
@@ -63,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup java build environment
         uses: actions/setup-java@v2
         with:
@@ -78,11 +80,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup node build environment
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: ${{ env.NODE_VERSION }}
       - name: install dependencies
         run: npm install --global uglify-js js-beautify
       - name: set RELEASE number
@@ -91,41 +93,30 @@ jobs:
         run: cd javascript && make build
 
   php:
-    name: Test on php ${{ matrix.php-version }} and ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-        fail-fast: false
-        matrix:
-            php-version: ["8.1"]
-            experimental: [false]
-            os: [ubuntu-latest]
-            coverage-extension: [pcov]
+    runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v4
-        - name: Use php ${{ matrix.php-version }}
-          uses: shivammathur/setup-php@v2
-          with:
-              php-version: ${{ matrix.php-version }}
-              coverage: ${{ matrix.coverage-extension }}
-              ini-values: display_errors=on, error_reporting=-1, zend.assertions=1
-        - name: List php modules
-          run: php -m
-        - name: List php modules using "no php ini" mode
-          run: php -m -n
-        - name: Cache module
-          uses: actions/cache@v3
-          with:
-              path: ~/.composer/cache/
-              key: composer-cache
-        - name: Run all tests
-          run: make build
+      - name: checkout repository
+        uses: actions/checkout@v4
+      - name: setup php build environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          ini-values: display_errors=on, error_reporting=-1, zend.assertions=1
+      - name: Cache module
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache/
+          key: composer-cache
+      - name: set RELEASE number
+        run: echo ${GITHUB_RUN_NUMBER} > RELEASE
+      - name: test
+        run: cd php && make build
 
   python:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup python build environment
         uses: actions/setup-python@v2
         with:
@@ -143,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup R build environment
         uses: r-lib/actions/setup-r@v2
       - name: Install dependencies
@@ -169,7 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
@@ -179,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup zig build environment
         uses: goto-bus-stop/setup-zig@v2
         with:
