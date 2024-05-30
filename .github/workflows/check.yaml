@@ -29,7 +29,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd c && make version test build
+        run: cd c && make clean version test build
 
   cgo:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd cgo && make mod deps linter test GOPATH=$(go env GOPATH)
+        run: cd cgo && make clean mod deps linter test GOPATH=$(go env GOPATH)
 
   go:
     runs-on: ubuntu-latest
@@ -59,7 +59,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd go && make mod deps linter test GOPATH=$(go env GOPATH)
+        run: cd go && make clean mod deps linter test GOPATH=$(go env GOPATH)
 
   java:
     runs-on: ubuntu-latest
@@ -74,7 +74,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd java && make build test
+        run: cd java && make clean build test
 
   javascript:
     runs-on: ubuntu-latest
@@ -90,7 +90,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd javascript && make build
+        run: cd javascript && make clean build
 
   php:
     runs-on: ubuntu-latest
@@ -110,7 +110,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd php && make build
+        run: cd php && make clean build
 
   python:
     runs-on: ubuntu-latest
@@ -128,7 +128,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd python && make vbuild
+        run: cd python && make clean vbuild
 
   r:
     runs-on: ubuntu-latest
@@ -154,7 +154,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd r && make build test
+        run: cd r && make clean build test
 
   rust:
     runs-on: ubuntu-latest
@@ -164,7 +164,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd rust && make test
+        run: cd rust && make clean test
 
   zig:
     runs-on: ubuntu-latest
@@ -178,4 +178,4 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd zig && make test
+        run: cd zig && make clean test

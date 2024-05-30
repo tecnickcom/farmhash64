@@ -20,6 +20,7 @@
 /Dockerfile
 __pycache__
 build
+composer.lock
 coverage.xml
 dist
 htmlcov
@@ -27,3 +28,4 @@ nosetests.xml
 pip-delete-this-directory.txt
 pip-log.txt
 target
+vendor

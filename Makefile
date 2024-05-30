@@ -97,6 +97,7 @@ zig:
 # Remove any build artifact
 .PHONY: clean
 clean:
+	rm -rf vendor composer.lock
 	cd c && make clean
 	cd cgo && make clean
 	cd go && make clean

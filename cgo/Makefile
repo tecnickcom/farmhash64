@@ -99,7 +99,7 @@ x:
 # Remove any build artifact
 .PHONY: clean
 clean:
-	rm -rf $(TARGETDIR)
+	rm -rf $(TARGETDIR) ../vendor
 
 # Generate the coverage report
 .PHONY: coverage
