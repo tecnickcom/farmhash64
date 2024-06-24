@@ -1,7 +1,8 @@
+.zig-cache
+/build-*/
+/build/
+/debug/
+/docgen_tmp/
+/release/
 target
 zig-*/
-/release/
-/debug/
-/build/
-/build-*/
-/docgen_tmp/
