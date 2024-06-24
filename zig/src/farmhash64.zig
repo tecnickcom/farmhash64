@@ -159,7 +159,7 @@ fn hash_len_33_to_64(s: []const u8) u64 {
 fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, pa: u64, pb: u64) Uint128 {
     var a: u64 = pa +% w;
     var b: u64 = rotate64(pb +% a +% z, 21);
-    var c: u64 = a;
+    const c: u64 = a;
     a = a +% x;
     a = a +% y;
     b = b +% rotate64(a, 44);

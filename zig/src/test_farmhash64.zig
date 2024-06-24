@@ -169,15 +169,17 @@ const expected_farmhash64 = &[_]u32{
 };
 
 test "test_farmhash64_strings" {
+    var h: u64 = 0;
     for (hash_test_data) |tt| {
-        var h: u64 = farmhash64(tt.in);
+        h = farmhash64(tt.in);
         try expectEqual(tt.oh64, h);
     }
 }
 
 test "test_farmhash32_strings" {
+    var h: u32 = 0;
     for (hash_test_data) |tt| {
-        var h: u32 = farmhash32(tt.in);
+        h = farmhash32(tt.in);
         try expectEqual(tt.oh32, h);
     }
 }
@@ -201,7 +203,7 @@ fn data_setup(data: []u8) void {
 
 fn test_data_item_farmhash64(data: []const u8, offset: usize, hlen: usize, index: usize) !void {
     const s: []const u8 = data[offset..(offset + hlen)];
-    var h: u64 = farmhash64(s);
+    const h: u64 = farmhash64(s);
 
     var a: u32 = @as(u32, @truncate(h >> 32));
     try expectEqual(expected_farmhash64[index], a);
