@@ -155,8 +155,6 @@ func TestFarmHash64Strings(t *testing.T) {
 	htd := hashTestData()
 
 	for _, tt := range htd {
-		tt := tt
-
 		t.Run("", func(t *testing.T) {
 			t.Parallel()
 
@@ -190,7 +188,7 @@ func dataSetup() []byte {
 		u byte
 	)
 
-	for i := 0; i < dataSize; i++ {
+	for i := range dataSize {
 		a += b
 		b += a
 		a = (a ^ (a >> 41)) * kt
@@ -247,8 +245,6 @@ func TestFarmHash32Strings(t *testing.T) {
 	htd := hashTestData()
 
 	for _, tt := range htd {
-		tt := tt
-
 		t.Run("", func(t *testing.T) {
 			t.Parallel()
 
