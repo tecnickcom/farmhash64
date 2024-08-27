@@ -45,8 +45,8 @@ static PyObject* py_farmhash32(PyObject *Py_UNUSED(ignored), PyObject *args, PyO
 
 static PyMethodDef PyFarmhash64Methods[] =
 {
-    {"farmhash64", (PyCFunction)py_farmhash64, METH_VARARGS|METH_KEYWORDS, PYFARMHASH64_DOCSTRING},
-    {"farmhash32", (PyCFunction)py_farmhash32, METH_VARARGS|METH_KEYWORDS, PYFARMHASH32_DOCSTRING},
+    {"farmhash64", (PyCFunction)(void(*)(void))py_farmhash64, METH_VARARGS|METH_KEYWORDS, PYFARMHASH64_DOCSTRING},
+    {"farmhash32", (PyCFunction)(void(*)(void))py_farmhash32, METH_VARARGS|METH_KEYWORDS, PYFARMHASH32_DOCSTRING},
     {NULL, NULL, 0, NULL}
 };
 
