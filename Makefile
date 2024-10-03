@@ -28,18 +28,19 @@ help:
 	@echo "$(PROJECT) Makefile."
 	@echo "The following commands are available:"
 	@echo ""
-	@echo "    make c          : Build and test the C version"
-	@echo "    make cgo        : Build and test the GO C-wrapper version"
-	@echo "    make clean      : Remove any build artifact"
-	@echo "    make go         : Build and test the GO version"
-	@echo "    make java       : Build and test the Java version"
-	@echo "    make javascript : Build and test the Javascript version"
-	@echo "    make php        : Build and test the PHP version"
-	@echo "    make python     : Build and test the Python version"
-	@echo "    make r          : Build and test the R version"
-	@echo "    make rust       : Build and test the Rust version"
-	@echo "    make zig        : Build and test the Zig version"
-	@echo "    make tag        : Tag the Git repository"
+	@echo "  make c          : Build and test the C version"
+	@echo "  make cgo        : Build and test the GO C-wrapper version"
+	@echo "  make clean      : Remove any build artifact"
+	@echo "  make go         : Build and test the GO version"
+	@echo "  make java       : Build and test the Java version"
+	@echo "  make javascript : Build and test the Javascript version"
+	@echo "  make php        : Build and test the PHP version"
+	@echo "  make python     : Build and test the Python version"
+	@echo "  make r          : Build and test the R version"
+	@echo "  make rust       : Build and test the Rust version"
+	@echo "  make zig        : Build and test the Zig version"
+	@echo "  make tag        : Tag the Git repository"
+	@echo "  make versionup  : Increase the patch number in the VERSION file"
 	@echo ""
 
 all: clean c cgo go java javascript php python r rust zig
@@ -114,3 +115,8 @@ clean:
 tag:
 	git tag -a "v$(VERSION)" -m "Version $(VERSION)" && \
 	git push origin --tags
+
+# Increase the patch number in the VERSION file
+.PHONY: versionup
+versionup:
+	echo ${VERSION} | gawk -F. '{printf("%d.%d.%d",$$1,$$2,(($$3+1)));}' > VERSION
