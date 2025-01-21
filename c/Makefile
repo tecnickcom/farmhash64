@@ -96,7 +96,7 @@ test: testcpp
 	lcov --capture --initial --directory . --output-file coverage/farmhash64.cov && \
 	env CTEST_OUTPUT_ON_FAILURE=1 make test | tee test.log ; test $${PIPESTATUS[0]} -eq 0 && \
 	lcov --no-checksum --directory . --capture --output-file coverage/farmhash64.info && \
-	lcov --remove coverage/farmhash64.info '*/test/*' '*/usr/include/x86_64-linux-gnu/bits*' --output-file coverage/farmhash64.info && \
+	lcov --ignore-errors unused --remove coverage/farmhash64.info '*/test/*' '*/usr/include/x86_64-linux-gnu/bits*' --output-file coverage/farmhash64.info && \
 	genhtml -o coverage -t "farmhash64 Test Coverage" coverage/farmhash64.info
 ifeq ($(VH_BUILD_DOXYGEN),ON)
 	cd target && \
