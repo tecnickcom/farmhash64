@@ -1,6 +1,6 @@
 Package: farmhash64
 Title: farmhash64
-Version: 1.9.24.0
+Version: 1.9.25.0
 Authors@R: person("Nicola", "Asuni", email = "info@tecnick.com", role = c("aut", "cre"))
 Description: FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
     It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
