@@ -9,10 +9,10 @@ on:
       - 'main'
 
 env:
-  NODE_VERSION: '14'
-  PHP_VERSION: '8.1'
+  NODE_VERSION: '22'
+  PHP_VERSION: '8.4'
   PYTHON_VERSION: '3.x'
-  JAVA_VERSION: '11'
+  JAVA_VERSION: '21'
   XDEBUG_MODE: coverage
 
 permissions:
