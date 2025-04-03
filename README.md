@@ -7,9 +7,9 @@
 
 ![farmhash64 logo](doc/images/logo.png)
 
-* **category:**    Libraries
-* **license:**     [LICENSE](https://github.com/tecnickcom/farmhash64/blob/main/LICENSE)
-* **cvs:**         https://github.com/tecnickcom/farmhash64
+* **category:** Libraries
+* **license:**  [LICENSE](https://github.com/tecnickcom/farmhash64/blob/main/LICENSE)
+* **cvs:**      https://github.com/tecnickcom/farmhash64
 
 [![check](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yaml/badge.svg)](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yaml)
 
