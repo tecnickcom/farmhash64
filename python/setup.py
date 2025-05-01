@@ -30,7 +30,7 @@ class RunTests(Command):
 
 setup(
     name="farmhash64",
-    version="1.9.36.0",
+    version="1.9.37.0",
     keywords=("farmhash64"),
     description="farmhash64 Bindings for Python",
     long_description=read("../README.md"),
@@ -64,7 +64,6 @@ setup(
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
         "Programming Language :: C",
         "Programming Language :: Python",
