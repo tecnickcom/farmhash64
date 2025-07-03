@@ -19,14 +19,13 @@
 
 FarmHash is a family of hash functions.
 
-FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
-It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
+**FarmHash64** is a 64-bit fingerprint hash function that generates a hash value for a given string. It is optimized for speed and produces well-distributed hashes, but it is not intended for cryptographic use.
 
-The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
+The **FarmHash32** function is also available, providing a 32-bit fingerprint hash for strings.
 
-All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
+All FarmHash algorithms build upon prior work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
 
-This is a port of the original Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash) in multiple languages by Nicola Asuni (Tecnick.com):
+This project is a multi-language port of the original Fingerprint64 (`farmhashna::Hash64`) implementation from Google’s FarmHash ([github.com/google/farmhash](https://github.com/google/farmhash)), maintained by Nicola Asuni (Tecnick.com).
 
 - C (header-only compatible with CPP)
 - CGO (C wrapper)
