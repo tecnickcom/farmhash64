@@ -30,7 +30,7 @@ class RunTests(Command):
 
 setup(
     name="farmhash64",
-    version="1.9.44.0",
+    version="1.9.45.0",
     keywords=("farmhash64"),
     description="farmhash64 Bindings for Python",
     long_description=read("../README.md"),
@@ -55,6 +55,7 @@ setup(
                 "-Wunused-value",
                 "-Wcast-align",
                 "-Wundef",
+                "-Wformat",
                 "-Wformat-security",
                 "-Wshadow",
                 "-Wno-format-overflow",

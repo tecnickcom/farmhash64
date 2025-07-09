@@ -106,7 +106,7 @@ endif
 # Test C code compatibility with C++
 .PHONY: testcpp
 testcpp:
-	find ./src -type f -name '*.h' -exec gcc -c -pedantic -Werror -Wall -Wextra -Wcast-align -Wundef -Wformat-security -std=c++17 -x c++ -o /dev/null {} \;
+	find ./src -type f -name '*.h' -exec gcc -c -pedantic -Werror -Wall -Wextra -Wcast-align -Wundef -Wformat -Wformat-security -std=c++17 -x c++ -o /dev/null {} \;
 
 # use clang-tidy
 .PHONY: tidy
