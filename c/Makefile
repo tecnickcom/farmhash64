@@ -96,7 +96,7 @@ test: testcpp
 	lcov --capture --initial --directory . --output-file coverage/farmhash64.cov && \
 	env CTEST_OUTPUT_ON_FAILURE=1 make test | tee test.log ; test $${PIPESTATUS[0]} -eq 0 && \
 	lcov --no-checksum --directory . --capture --output-file coverage/farmhash64.info && \
-	lcov --ignore-errors unused --remove coverage/farmhash64.info '*/test/*' '*/usr/include/x86_64-linux-gnu/bits*' --output-file coverage/farmhash64.info && \
+	lcov --ignore-errors unused --remove coverage/farmhash64.info '*/test/*' --output-file coverage/farmhash64.info && \
 	genhtml -o coverage -t "farmhash64 Test Coverage" coverage/farmhash64.info
 ifeq ($(VH_BUILD_DOXYGEN),ON)
 	cd target && \
@@ -106,7 +106,7 @@ endif
 # Test C code compatibility with C++
 .PHONY: testcpp
 testcpp:
-	find ./src -type f -name '*.h' -exec gcc -c -pedantic -Werror -Wall -Wextra -Wcast-align -Wundef -Wformat -Wformat-security -std=c++17 -x c++ -o /dev/null {} \;
+	find ./src -type f -name '*.h' -exec gcc -c -pedantic -Werror -Wall -Wextra -Wcast-align -Wundef -Wformat -Wformat-security -std=c++23 -x c++ -o /dev/null {} \;
 
 # use clang-tidy
 .PHONY: tidy

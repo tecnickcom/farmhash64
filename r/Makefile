@@ -56,7 +56,7 @@ build: version
 
 .PHONY: test
 test:
-	R -e 'setwd("./farmhash64");renv::restore();library(devtools);devtools::document();library(testthat);testthat::test_dir("tests")'
+	R -e 'setwd("./farmhash64");renv::restore();library(devtools);devtools::document();library(stringi);library(testthat);testthat::test_dir("tests")'
 
 # Format the source code
 .PHONY: format

@@ -583,16 +583,16 @@ static inline uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
 {
     if (len >= 8)
     {
-        uint64_t mul = k2 + len * 2;
+        uint64_t mul = k2 + (len * 2);
         uint64_t a = fetch64(s) + k2;
         uint64_t b = fetch64(s + len - 8);
-        uint64_t c = ror64(b, 37) * mul + a;
+        uint64_t c = (ror64(b, 37) * mul) + a;
         uint64_t d = (ror64(a, 25) + b) * mul;
         return farmhash_len_16_mul(c, d, mul);
     }
     if (len >= 4)
     {
-        uint64_t mul = k2 + len * 2;
+        uint64_t mul = k2 + (len * 2);
         uint64_t a = fetch32(s);
         return farmhash_len_16_mul(len + (a << 3), fetch32(s + len - 4), mul);
     }
@@ -620,7 +620,7 @@ static inline uint64_t farmhash_na_len_0_to_16(const char *s, size_t len)
  */
 static inline uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
 {
-    uint64_t mul = k2 + len * 2;
+    uint64_t mul = k2 + (len * 2);
     uint64_t a = fetch64(s) * k1;
     uint64_t b = fetch64(s + 8);
     uint64_t c = fetch64(s + len - 8) * mul;
@@ -640,7 +640,7 @@ static inline uint64_t farmhash_na_len_17_to_32(const char *s, size_t len)
  */
 static inline uint64_t farmhash_na_len_33_to_64(const char *s, size_t len)
 {
-    uint64_t mul = k2 + len * 2;
+    uint64_t mul = k2 + (len * 2);
     uint64_t a = fetch64(s) * k2;
     uint64_t b = fetch64(s + 8);
     uint64_t c = fetch64(s + len - 8) * mul;
@@ -738,9 +738,9 @@ static inline uint64_t farmhash64(const char *s, size_t len)
     // Internal state consists of 56 bytes: v, w, x, y, and z.
     uint128_t v = make_uint128_t(0, 0);
     uint128_t w = make_uint128_t(0, 0);
-    uint64_t x = seed * k2 + fetch64(s);
-    uint64_t y = seed * k1 + 113;
-    uint64_t z = smix(y * k2 + 113) * k2;
+    uint64_t x = (seed * k2) + fetch64(s);
+    uint64_t y = (seed * k1) + 113;
+    uint64_t z = smix((y * k2) + 113) * k2;
     // Set end so that after the loop we have 1 to 64 bytes left to process.
     const char* end = s + (((len - 1) >> 6) << 6);
     const char* last64 = end + ((len - 1) & 63) - 63;
@@ -771,7 +771,7 @@ static inline uint64_t farmhash64(const char *s, size_t len)
     v = weak_farmhash_na_len_32_with_seeds(s, v.hi * mul, x + w.lo);
     w = weak_farmhash_na_len_32_with_seeds(s + 32, z + w.hi, y + fetch64(s + 16));
     swap64(&z, &x);
-    return farmhash_len_16_mul(farmhash_len_16_mul(v.lo, w.lo, mul) + smix(y) * k0 + z,
+    return farmhash_len_16_mul(farmhash_len_16_mul(v.lo, w.lo, mul) + (smix(y) * k0) + z,
                                farmhash_len_16_mul(v.hi, w.hi, mul) + x,
                                mul);
 }
