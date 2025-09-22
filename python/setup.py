@@ -30,7 +30,7 @@ class RunTests(Command):
 
 setup(
     name="farmhash64",
-    version="1.9.52.0",
+    version="1.9.53.0",
     keywords=("farmhash64"),
     description="farmhash64 Bindings for Python",
     long_description=read("../README.md"),
@@ -48,7 +48,7 @@ setup(
             extra_compile_args=[
                 "-O3",
                 "-pedantic",
-                "-std=c17",
+                "-std=c2x",
                 "-Wall",
                 "-Wextra",
                 "-Wno-strict-prototypes",
