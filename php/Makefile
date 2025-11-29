@@ -51,7 +51,7 @@ clean:
 # Fix code style violations
 .PHONY: codefix
 codefix:
-	./vendor/bin/phpcbf --ignore="./vendor/" --standard=psr12 src test
+	./vendor/bin/phpcbf --ignore="\./vendor/" --standard=psr12 src test
 
 # Clean all artifacts and download all dependencies
 .PHONY: deps
@@ -77,7 +77,7 @@ ensuretarget:
 # Test source code for coding standard violations
 .PHONY: lint
 lint:
-	./vendor/bin/phpcs --ignore="./vendor/" --standard=phpcs.xml src test
+	./vendor/bin/phpcs --ignore="\./vendor/" --standard=phpcs.xml src test
 	./vendor/bin/phpmd src text unusedcode,design --exclude vendor
 	./vendor/bin/phpmd test text unusedcode,design
 	php -r 'exit((int)version_compare(PHP_MAJOR_VERSION, "7", ">"));' || ./vendor/phpstan.phar analyse

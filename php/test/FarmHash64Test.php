@@ -1,5 +1,7 @@
 <?php
 
+// @phpcs:disable Generic.Files.LineLength
+
 namespace Test;
 
 use PHPUnit\Framework\TestCase;
