@@ -52,7 +52,7 @@ build: version
 	cd farmhash64 \
 	&& cp ../../LICENSE . \
 	&& R -e 'renv::settings$$snapshot.type("implicit");renv::init();renv::snapshot();'
-	R -e 'setwd("./farmhash64");renv::restore();library(pryr);library(devtools);library(roxygen2);pkgbuild::build();'
+	R -e 'setwd("./farmhash64");renv::restore();library(devtools);library(roxygen2);pkgbuild::build();'
 
 .PHONY: test
 test:
