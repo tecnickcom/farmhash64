@@ -122,4 +122,4 @@ uninstall:
 # Set the version from VERSION file
 .PHONY: version
 version:
-	sed -i "s/PROJECT_NUMBER.*=.*$$/PROJECT_NUMBER = $(VERSION)/" doc/Doxyfile
+	sed --in-place=.bak "s/PROJECT_NUMBER.*=.*$$/PROJECT_NUMBER = $(VERSION)/" doc/Doxyfile

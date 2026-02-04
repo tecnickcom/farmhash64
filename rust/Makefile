@@ -66,4 +66,4 @@ test:
 # Set the version from VERSION file
 .PHONY: version
 version:
-	sed -i "s/version.*=.*$$/version = \"$(VERSION)\"/" Cargo.toml
+	sed --in-place=.bak "s/version.*=.*$$/version = \"$(VERSION)\"/" Cargo.toml

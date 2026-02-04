@@ -44,7 +44,7 @@ all: clean version format build test
 # Set the version from VERSION file
 .PHONY: version
 version:
-	sed -i "s/Version:.*$$/Version: $(VERSION).$(RELEASE)/" farmhash64/DESCRIPTION
+	sed --in-place=.bak "s/Version:.*$$/Version: $(VERSION).$(RELEASE)/" farmhash64/DESCRIPTION
 
 # Build the library
 .PHONY: build
