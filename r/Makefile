@@ -6,7 +6,7 @@
 
 # Install R in Ubuntu/Debian:
 # sudo apt install r-base libfontconfig1-dev libcurl4-openssl-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
-# sudo Rscript -e "install.packages(c('Rcpp', 'base', 'devtools', 'inline', 'pryr', 'renv', 'ragg', 'roxygen2', 'testthat', 'pkgdown', 'libgfortran-ng'), repos = 'http://cran.us.r-project.org')"
+# sudo Rscript -e "install.packages(c('Rcpp', 'base', 'devtools', 'inline', 'renv', 'ragg', 'roxygen2', 'testthat', 'pkgdown', 'libgfortran-ng'), repos = 'http://cran.us.r-project.org')"
 
 SHELL=/bin/bash
 .SHELLFLAGS=-o pipefail -c
