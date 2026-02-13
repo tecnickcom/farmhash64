@@ -1,5 +1,5 @@
 module github.com/tecnickcom/farmhash64
 
-go 1.25
+go 1.26
 
-toolchain go1.25.7
+toolchain go1.26.0
