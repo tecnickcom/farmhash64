@@ -103,7 +103,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           ini-values: display_errors=on, error_reporting=-1, zend.assertions=1
       - name: Cache module
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.composer/cache/
           key: composer-cache
