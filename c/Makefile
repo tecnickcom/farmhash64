@@ -14,6 +14,12 @@ PROJECT=farmhash64
 # Project version
 VERSION=$(shell cat ../VERSION)
 
+# sed argument for in-place substitutions
+SEDINPLACE=-i
+ifeq ($(shell uname -s),Darwin)
+	SEDINPLACE=-i ''
+endif
+
 # Project release number (packaging build number)
 # RELEASE=$(shell cat ../RELEASE)
 
@@ -122,4 +128,4 @@ uninstall:
 # Set the version from VERSION file
 .PHONY: version
 version:
-	sed --in-place=.bak "s/PROJECT_NUMBER.*=.*$$/PROJECT_NUMBER = $(VERSION)/" doc/Doxyfile
+	sed $(SEDINPLACE) "s/PROJECT_NUMBER.*=.*$$/PROJECT_NUMBER = $(VERSION)/" doc/Doxyfile

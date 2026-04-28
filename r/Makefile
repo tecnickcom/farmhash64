@@ -23,6 +23,12 @@ RELEASE=$(shell cat ../RELEASE)
 # Current directory
 CURRENTDIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
+# sed argument for in-place substitutions
+SEDINPLACE=-i
+ifeq ($(shell uname -s),Darwin)
+	SEDINPLACE=-i ''
+endif
+
 # --- MAKE TARGETS ---
 
 # Display general help about this command
@@ -44,7 +50,7 @@ all: clean version format build test
 # Set the version from VERSION file
 .PHONY: version
 version:
-	sed --in-place=.bak "s/Version:.*$$/Version: $(VERSION).$(RELEASE)/" farmhash64/DESCRIPTION
+	sed $(SEDINPLACE) "s/Version:.*$$/Version: $(VERSION).$(RELEASE)/" farmhash64/DESCRIPTION
 
 # Build the library
 .PHONY: build

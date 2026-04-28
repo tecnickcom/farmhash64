@@ -19,6 +19,12 @@ RELEASE=$(shell cat ../RELEASE)
 # Path fot the python binary
 PYTHON=$(shell which python3)
 
+# sed argument for in-place substitutions
+SEDINPLACE=-i
+ifeq ($(shell uname -s),Darwin)
+	SEDINPLACE=-i ''
+endif
+
 # --- MAKE TARGETS ---
 
 # Display general help about this command
@@ -70,7 +76,7 @@ test:
 # Set the version from VERSION file
 .PHONY: version
 version:
-	sed --in-place=.bak "s/version=.*,$$/version=\"$(VERSION).$(RELEASE)\",/" setup.py
+	sed $(SEDINPLACE) "s/version=.*,$$/version=\"$(VERSION).$(RELEASE)\",/" setup.py
 
 # Create a virtual environment
 .PHONY: venv

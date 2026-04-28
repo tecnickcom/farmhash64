@@ -17,6 +17,12 @@ VERSION=$(shell cat ../VERSION)
 # Project release number (packaging build number)
 # RELEASE=$(shell cat ../RELEASE)
 
+# sed argument for in-place substitutions
+SEDINPLACE=-i
+ifeq ($(shell uname -s),Darwin)
+	SEDINPLACE=-i ''
+endif
+
 # --- MAKE TARGETS ---
 
 # Display general help about this command
@@ -66,4 +72,4 @@ test:
 # Set the version from VERSION file
 .PHONY: version
 version:
-	sed --in-place=.bak "s/version.*=.*$$/version = \"$(VERSION)\"/" Cargo.toml
+	sed $(SEDINPLACE) "s/version.*=.*$$/version = \"$(VERSION)\"/" Cargo.toml

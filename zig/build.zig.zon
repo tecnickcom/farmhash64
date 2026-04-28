@@ -1,6 +1,6 @@
 .{
     .name = "farmhash64",
-    .version = "1.9.69",
+    .version = "1.9.70",
     .paths = .{""},
     .dependencies = .{},
 }
