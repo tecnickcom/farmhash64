@@ -25,18 +25,13 @@ endif
 
 # --- MAKE TARGETS ---
 
-# Display general help about this command
-.PHONY: 
+.PHONY: help
 help:
 	@echo ""
-	@echo "$(PROJECT) Zig Makefile."
+	@echo "$(PROJECT) Makefile."
 	@echo "The following commands are available:"
 	@echo ""
-	@echo "    make build   : Build the library"
-	@echo "    make clean   : Remove any build artifact"
-	@echo "    make format  : Format the source code"
-	@echo "    make test    : Run the unit tests"
-	@echo "    make version : Set version from VERSION file"
+	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
 .PHONY: all

@@ -25,26 +25,19 @@ endif
 
 # --- MAKE TARGETS ---
 
-# Display general help about this command
-.PHONY: 
+.PHONY: help
 help:
 	@echo ""
 	@echo "$(PROJECT) Makefile."
 	@echo "The following commands are available:"
 	@echo ""
-	@echo "    make build   : Build the library"
-	@echo "    make clean   : Remove any build artifact"
-	@echo "    make doc     : Generate source code documentation"
-	@echo "    make format  : Format the source code"
-	@echo "    make test    : Run the unit tests"
-	@echo "    make tidy    : Check the code using clang-tidy"
-	@echo "    make version : Set version from VERSION file"
+	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
 .PHONY: all
 all: clean version format test tidy build doc
 
-# Build the library
+## Build the library
 .PHONY: build
 build:
 	@mkdir -p target/build
@@ -64,24 +57,24 @@ build:
 	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./ && \
 	env CTEST_OUTPUT_ON_FAILURE=1 make test | tee build.log ; test $${PIPESTATUS[0]} -eq 0
 
-# Remove any build artifact
+## Remove any build artifact
 .PHONY: clean
 clean:
 	rm -rf target
 
-# Generate source code documentation
+## Generate source code documentation
 .PHONY: doc
 doc:
 	cd target/build && \
 	make doc | tee doc.log ; test $${PIPESTATUS[0]} -eq 0
 
-# Format the source code
+## Format the source code
 .PHONY: format
 format:
 	astyle --style=allman --recursive --suffix=none 'src/*.h'
 	astyle --style=allman --recursive --suffix=none 'test/*.c'
 
-# Build and run the unit tests
+## Build and run the unit tests
 .PHONY: test
 test: testcpp
 	@mkdir -p target/test/test
@@ -109,23 +102,23 @@ ifeq ($(VH_BUILD_DOXYGEN),ON)
 	make doc | tee doc.log ; test $${PIPESTATUS[0]} -eq 0
 endif
 
-# Test C code compatibility with C++
+## Test C code compatibility with C++
 .PHONY: testcpp
 testcpp:
 	find ./src -type f -name '*.h' -exec gcc -c -pedantic -Werror -Wall -Wextra -Wcast-align -Wundef -Wformat -Wformat-security -std=c++23 -x c++ -o /dev/null {} \;
 
-# use clang-tidy
+## Tidy the code via clang-tidy
 .PHONY: tidy
 tidy:
 	clang-tidy -checks='*,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-altera-unroll-loops,-altera-id-dependent-backward-branch,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-readability-identifier-length,-llvmlibc-restrict-system-libc-headers,-llvm-header-guard,-llvm-include-order,-android-cloexec-open,-hicpp-no-assembler,-hicpp-signed-bitwise,-clang-analyzer-alpha.*' -header-filter=.* -p . src/*.h
 
-# Remove all installed files (excluding configuration files)
+## Remove all installed files (excluding configuration files)
 .PHONY: uninstall
 uninstall:
 	rm -rf $(PATHINSTLIB)
 	rm -rf $(PATHINSTDOC)
 
-# Set the version from VERSION file
+## Set the version from VERSION file
 .PHONY: version
 version:
 	sed $(SEDINPLACE) "s/PROJECT_NUMBER.*=.*$$/PROJECT_NUMBER = $(VERSION)/" doc/Doxyfile

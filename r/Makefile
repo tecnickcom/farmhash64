@@ -31,28 +31,23 @@ endif
 
 # --- MAKE TARGETS ---
 
-# Display general help about this command
 .PHONY: help
 help:
 	@echo ""
-	@echo "farmhash64 R Makefile."
+	@echo "$(PROJECT) Makefile."
 	@echo "The following commands are available:"
 	@echo ""
-	@echo "    make build   : Build the library"
-	@echo "    make test    : Test the library"
-	@echo "    make format  : Format the source code"
-	@echo "    make clean   : Remove any build artifact"
-	@echo "    make devdoc  : Generate documentation"
+	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
 all: clean version format build test
 
-# Set the version from VERSION file
+## Set the version from VERSION file
 .PHONY: version
 version:
 	sed $(SEDINPLACE) "s/Version:.*$$/Version: $(VERSION).$(RELEASE)/" farmhash64/DESCRIPTION
 
-# Build the library
+## Build the library
 .PHONY: build
 build: version
 	cd farmhash64 \
@@ -60,11 +55,12 @@ build: version
 	&& R -e 'renv::settings$$snapshot.type("implicit");renv::init();renv::snapshot();'
 	R -e 'setwd("./farmhash64");renv::restore();library(devtools);library(roxygen2);pkgbuild::build();'
 
+## Unit tests
 .PHONY: test
 test:
 	R -e 'setwd("./farmhash64");renv::restore();library(devtools);devtools::document();library(stringi);library(testthat);testthat::test_dir("tests")'
 
-# Format the source code
+## Format the source code
 .PHONY: format
 format:
 	astyle --style=allman --recursive --suffix=none 'farmhash64/src/*.c'
@@ -72,12 +68,13 @@ format:
 	#astyle --style=google --recursive --suffix=none 'farmhash64/tests/*.R'
 	#astyle --style=google --recursive --suffix=none 'example/*.R'
 
-# Remove any build artifact
+## Remove any build artifact
 .PHONY: clean
 clean:
 	rm -f farmhash64.Rcheck farmhash64/src/farmhash64.o farmhash64/src/farmhash64.so farmhash64/renv.lock
 	rm -rf renv farmhash64/renv farmhash64/.Rbuildignore farmhash64/.Rprofile .Rprofile
 
+## Generate documentation
 .PHONY: devdoc
 devdoc:
 	R -e 'setwd("./farmhash64");renv::restore();library(devtools);devtools::document();'

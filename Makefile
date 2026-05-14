@@ -21,26 +21,13 @@ CURRENTDIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
 # --- MAKE TARGETS ---
 
-# Display general help about this command
 .PHONY: help
 help:
 	@echo ""
 	@echo "$(PROJECT) Makefile."
 	@echo "The following commands are available:"
 	@echo ""
-	@echo "  make c          : Build and test the C version"
-	@echo "  make cgo        : Build and test the GO C-wrapper version"
-	@echo "  make clean      : Remove any build artifact"
-	@echo "  make go         : Build and test the GO version"
-	@echo "  make java       : Build and test the Java version"
-	@echo "  make javascript : Build and test the Javascript version"
-	@echo "  make php        : Build and test the PHP version"
-	@echo "  make python     : Build and test the Python version"
-	@echo "  make r          : Build and test the R version"
-	@echo "  make rust       : Build and test the Rust version"
-	@echo "  make zig        : Build and test the Zig version"
-	@echo "  make tag        : Tag the Git repository"
-	@echo "  make versionup  : Increase the patch number in the VERSION file"
+	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
 all: clean c cgo go java javascript php python r rust zig

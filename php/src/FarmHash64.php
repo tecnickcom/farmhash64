@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** FarmHash64 PHP Library
  *
  * farmhash64.php
@@ -44,25 +46,25 @@ class FarmHash64
 {
     private const MASK8 = 0xff;
     private const MASK16 = 0xffff;
-    private const MASK32 = 0xffffffff;
+    private const MASK32 = 0xffff_ffff;
 
     private const K0 = [
-        'hi' => 0xc3a5c85c,
-        'lo' => 0x97cb3127,
+        'hi' => 0xc3a5_c85c,
+        'lo' => 0x97cb_3127,
     ];
 
     private const K1 = [
-        'hi' => 0xb492b66f,
-        'lo' => 0xbe98f273,
+        'hi' => 0xb492_b66f,
+        'lo' => 0xbe98_f273,
     ];
 
     private const K2 = [
-        'hi' => 0x9ae16a3b,
-        'lo' => 0x2f90404f,
+        'hi' => 0x9ae1_6a3b,
+        'lo' => 0x2f90_404f,
     ];
 
-    private const C1 = 0xcc9e2d51;
-    private const C2 = 0x1b873593;
+    private const C1 = 0xcc9e_2d51;
+    private const C2 = 0x1b87_3593;
 
     /**
      * @param Uint64S32 $a
@@ -100,9 +102,10 @@ class FarmHash64
     {
         $x = $this->u32Split16($a);
         $y = $this->u32Split16($b);
-        return ($x['lo'] * $y['lo']
-        + (((($x['hi'] * $y['lo']) + ($x['lo'] * $y['hi'])) << 16) & self::MASK32))
-        & self::MASK32;
+        return (
+            (($x['lo'] * $y['lo']) + (((($x['hi'] * $y['lo']) + ($x['lo'] * $y['hi'])) << 16) & self::MASK32))
+            & self::MASK32
+        );
     }
 
     /**
@@ -140,11 +143,10 @@ class FarmHash64
     {
         return $this->u64Add(
             [
-                'hi' => ($this->u32Mul($a['hi'], $b['lo'])
-                + $this->u32Mul($a['lo'], $b['hi'])) & self::MASK32,
+                'hi' => ($this->u32Mul($a['hi'], $b['lo']) + $this->u32Mul($a['lo'], $b['hi'])) & self::MASK32,
                 'lo' => 0,
             ],
-            $this->u32Mul64($a['lo'], $b['lo'])
+            $this->u32Mul64($a['lo'], $b['lo']),
         );
     }
 
@@ -266,10 +268,10 @@ class FarmHash64
     private function fetchU32(string &$s, int $i): array
     {
         $lo =
-            (ord($s[$i + 0]) & self::MASK32) |
-            ((ord($s[$i + 1]) & self::MASK32) << 8) |
-            ((ord($s[$i + 2]) & self::MASK32) << 16) |
-            ((ord($s[$i + 3]) & self::MASK32) << 24);
+            (ord($s[$i]) & self::MASK32)
+            | ((ord($s[$i + 1]) & self::MASK32) << 8)
+            | ((ord($s[$i + 2]) & self::MASK32) << 16)
+            | ((ord($s[$i + 3]) & self::MASK32) << 24);
         return [
             'hi' => 0,
             'lo' => $lo & self::MASK32,
@@ -283,14 +285,16 @@ class FarmHash64
      */
     private function fetchU64(string &$s, int $i): array
     {
-        $lo = (ord($s[$i + 0]) & self::MASK32) |
-            ((ord($s[$i + 1]) & self::MASK32) << 8) |
-            ((ord($s[$i + 2]) & self::MASK32) << 16) |
-            ((ord($s[$i + 3]) & self::MASK32) << 24);
-        $hi = ((ord($s[$i + 4]) & self::MASK32)) |
-            ((ord($s[$i + 5]) & self::MASK32) << 8) |
-            ((ord($s[$i + 6]) & self::MASK32) << 16) |
-            ((ord($s[$i + 7]) & self::MASK32) << 24);
+        $lo =
+            (ord($s[$i]) & self::MASK32)
+            | ((ord($s[$i + 1]) & self::MASK32) << 8)
+            | ((ord($s[$i + 2]) & self::MASK32) << 16)
+            | ((ord($s[$i + 3]) & self::MASK32) << 24);
+        $hi =
+            (ord($s[$i + 4]) & self::MASK32)
+            | ((ord($s[$i + 5]) & self::MASK32) << 8)
+            | ((ord($s[$i + 6]) & self::MASK32) << 16)
+            | ((ord($s[$i + 7]) & self::MASK32) << 24);
         return [
             'hi' => $hi & self::MASK32,
             'lo' => $lo & self::MASK32,
@@ -316,9 +320,9 @@ class FarmHash64
         $a = $this->u32Mul($a, self::C1);
         $a = $this->u32RotR($a, 17);
         $a = $this->u32Mul($a, self::C2);
-        $h = $h ^ $a;
+        $h ^= $a;
         $h = $this->u32RotR($h, 19);
-        return ($this->u32Mul($h, 5) + 0xe6546b64) & self::MASK32;
+        return ($this->u32Mul($h, 5) + 0xe654_6b64) & self::MASK32;
     }
 
     /**
@@ -342,8 +346,7 @@ class FarmHash64
         $a = $this->u64XOR($a, $this->u64ShiftR($a, 47));
         $b = $this->u64Mul($this->u64XOR($v, $a), $mul);
         $b = $this->u64XOR($b, $this->u64ShiftR($b, 47));
-        $b = $this->u64Mul($b, $mul);
-        return $b;
+        return $this->u64Mul($b, $mul);
     }
 
     /**
@@ -359,15 +362,12 @@ class FarmHash64
         ];
 
         if ($slen >= 8) {
-            $mul = $this->u64Add(
-                self::K2,
-                $this->u64Mul($slen64, [
-                    'hi' => 0,
-                    'lo' => 2,
-                ])
-            );
+            $mul = $this->u64Add(self::K2, $this->u64Mul($slen64, [
+                'hi' => 0,
+                'lo' => 2,
+            ]));
             $a = $this->u64Add($this->fetchU64($s, 0), self::K2);
-            $b = $this->fetchU64($s, ($slen - 8));
+            $b = $this->fetchU64($s, $slen - 8);
             $br = $this->u64RotR($b, 37);
             $dr = $this->u64RotR($a, 25);
             $c = $this->u64Add($this->u64Mul($br, $mul), $a);
@@ -377,13 +377,10 @@ class FarmHash64
         }
 
         if ($slen >= 4) {
-            $mul = $this->u64Add(
-                self::K2,
-                $this->u64Mul($slen64, [
-                    'hi' => 0,
-                    'lo' => 2,
-                ])
-            );
+            $mul = $this->u64Add(self::K2, $this->u64Mul($slen64, [
+                'hi' => 0,
+                'lo' => 2,
+            ]));
             $a = $this->fetchU32($s, 0);
             $u = $this->u64Add($slen64, $this->u64ShiftL($a, 3));
             $v = $this->fetchU32($s, $slen - 4);
@@ -392,25 +389,23 @@ class FarmHash64
 
         if ($slen > 0) {
             $a = ord($s[0]) & self::MASK32;
-            $b = ord($s[($slen >> 1)]) & self::MASK32;
-            $c = ord($s[($slen - 1)]) & self::MASK32;
+            $b = ord($s[$slen >> 1]) & self::MASK32;
+            $c = ord($s[$slen - 1]) & self::MASK32;
             $y = ($a + ($b << 8)) & self::MASK32;
             $z = ($slen + ($c << 2)) & self::MASK32;
 
             return $this->u64Mul(
-                $this->shiftMix(
-                    $this->u64XOR(
-                        $this->u64Mul([
-                            'hi' => 0,
-                            'lo' => $y,
-                        ], self::K2),
-                        $this->u64Mul([
-                            'hi' => 0,
-                            'lo' => $z,
-                        ], self::K0)
-                    )
-                ),
-                self::K2
+                $this->shiftMix($this->u64XOR(
+                    $this->u64Mul([
+                        'hi' => 0,
+                        'lo' => $y,
+                    ], self::K2),
+                    $this->u64Mul([
+                        'hi' => 0,
+                        'lo' => $z,
+                    ], self::K0),
+                )),
+                self::K2,
             );
         }
 
@@ -428,13 +423,10 @@ class FarmHash64
             'hi' => 0,
             'lo' => $slen,
         ];
-        $mul = $this->u64Add(
-            self::K2,
-            $this->u64Mul($slen64, [
-                'hi' => 0,
-                'lo' => 2,
-            ])
-        );
+        $mul = $this->u64Add(self::K2, $this->u64Mul($slen64, [
+            'hi' => 0,
+            'lo' => 2,
+        ]));
         $a = $this->u64Mul($this->fetchU64($s, 0), self::K1);
         $b = $this->fetchU64($s, 8);
         $c = $this->u64Mul($this->fetchU64($s, $slen - 8), $mul);
@@ -443,7 +435,7 @@ class FarmHash64
         return $this->hashLen16Mul(
             $this->u64Add($this->u64Add($this->u64RotR($this->u64Add($a, $b), 43), $this->u64RotR($c, 30)), $d),
             $this->u64Add($this->u64Add($a, $this->u64RotR($this->u64Add($b, self::K2), 18)), $c),
-            $mul
+            $mul,
         );
     }
 
@@ -458,13 +450,10 @@ class FarmHash64
             'hi' => 0,
             'lo' => $slen,
         ];
-        $mul = $this->u64Add(
-            self::K2,
-            $this->u64Mul($slen64, [
-                'hi' => 0,
-                'lo' => 2,
-            ])
-        );
+        $mul = $this->u64Add(self::K2, $this->u64Mul($slen64, [
+            'hi' => 0,
+            'lo' => 2,
+        ]));
         $a = $this->u64Mul($this->fetchU64($s, 0), self::K2);
         $b = $this->fetchU64($s, 8);
         $c = $this->u64Mul($this->fetchU64($s, $slen - 8), $mul);
@@ -473,7 +462,7 @@ class FarmHash64
         $z = $this->hashLen16Mul(
             $y,
             $this->u64Add($this->u64Add($a, $this->u64RotR($this->u64Add($b, self::K2), 18)), $c),
-            $mul
+            $mul,
         );
         $e = $this->u64Mul($this->fetchU64($s, 16), $mul);
         $f = $this->fetchU64($s, 24);
@@ -482,7 +471,7 @@ class FarmHash64
         return $this->hashLen16Mul(
             $this->u64Add($this->u64Add($this->u64RotR($this->u64Add($e, $f), 43), $this->u64RotR($g, 30)), $h),
             $this->u64Add($this->u64Add($e, $this->u64RotR($this->u64Add($f, $a), 18)), $g),
-            $mul
+            $mul,
         );
     }
 
@@ -495,14 +484,8 @@ class FarmHash64
      * @param Uint64S32 $b
      * @return Uint64S16
      */
-    private function weakHashLen32WithSeedsWords(
-        array $w,
-        array $x,
-        array $y,
-        array $z,
-        array $a,
-        array $b,
-    ): array {
+    private function weakHashLen32WithSeedsWords(array $w, array $x, array $y, array $z, array $a, array $b): array
+    {
         $a = $this->u64Add($a, $w);
         $b = $this->u64RotR($this->u64Add($this->u64Add($b, $a), $z), 21);
         $c = $a;
@@ -525,12 +508,12 @@ class FarmHash64
     private function weakHashLen32WithSeeds(string $s, int $idx, array $a, array $b): array
     {
         return $this->weakHashLen32WithSeedsWords(
-            $this->fetchU64($s, $idx + 0),
+            $this->fetchU64($s, $idx),
             $this->fetchU64($s, $idx + 8),
             $this->fetchU64($s, $idx + 16),
             $this->fetchU64($s, $idx + 24),
             $a,
-            $b
+            $b,
         );
     }
 
@@ -601,26 +584,14 @@ class FarmHash64
         while ($slen > 64) {
             $x = $this->u64Mul(
                 $this->u64RotR(
-                    $this->u64Add(
-                        $this->u64Add(
-                            $this->u64Add($x, $y),
-                            $v['lo']
-                        ),
-                        $this->fetchU64($s, $idx + 8)
-                    ),
-                    37
+                    $this->u64Add($this->u64Add($this->u64Add($x, $y), $v['lo']), $this->fetchU64($s, $idx + 8)),
+                    37,
                 ),
-                self::K1
+                self::K1,
             );
             $y = $this->u64Mul(
-                $this->u64RotR(
-                    $this->u64Add(
-                        $this->u64Add($y, $v['hi']),
-                        $this->fetchU64($s, $idx + 48)
-                    ),
-                    42
-                ),
-                self::K1
+                $this->u64RotR($this->u64Add($this->u64Add($y, $v['hi']), $this->fetchU64($s, $idx + 48)), 42),
+                self::K1,
             );
             $x = $this->u64XOR($x, $w['hi']);
             $y = $this->u64Add($y, $this->u64Add($v['lo'], $this->fetchU64($s, $idx + 40)));
@@ -629,13 +600,13 @@ class FarmHash64
                 $s,
                 $idx,
                 $this->u64Mul($v['hi'], self::K1),
-                $this->u64Add($x, $w['lo'])
+                $this->u64Add($x, $w['lo']),
             );
             $w = $this->weakHashLen32WithSeeds(
                 $s,
                 $idx + 32,
                 $this->u64Add($z, $w['hi']),
-                $this->u64Add($y, $this->fetchU64($s, $idx + 16))
+                $this->u64Add($y, $this->fetchU64($s, $idx + 16)),
             );
             $tmp = $x;
             $x = $z;
@@ -651,57 +622,39 @@ class FarmHash64
         $idx = $last64Idx;
         $w['lo'] = $this->u64Add($w['lo'], [
             'hi' => 0,
-            'lo' => (($slen - 1) & 63) & self::MASK32,
+            'lo' => ($slen - 1) & 63 & self::MASK32,
         ]);
         $v['lo'] = $this->u64Add($v['lo'], $w['lo']);
         $w['lo'] = $this->u64Add($w['lo'], $v['lo']);
         $x = $this->u64Mul(
             $this->u64RotR(
-                $this->u64Add(
-                    $this->u64Add(
-                        $this->u64Add($x, $y),
-                        $v['lo']
-                    ),
-                    $this->fetchU64($s, $idx + 8)
-                ),
-                37
+                $this->u64Add($this->u64Add($this->u64Add($x, $y), $v['lo']), $this->fetchU64($s, $idx + 8)),
+                37,
             ),
-            $mul
+            $mul,
         );
         $y = $this->u64Mul(
-            $this->u64RotR(
-                $this->u64Add(
-                    $this->u64Add($y, $v['hi']),
-                    $this->fetchU64($s, $idx + 48)
-                ),
-                42
-            ),
-            $mul
+            $this->u64RotR($this->u64Add($this->u64Add($y, $v['hi']), $this->fetchU64($s, $idx + 48)), 42),
+            $mul,
         );
-        $x = $this->u64XOR(
-            $x,
-            $this->u64Mul($w['hi'], [
+        $x = $this->u64XOR($x, $this->u64Mul($w['hi'], [
+            'hi' => 0,
+            'lo' => 9,
+        ]));
+        $y = $this->u64Add($y, $this->u64Add(
+            $this->u64Mul($v['lo'], [
                 'hi' => 0,
                 'lo' => 9,
-            ])
-        );
-        $y = $this->u64Add(
-            $y,
-            $this->u64Add(
-                $this->u64Mul($v['lo'], [
-                    'hi' => 0,
-                    'lo' => 9,
-                ]),
-                $this->fetchU64($s, $idx + 40)
-            )
-        );
+            ]),
+            $this->fetchU64($s, $idx + 40),
+        ));
         $z = $this->u64Mul($this->u64RotR($this->u64Add($z, $w['lo']), 33), $mul);
         $v = $this->weakHashLen32WithSeeds($s, $idx, $this->u64Mul($v['hi'], $mul), $this->u64Add($x, $w['lo']));
         $w = $this->weakHashLen32WithSeeds(
             $s,
             $idx + 32,
             $this->u64Add($z, $w['hi']),
-            $this->u64Add($y, $this->fetchU64($s, $idx + 16))
+            $this->u64Add($y, $this->fetchU64($s, $idx + 16)),
         );
         $tmp = $x;
         $x = $z;
@@ -711,12 +664,12 @@ class FarmHash64
             $this->u64Add(
                 $this->u64Add(
                     $this->hashLen16Mul($v['lo'], $w['lo'], $mul),
-                    $this->u64Mul($this->shiftMix($y), self::K0)
+                    $this->u64Mul($this->shiftMix($y), self::K0),
                 ),
-                $z
+                $z,
             ),
             $this->u64Add($this->hashLen16Mul($v['hi'], $w['hi'], $mul), $x),
-            $mul
+            $mul,
         );
     }
 

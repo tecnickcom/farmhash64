@@ -1,0 +1,49 @@
+#:schema https://mago.carthage.software/1.27.1/schema.json
+# Welcome to Mago!
+# For full documentation, see https://mago.carthage.software/tools/overview
+version = "1"
+php-version = "8.0.0"
+
+[source]
+workspace = "."
+paths = ["src", "test"]
+includes = ["vendor"]
+excludes = []
+
+[source.glob]
+literal-separator = true
+
+[formatter]
+print-width = 120
+tab-width = 4
+use-tabs = false
+
+[linter]
+integrations = ["phpunit"]
+
+[linter.rules]
+ambiguous-function-call = { enabled = false }
+literal-named-argument = { enabled = false }
+cyclomatic-complexity = { threshold = 30 }
+too-many-methods = { threshold = 30 }
+excessive-parameter-list = { threshold = 10 }
+halstead = { volume-threshold = 3000, difficulty-threshold = 30, effort-threshold = 60000 }
+
+[analyzer]
+plugins = []
+find-unused-definitions = true
+find-unused-expressions = false
+analyze-dead-code = false
+memoize-properties = true
+allow-possibly-undefined-array-keys = true
+check-throws = false
+unchecked-exceptions = ["Error", "LogicException"]
+unchecked-exception-classes = []
+check-missing-override = false
+find-unused-parameters = false
+strict-list-index-checks = false
+strict-array-index-existence = false
+allow-array-truthy-operand = false
+no-boolean-literal-comparison = false
+check-missing-type-hints = false
+register-super-globals = true

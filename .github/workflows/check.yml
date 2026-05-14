@@ -110,6 +110,8 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: cd php && make clean build
 
   python:

@@ -29,60 +29,55 @@ PHPDOC=$(shell which phpDocumentor)
 .PHONY: help
 help:
 	@echo ""
-	@echo "$(PROJECT) PHP Makefile."
-	@echo "Requires: node-js and uglify-js."
+	@echo "$(PROJECT) Makefile."
 	@echo "The following commands are available:"
 	@echo ""
-	@echo "    make build   : Build and test"
-	@echo "    make clean   : Remove any build artifact"
+	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
 all: clean build
 
-# Build a minified version of the library
+## Build a minified version of the library
 .PHONY: build
 build: deps lint test
 
-# Remove any build artifact
+## Remove any build artifact
 .PHONY: clean
 clean:
 	rm -rf ./vendor $(TARGETDIR)
 
-# Fix code style violations
-.PHONY: codefix
-codefix:
-	./vendor/bin/phpcbf --ignore="\./vendor/" --standard=psr12 src test
-
-# Clean all artifacts and download all dependencies
+## Clean all artifacts and download all dependencies
 .PHONY: deps
 deps: ensuretarget
 	rm -rf ./vendor/*
 	($(COMPOSER) install -vvv --no-interaction)
-	curl --silent --show-error --fail --location --output ./vendor/phpstan.phar https://github.com/phpstan/phpstan/releases/download/2.1.2/phpstan.phar \
-	&& chmod +x ./vendor/phpstan.phar
+	curl --proto '=https' --tlsv1.2 --silent --show-error --fail --location https://carthage.software/mago.sh | bash -s -- --install-dir=./vendor/bin
 
-# Generate source code documentation
+## Generate source code documentation
 .PHONY: doc
 doc: ensuretarget
 	rm -rf $(TARGETDIR)/doc
 	$(PHPDOC) -d ./src -t $(TARGETDIR)/doc/
 
-# Create missing target directories for test and build artifacts
+## Create missing target directories for test and build artifacts
 .PHONY: ensuretarget
 ensuretarget:
 	mkdir -p $(TARGETDIR)/test
 	mkdir -p $(TARGETDIR)/report
 	mkdir -p $(TARGETDIR)/doc
 
-# Test source code for coding standard violations
+## Format the source code
+.PHONY: format
+format:
+	./vendor/bin/mago fmt src test
+
+## Analyze and Lint the source code
 .PHONY: lint
 lint:
-	./vendor/bin/phpcs --ignore="\./vendor/" --standard=phpcs.xml src test
-	./vendor/bin/phpmd src text unusedcode,design --exclude vendor
-	./vendor/bin/phpmd test text unusedcode,design
-	php -r 'exit((int)version_compare(PHP_MAJOR_VERSION, "7", ">"));' || ./vendor/phpstan.phar analyse
+	./vendor/bin/mago analyze src test
+	./vendor/bin/mago lint src test
 
-# Run unit tests
+## Run unit tests
 .PHONY: test
 test:
 	cp phpunit.xml.dist phpunit.xml

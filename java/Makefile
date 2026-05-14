@@ -10,37 +10,33 @@ SHELL=/bin/bash
 # Project name
 PROJECT=farmhash64
 
-# Display general help about this command
 .PHONY: help
 help:
 	@echo ""
-	@echo "$(PROJECT) Java Makefile."
+	@echo "$(PROJECT) Makefile."
 	@echo "The following commands are available:"
 	@echo ""
-	@echo "    make build        : Build the library"
-	@echo "    make clean        : Remove any build artifact"
-	@echo "    make test         : Run the unit tests against source code"
-	@echo "    make updategradle : Update gradle wrapper to the latest version"
+	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
 all: clean build test
 
-# Build the library
+## Build the library
 .PHONY: build
 build:
 	./gradlew jar
 
-# Remove any build artifact
+## Remove any build artifact
 .PHONY: clean
 clean:
 	./gradlew clean
 
-# Run the unit tests
+## Run the unit tests
 .PHONY: test
 test:
 	./gradlew test
 
-# Update gradle wrapper to the latest version
+## Update gradle wrapper to the latest version
 .PHONY: updategradle
 updategradle:
 	./gradlew wrapper --gradle-version latest
