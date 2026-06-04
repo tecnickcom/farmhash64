@@ -173,9 +173,9 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v6
       - name: setup zig build environment
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
-          version: '0.11.0'
+          version: '0.13.0'
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
