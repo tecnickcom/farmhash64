@@ -53,12 +53,12 @@ build: version
 	cd farmhash64 \
 	&& cp ../../LICENSE . \
 	&& R -e 'renv::settings$$snapshot.type("implicit");renv::init();renv::snapshot();'
-	R -e 'setwd("./farmhash64");renv::restore();library(devtools);library(roxygen2);pkgbuild::build();'
+	R -e 'setwd("./farmhash64");renv::load();renv::restore(prompt = FALSE);pkgbuild::build();'
 
 ## Unit tests
 .PHONY: test
 test:
-	R -e 'setwd("./farmhash64");renv::restore();library(devtools);devtools::document();library(stringi);library(testthat);testthat::test_dir("tests")'
+	R -e 'setwd("./farmhash64");renv::load();renv::restore(prompt = FALSE);library(testthat);testthat::test_dir("tests")'
 
 ## Format the source code
 .PHONY: format
@@ -77,4 +77,4 @@ clean:
 ## Generate documentation
 .PHONY: devdoc
 devdoc:
-	R -e 'setwd("./farmhash64");renv::restore();library(devtools);devtools::document();'
+	R -e 'setwd("./farmhash64");renv::load();renv::restore(prompt = FALSE);roxygen2::roxygenise();'
