@@ -17,7 +17,7 @@
 FarmHash64Hex <- function(strv) {
     n <- length(strv)
     ret <- character(n)
-    return(.Call("R_FarmHash64Hex", as.character(strv), ret))
+    .Call("R_FarmHash64Hex", as.character(strv), ret)
 }
 
 #' Computes the 32-bit FarmHash hash value of each string in the input vector
@@ -30,5 +30,5 @@ FarmHash64Hex <- function(strv) {
 FarmHash32Hex <- function(strv) {
     n <- length(strv)
     ret <- character(n)
-    return(.Call("R_FarmHash32Hex", as.character(strv), ret))
+    .Call("R_FarmHash32Hex", as.character(strv), ret)
 }
