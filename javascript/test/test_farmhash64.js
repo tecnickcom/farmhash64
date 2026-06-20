@@ -7,8 +7,10 @@
  * @link       https://github.com/tecnickcom/farmhash64
  */
 
+"use strict";
+
 const {
-    // farmhash32,
+    farmhash32,
     farmhash64,
     strFarmhash32,
     strFarmhash64,
@@ -17,6 +19,10 @@ const {
     hex32,
     hex64,
     _testData,
+    _u32RotR,
+    _u64RotR,
+    _u64ShiftL,
+    _u64ShiftR,
 } = require(process.argv[2]);
 
 const test_data = [
@@ -638,7 +644,7 @@ function test_strFarmhash32Hex() {
     var i = 0;
     for (i = 0; i < test_data.length; i++) {
         h = strFarmhash32Hex(test_data[i][3]);
-        exp = hex32(test_data[i][0]);
+        const exp = hex32(test_data[i][0]);
         if (h != exp) {
             console.error(
                 "strFarmhash32: (" +
@@ -657,9 +663,9 @@ function test_strFarmhash32Hex() {
 function testDataItemFarmHash64(data, offset, hlen, index) {
     const begin = offset >>> 0;
     const end = (begin + hlen) >>> 0;
-    s = data.slice(begin, end);
+    const s = data.slice(begin, end);
 
-    h = farmhash64(s);
+    const h = farmhash64(s);
     if (h.hi != exphash[index] || h.lo != exphash[index + 1]) {
         console.error(
             "farmhash64: expected " +
@@ -703,6 +709,108 @@ function test_farmhash64() {
     return errors;
 }
 
+function test_farmhash32() {
+    var errors = 0;
+    var i = 0;
+    for (i = 0; i < test_data.length; i++) {
+        const s = new TextEncoder().encode(test_data[i][3]);
+        const h = farmhash32(s);
+        if (h != test_data[i][0]) {
+            console.error(
+                "farmhash32: (" +
+                i +
+                ") expected " +
+                test_data[i][0] +
+                " but got " +
+                h
+            );
+            ++errors;
+        }
+    }
+    return errors;
+}
+
+function eqU64(a, b) {
+    return a.hi === b.hi && a.lo === b.lo;
+}
+
+function test_internals() {
+    var errors = 0;
+    const v = {
+        hi: 0x01234567,
+        lo: 0x89abcdef,
+    };
+
+    // u32RotR: shifts of 0 or >= 32 return the value unchanged.
+    if (_u32RotR(0x89abcdef, 0) !== (0x89abcdef >>> 0)) {
+        console.error("u32RotR(x, 0) should be identity");
+        ++errors;
+    }
+    if (_u32RotR(0x89abcdef, 32) !== (0x89abcdef >>> 0)) {
+        console.error("u32RotR(x, 32) should be identity");
+        ++errors;
+    }
+
+    // u64RotR: 0 and 64 are identity, 32 swaps the words.
+    if (!eqU64(_u64RotR(v, 0), v)) {
+        console.error("u64RotR(v, 0) should be identity");
+        ++errors;
+    }
+    if (!eqU64(_u64RotR(v, 64), v)) {
+        console.error("u64RotR(v, 64) should be identity");
+        ++errors;
+    }
+    if (!eqU64(_u64RotR(v, 32), {
+            hi: v.lo,
+            lo: v.hi,
+        })) {
+        console.error("u64RotR(v, 32) should swap hi and lo");
+        ++errors;
+    }
+
+    // u64ShiftL: 0 and 64 are identity, 32..63 clears the low word.
+    if (!eqU64(_u64ShiftL(v, 0), v)) {
+        console.error("u64ShiftL(v, 0) should be identity");
+        ++errors;
+    }
+    if (!eqU64(_u64ShiftL(v, 64), v)) {
+        console.error("u64ShiftL(v, 64) should be identity");
+        ++errors;
+    }
+    if (!eqU64(_u64ShiftL({
+            hi: 0,
+            lo: 1,
+        }, 40), {
+            hi: 0x100,
+            lo: 0,
+        })) {
+        console.error("u64ShiftL({0,1}, 40) should be {0x100, 0}");
+        ++errors;
+    }
+
+    // u64ShiftR: 0 and 64 are identity, 1..31 shifts within 64 bits.
+    if (!eqU64(_u64ShiftR(v, 0), v)) {
+        console.error("u64ShiftR(v, 0) should be identity");
+        ++errors;
+    }
+    if (!eqU64(_u64ShiftR(v, 64), v)) {
+        console.error("u64ShiftR(v, 64) should be identity");
+        ++errors;
+    }
+    if (!eqU64(_u64ShiftR({
+            hi: 0,
+            lo: 0xf0,
+        }, 4), {
+            hi: 0,
+            lo: 0xf,
+        })) {
+        console.error("u64ShiftR({0,0xf0}, 4) should be {0, 0xf}");
+        ++errors;
+    }
+
+    return errors;
+}
+
 var errors = 0;
 
 errors += test_hex64();
@@ -710,6 +818,8 @@ errors += test_strFarmhash64();
 errors += test_strFarmhash64Hex();
 errors += test_strFarmhash32();
 errors += test_strFarmhash32Hex();
+errors += test_farmhash32();
+errors += test_internals();
 errors += test_farmhash64();
 
 if (errors > 0) {

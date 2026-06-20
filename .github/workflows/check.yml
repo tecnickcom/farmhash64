@@ -85,12 +85,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: install dependencies
-        run: npm install --global uglify-js js-beautify
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd javascript && make clean build
+        run: cd javascript && make all
 
   php:
     runs-on: ubuntu-latest

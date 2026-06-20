@@ -25,6 +25,8 @@
  * @link       https://github.com/tecnickcom/farmhash64
  */
 
+"use strict";
+
 const k0 = {
     hi: 0xc3a5c85c,
     lo: 0x97cb3127,
@@ -219,9 +221,9 @@ function mix64To32(v) {
 }
 
 function hashLen16Mul(u, v, mul) {
-    a = u64Mul(u64XOR(u, v), mul);
+    let a = u64Mul(u64XOR(u, v), mul);
     a = u64XOR(a, u64ShiftR(a, 47));
-    b = u64Mul(u64XOR(v, a), mul);
+    let b = u64Mul(u64XOR(v, a), mul);
     b = u64XOR(b, u64ShiftR(b, 47));
     b = u64Mul(b, mul);
     return b;
@@ -359,7 +361,7 @@ function hashLen33to64(s) {
 function weakHashLen32WithSeedsWords(w, x, y, z, a, b) {
     a = u64Add(a, w);
     b = u64RotR(u64Add(u64Add(b, a), z), 21);
-    c = a;
+    const c = a;
     a = u64Add(a, x);
     a = u64Add(a, y);
     b = u64Add(b, u64RotR(a, 44));
@@ -486,14 +488,14 @@ function farmhash64(s) {
             u64Add(z, w.hi),
             u64Add(y, fetchU64(s, idx + 16))
         );
-        tmp = x;
+        const tmp = x;
         x = z;
         z = tmp;
         idx += 64;
         slen -= 64;
     }
 
-    mul = u64Add(k1, {
+    const mul = u64Add(k1, {
         hi: 0,
         lo: (((z.lo >>> 0) & 0xff) << 1) >>> 0,
     });
@@ -534,7 +536,7 @@ function farmhash64(s) {
         u64Add(z, w.hi),
         u64Add(y, fetchU64(s, idx + 16))
     );
-    tmp = x;
+    const tmp = x;
     x = z;
     z = tmp;
 
@@ -621,6 +623,7 @@ function strFarmhash32Hex(str) {
     return hex32(strFarmhash32(str));
 }
 
+/* c8 ignore start */
 if (typeof module !== "undefined") {
     module.exports = {
         farmhash32: farmhash32,
@@ -632,5 +635,10 @@ if (typeof module !== "undefined") {
         hex32: hex32,
         hex64: hex64,
         _testData: _testData,
+        _u32RotR: u32RotR,
+        _u64RotR: u64RotR,
+        _u64ShiftL: u64ShiftL,
+        _u64ShiftR: u64ShiftR,
     };
 }
+/* c8 ignore stop */
