@@ -68,7 +68,7 @@ build: version
 ## Unit tests
 .PHONY: test
 test:
-	R -e 'setwd("./farmhash64");renv::load();renv::restore(prompt = FALSE);library(testthat);testthat::test_dir("tests")'
+	R -e 'setwd("./farmhash64"); renv::load(); renv::restore(prompt = FALSE); if (system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", paste0("--library=", .libPaths()[1]), "."), stdout = "", stderr = "") != 0L) stop("package install failed"); library(testthat); testthat::test_dir("tests")'
 
 ## Format the source code
 .PHONY: format
