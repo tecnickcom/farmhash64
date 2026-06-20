@@ -35,7 +35,7 @@ help:
 	@echo ""
 
 .PHONY: all
-all: clean version format test
+all: clean version format linter test
 
 # Build the library
 .PHONY: build
@@ -51,6 +51,11 @@ clean:
 .PHONY: format
 format:
 	zig fmt src/*.zig
+
+## Lint the source code (check formatting)
+.PHONY: linter
+linter:
+	zig fmt --check src/*.zig
 
 # Build and run the unit tests
 .PHONY: test

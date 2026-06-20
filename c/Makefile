@@ -23,6 +23,9 @@ endif
 # Project release number (packaging build number)
 # RELEASE=$(shell cat ../RELEASE)
 
+# clang-tidy checks (mirrors the tidy target) used by the linter target
+TIDYCHECKS=*,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-altera-unroll-loops,-altera-id-dependent-backward-branch,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-readability-identifier-length,-llvmlibc-restrict-system-libc-headers,-llvm-header-guard,-llvm-include-order,-android-cloexec-open,-hicpp-no-assembler,-hicpp-signed-bitwise,-misc-include-cleaner,-clang-analyzer-alpha.*
+
 # --- MAKE TARGETS ---
 
 .PHONY: help
@@ -73,6 +76,12 @@ doc:
 format:
 	astyle --style=allman --recursive --suffix=none 'src/*.h'
 	astyle --style=allman --recursive --suffix=none 'test/*.c'
+
+## Lint the source code with cppcheck and clang-tidy
+.PHONY: linter
+linter:
+	cppcheck --enable=warning,style,performance,portability --error-exitcode=1 --inline-suppr --std=c11 src/farmhash64.h
+	clang-tidy src/farmhash64.h --warnings-as-errors='$(TIDYCHECKS)' -checks='$(TIDYCHECKS)' -- -x c -std=c2x -I src
 
 ## Build and run the unit tests
 .PHONY: test

@@ -82,6 +82,20 @@ rust:
 zig:
 	cd zig && make all
 
+# Run the linters for every language
+.PHONY: linter
+linter:
+	cd c && make linter
+	cd cgo && make linter
+	cd go && make linter
+	cd java && make linter
+	cd javascript && make linter
+	cd php && make linter
+	cd python && make linter
+	cd r && make linter
+	cd rust && make linter
+	cd zig && make linter
+
 # Remove any build artifact
 .PHONY: clean
 clean:

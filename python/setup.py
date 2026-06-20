@@ -77,6 +77,7 @@ setup(
             "pytest-cov",
             "pycodestyle",
             "black",
+            "ruff",
             "wheel",
         ]
     },

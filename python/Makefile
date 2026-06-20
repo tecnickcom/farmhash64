@@ -36,7 +36,7 @@ help:
 	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
-all: clean venv test build
+all: clean venv linter test build
 
 ## Build the package
 .PHONY: build
@@ -60,6 +60,13 @@ doc:
 format:
 	astyle --style=allman --recursive --suffix=none 'farmhash64/*.h'
 	black setup.py
+
+## Lint the source code with cppcheck (C extension) and ruff (Python)
+.PHONY: linter
+linter:
+	cppcheck --enable=warning,style,performance,portability --error-exitcode=1 --inline-suppr -I ../c/src -I farmhash64 farmhash64/pyfarmhash64.c
+	source venv/bin/activate \
+	&& ruff check test setup.py
 
 ## Unit tests
 .PHONY: test

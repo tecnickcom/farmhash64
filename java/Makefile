@@ -19,7 +19,7 @@ help:
 	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
-all: clean build test
+all: clean build linter test
 
 ## Build the library
 .PHONY: build
@@ -30,6 +30,11 @@ build:
 .PHONY: clean
 clean:
 	./gradlew clean
+
+## Run the static analysis (SpotBugs)
+.PHONY: linter
+linter:
+	./gradlew spotbugsMain spotbugsTest
 
 ## Run the unit tests
 .PHONY: test

@@ -77,6 +77,10 @@ lint:
 	./vendor/bin/mago analyze src test
 	./vendor/bin/mago lint src test
 
+## Alias for the lint target (naming consistency across languages)
+.PHONY: linter
+linter: lint
+
 ## Run unit tests
 .PHONY: test
 test:

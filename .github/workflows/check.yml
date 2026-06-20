@@ -25,11 +25,11 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v6
       - name: install dependencies
-        run: sudo apt install -y lcov astyle
+        run: sudo apt install -y lcov astyle cppcheck clang-tidy
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd c && make clean version test build
+        run: cd c && make clean version linter test build
 
   cgo:
     runs-on: ubuntu-latest
@@ -74,7 +74,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd java && make clean build test
+        run: cd java && make clean build linter test
 
   javascript:
     runs-on: ubuntu-latest
@@ -123,6 +123,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
         run: |
+          sudo apt-get install -y cppcheck
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools virtualenv
       - name: set RELEASE number
@@ -146,6 +147,7 @@ jobs:
             any::Rcpp
             any::devtools
             any::inline
+            any::lintr
             any::renv
             any::roxygen2
             any::testthat
@@ -153,7 +155,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd r && make clean build test
+        run: cd r && make clean linter build test
 
   rust:
     runs-on: ubuntu-latest
@@ -179,4 +181,4 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd zig && make clean test
+        run: cd zig && make clean linter test

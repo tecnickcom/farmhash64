@@ -9,6 +9,8 @@
 plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
+    // Apply the SpotBugs plugin to add static analysis (bug detection)
+    id 'com.github.spotbugs' version '6.5.8'
 }
 
 repositories {
