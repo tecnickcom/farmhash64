@@ -196,15 +196,13 @@ mod tests {
         let mut data = vec![0; DATA_SIZE];
         let mut a: u64 = 9;
         let mut b: u64 = 777;
-        let mut u: u8;
 
-        for i in 0..DATA_SIZE {
+        for (i, item) in data.iter_mut().enumerate() {
             a = a.wrapping_add(b);
             b = b.wrapping_add(a);
             a = (a ^ (a >> 41)).wrapping_mul(KT);
             b = (b ^ (b >> 41)).wrapping_mul(KT) + i as u64;
-            u = (b >> 37) as u8;
-            data[i] = u;
+            *item = (b >> 37) as u8;
         }
 
         data

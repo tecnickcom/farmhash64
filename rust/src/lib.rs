@@ -44,7 +44,7 @@ fn rotate64(val: u64, shift: u32) -> u64 {
 
 #[inline]
 fn fetch32(s: &[u8], idx: usize) -> u64 {
-    u64::from(s[idx + 0])
+    u64::from(s[idx])
         | (u64::from(s[idx + 1]) << 8)
         | (u64::from(s[idx + 2]) << 16)
         | (u64::from(s[idx + 3]) << 24)
@@ -52,7 +52,7 @@ fn fetch32(s: &[u8], idx: usize) -> u64 {
 
 #[inline]
 fn fetch64(s: &[u8], idx: usize) -> u64 {
-    u64::from(s[idx + 0])
+    u64::from(s[idx])
         | (u64::from(s[idx + 1]) << 8)
         | (u64::from(s[idx + 2]) << 16)
         | (u64::from(s[idx + 3]) << 24)
@@ -71,11 +71,11 @@ fn shift_mix(val: u64) -> u64 {
 
 #[inline]
 fn mur(a: u32, h: u32) -> u32 {
-    let mut a: u32 = u32::from(a);
-    let mut h: u32 = u32::from(h);
-    a = a.wrapping_mul(u32::from(C1));
+    let mut a: u32 = a;
+    let mut h: u32 = h;
+    a = a.wrapping_mul(C1);
     a = rotate32(a, 17);
-    a = a.wrapping_mul(u32::from(C2));
+    a = a.wrapping_mul(C2);
     h ^= a;
     h = rotate32(h, 19);
     (h.wrapping_mul(5)).wrapping_add(0xe6546b64)
@@ -126,7 +126,7 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
         let b = s[(slen >> 1) as usize];
         let c = s[(slen - 1) as usize];
         let y = u32::from(a).wrapping_add(u32::from(b) << 8);
-        let z = u32::from(slen as u32).wrapping_add(u32::from(c) << 2);
+        let z = (slen as u32).wrapping_add(u32::from(c) << 2);
 
         return shift_mix((u64::from(y).wrapping_mul(K2)) ^ (u64::from(z).wrapping_mul(K0)))
             .wrapping_mul(K2);
@@ -300,13 +300,13 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
     );
     std::mem::swap(&mut x, &mut z);
 
-    return hash_len_16_mul(
+    hash_len_16_mul(
         hash_len_16_mul(v.lo, w.lo, mul)
             .wrapping_add(shift_mix(y).wrapping_mul(K0))
             .wrapping_add(z),
         hash_len_16_mul(v.hi, w.hi, mul).wrapping_add(x),
         mul,
-    );
+    )
 }
 
 // FarmHash32 returns a 32-bit fingerprint hash for a string.

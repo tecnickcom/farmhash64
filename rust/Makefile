@@ -35,7 +35,7 @@ help:
 	@echo ""
 
 .PHONY: all
-all: clean version format test build doc
+all: clean version format linter test coverage build doc
 
 ## Build the library
 .PHONY: build
@@ -48,6 +48,12 @@ build:
 clean:
 	rm -rf target
 
+## Install the coverage tooling
+.PHONY: deps
+deps:
+	rustup component add llvm-tools-preview
+	cargo install cargo-llvm-cov --locked
+
 ## Generate source code documentation
 .PHONY: doc
 doc:
@@ -58,10 +64,20 @@ doc:
 format:
 	cargo fmt
 
+## Lint the source code with clippy
+.PHONY: linter
+linter:
+	cargo clippy --all-targets --all-features -- -D warnings
+
 ## Build and run the unit tests
 .PHONY: test
 test:
 	cargo test
+
+## Run the unit tests and check for 100% code coverage
+.PHONY: coverage
+coverage:
+	cargo llvm-cov --all-features --fail-under-lines 100 --fail-under-functions 100 --fail-under-regions 100
 
 ## Set the version from VERSION file
 .PHONY: version

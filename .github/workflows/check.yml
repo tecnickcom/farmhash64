@@ -160,10 +160,12 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
+      - name: install coverage tooling
+        run: cd rust && make deps
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd rust && make clean test
+        run: cd rust && make clean linter test coverage
 
   zig:
     runs-on: ubuntu-latest
