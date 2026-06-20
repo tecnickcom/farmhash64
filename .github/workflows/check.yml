@@ -29,7 +29,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd c && make clean version linter test build
+        run: cd c && make clean version linter test coverage build
 
   cgo:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd cgo && make clean mod deps linter test GOPATH=$(go env GOPATH)
+        run: cd cgo && make clean mod deps linter test coverage GOPATH=$(go env GOPATH)
 
   go:
     runs-on: ubuntu-latest
@@ -59,7 +59,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd go && make clean mod deps linter test GOPATH=$(go env GOPATH)
+        run: cd go && make clean mod deps linter test coverage GOPATH=$(go env GOPATH)
 
   java:
     runs-on: ubuntu-latest
@@ -74,7 +74,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd java && make clean build linter test
+        run: cd java && make clean build linter test coverage
 
   javascript:
     runs-on: ubuntu-latest
@@ -145,6 +145,7 @@ jobs:
           cache-version: 2
           extra-packages: |
             any::Rcpp
+            any::covr
             any::devtools
             any::inline
             any::lintr
@@ -155,7 +156,7 @@ jobs:
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd r && make clean linter build test
+        run: cd r && make clean linter coverage build test
 
   rust:
     runs-on: ubuntu-latest
@@ -178,7 +179,9 @@ jobs:
         uses: mlugg/setup-zig@v2
         with:
           version: '0.13.0'
+      - name: install coverage tooling
+        run: sudo apt-get install -y kcov
       - name: set RELEASE number
         run: echo ${GITHUB_RUN_NUMBER} > RELEASE
       - name: test
-        run: cd zig && make clean linter test
+        run: cd zig && make clean linter test coverage

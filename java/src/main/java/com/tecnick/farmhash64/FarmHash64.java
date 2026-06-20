@@ -17,6 +17,10 @@ package com.tecnick.farmhash64;
 
 public class FarmHash64 {
 
+	// Utility class: prevent instantiation.
+	private FarmHash64() {
+	}
+
 	private static final int c1 = 0xcc9e2d51;
 	private static final int c2 = 0x1b873593;
 

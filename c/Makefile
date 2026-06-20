@@ -38,7 +38,7 @@ help:
 	@echo ""
 
 .PHONY: all
-all: clean version format test tidy build doc
+all: clean version format test coverage tidy build doc
 
 ## Build the library
 .PHONY: build
@@ -82,6 +82,13 @@ format:
 linter:
 	cppcheck --enable=warning,style,performance,portability --error-exitcode=1 --inline-suppr --std=c11 src/farmhash64.h
 	clang-tidy src/farmhash64.h --warnings-as-errors='$(TIDYCHECKS)' -checks='$(TIDYCHECKS)' -- -x c -std=c2x -I src
+
+## Check that the lcov line coverage from the test target is 100%
+.PHONY: coverage
+coverage:
+	@lines=$$(lcov --summary target/test/coverage/farmhash64.info 2>&1 | grep -oE 'lines[.]*: [0-9]+\.[0-9]+%' | grep -oE '[0-9]+\.[0-9]+' | head -1); \
+	echo "Line coverage: $$lines%"; \
+	if [ "$$lines" != "100.0" ]; then echo "ERROR: coverage $$lines% is below 100%"; exit 1; fi
 
 ## Build and run the unit tests
 .PHONY: test

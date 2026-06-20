@@ -229,4 +229,11 @@ public class FarmHash64Test {
 
         testDataItemFarmHash64(data, 0, dataSize, index);
     }
+
+    @Test
+    public void testPrivateConstructor() throws Exception {
+        var ctor = FarmHash64.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        ctor.newInstance();
+    }
 }

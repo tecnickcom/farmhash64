@@ -452,4 +452,35 @@ class FarmHash64Test extends TestCase
             static::assertEquals($data[2], $h);
         }
     }
+
+    public function testRotateAndShiftEdgeCases(): void
+    {
+        $obj = $this->getTestObject();
+        $invoke = static function (string $name, mixed ...$args) use ($obj): mixed {
+            $method = new \ReflectionMethod($obj, $name);
+            $method->setAccessible(true);
+            return $method->invoke($obj, ...$args);
+        };
+
+        $v = ['hi' => 0x0123_4567, 'lo' => 0x89ab_cdef];
+
+        // u32RotR: shifts of 0 or >= 32 return the value unchanged.
+        static::assertSame(0x89ab_cdef, $invoke('u32RotR', 0x89ab_cdef, 0));
+        static::assertSame(0x89ab_cdef, $invoke('u32RotR', 0x89ab_cdef, 32));
+
+        // u64RotR: 0 and 64 are identity, 32 swaps the words.
+        static::assertSame($v, $invoke('u64RotR', $v, 0));
+        static::assertSame($v, $invoke('u64RotR', $v, 64));
+        static::assertSame(['hi' => 0x89ab_cdef, 'lo' => 0x0123_4567], $invoke('u64RotR', $v, 32));
+
+        // u64ShiftL: 0 and 64 are identity, 32..63 clears the low word.
+        static::assertSame($v, $invoke('u64ShiftL', $v, 0));
+        static::assertSame($v, $invoke('u64ShiftL', $v, 64));
+        static::assertSame(['hi' => 0x100, 'lo' => 0], $invoke('u64ShiftL', ['hi' => 0, 'lo' => 1], 40));
+
+        // u64ShiftR: 0 and 64 are identity, 1..31 shifts within 64 bits.
+        static::assertSame($v, $invoke('u64ShiftR', $v, 0));
+        static::assertSame($v, $invoke('u64ShiftR', $v, 64));
+        static::assertSame(['hi' => 0, 'lo' => 0xf], $invoke('u64ShiftR', ['hi' => 0, 'lo' => 0xf0], 4));
+    }
 }

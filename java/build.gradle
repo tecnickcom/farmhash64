@@ -11,6 +11,8 @@ plugins {
     id 'java-library'
     // Apply the SpotBugs plugin to add static analysis (bug detection)
     id 'com.github.spotbugs' version '6.5.8'
+    // Apply the JaCoCo plugin to measure and enforce code coverage
+    id 'jacoco'
 }
 
 repositories {
@@ -25,4 +27,31 @@ dependencies {
 
 tasks.named("test", Test.class).configure {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 1.0
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 1.0
+            }
+        }
+    }
 }

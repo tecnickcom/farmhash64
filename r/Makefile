@@ -40,7 +40,7 @@ help:
 	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
-all: clean version format linter build test
+all: clean version format linter coverage build test
 
 ## Set the version from VERSION file
 .PHONY: version
@@ -51,6 +51,11 @@ version:
 .PHONY: linter
 linter:
 	R -e 'library(lintr); l <- lint_dir("farmhash64/R"); print(l); quit(status = if (length(l) > 0) 1 else 0)'
+
+## Check that the R source code has 100% test coverage (covr)
+.PHONY: coverage
+coverage:
+	R -e 'cov <- covr::package_coverage("farmhash64", quiet = TRUE); df <- covr::tally_coverage(cov); rdf <- df[grepl("R/.*[.]R$$", df$$filename), ]; pct <- 100 * sum(rdf$$value > 0) / nrow(rdf); cat("R coverage:", pct, "%\n"); quit(status = if (pct < 100) 1 else 0)'
 
 ## Build the library
 .PHONY: build

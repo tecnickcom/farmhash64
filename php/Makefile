@@ -39,7 +39,7 @@ all: clean build
 
 ## Build a minified version of the library
 .PHONY: build
-build: deps lint test
+build: deps lint test coverage
 
 ## Remove any build artifact
 .PHONY: clean
@@ -87,3 +87,8 @@ test:
 	cp phpunit.xml.dist phpunit.xml
 	#./vendor/bin/phpunit --migrate-configuration || true
 	XDEBUG_MODE=coverage ./vendor/bin/phpunit --stderr test
+
+## Check that the PHPUnit clover coverage from the test target is 100%
+.PHONY: coverage
+coverage:
+	@php -r '$$x=simplexml_load_file("target/coverage/coverage.xml");$$m=$$x->project->metrics;$$s=(int)$$m["statements"];$$c=(int)$$m["coveredstatements"];$$p=$$s?100*$$c/$$s:100;printf("Coverage: %.2f%%\n",$$p);exit($$p<100?1:0);'

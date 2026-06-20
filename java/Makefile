@@ -19,7 +19,7 @@ help:
 	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
-all: clean build linter test
+all: clean build linter test coverage
 
 ## Build the library
 .PHONY: build
@@ -40,6 +40,11 @@ linter:
 .PHONY: test
 test:
 	./gradlew test
+
+## Run the unit tests and check for 100% code coverage (JaCoCo)
+.PHONY: coverage
+coverage:
+	./gradlew jacocoTestReport jacocoTestCoverageVerification
 
 ## Update gradle wrapper to the latest version
 .PHONY: updategradle

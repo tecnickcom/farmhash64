@@ -57,6 +57,17 @@ format:
 linter:
 	zig fmt --check src/*.zig
 
+## Run the unit tests under kcov and check for 100% code coverage
+.PHONY: coverage
+coverage:
+	rm -rf zig-out/coverage
+	mkdir -p zig-out
+	zig test --test-no-exec -femit-bin=zig-out/test_farmhash64 src/test_farmhash64.zig
+	kcov --include-pattern=src/farmhash64.zig --exclude-pattern=test_farmhash64.zig --clean zig-out/coverage ./zig-out/test_farmhash64
+	@covered=$$(grep -oE '"percent_covered" *: *"[0-9.]+"' zig-out/coverage/test_farmhash64/coverage.json | grep -oE '[0-9.]+' | head -1); \
+	echo "Coverage: $$covered%"; \
+	if [ "$$covered" != "100.0" ] && [ "$$covered" != "100" ]; then echo "ERROR: coverage $$covered% is below 100%"; exit 1; fi
+
 # Build and run the unit tests
 .PHONY: test
 test:

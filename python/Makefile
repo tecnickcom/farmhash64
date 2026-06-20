@@ -36,7 +36,7 @@ help:
 	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
-all: clean venv linter test build
+all: clean venv linter test coverage build
 
 ## Build the package
 .PHONY: build
@@ -73,6 +73,12 @@ linter:
 test:
 	source venv/bin/activate \
 	&& pytest
+
+## Run the unit tests and check for 100% test coverage
+.PHONY: coverage
+coverage:
+	source venv/bin/activate \
+	&& pytest --cov=test --cov-branch --cov-report=term-missing --cov-fail-under=100 test
 
 ## Set the version from VERSION file
 .PHONY: version

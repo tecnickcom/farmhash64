@@ -91,10 +91,13 @@ x:
 clean:
 	rm -rf $(TARGETDIR) ../vendor
 
-## Generate the coverage report
+## Generate the coverage report and fail if below 100%
 .PHONY: coverage
 coverage: ensuretarget
 	$(GO) tool cover -html=$(TARGETDIR)/report/coverage.out -o $(TARGETDIR)/report/coverage.html
+	@total=$$($(GO) tool cover -func=$(TARGETDIR)/report/coverage.out | awk '/^total:/{print $$3}'); \
+	echo "Total coverage: $$total"; \
+	if [ "$$total" != "100.0%" ]; then echo "ERROR: coverage $$total is below 100.0%"; exit 1; fi
 
 # Get the test dependencies
 .PHONY: deps
