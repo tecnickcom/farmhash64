@@ -458,7 +458,6 @@ class FarmHash64Test extends TestCase
         $obj = $this->getTestObject();
         $invoke = static function (string $name, mixed ...$args) use ($obj): mixed {
             $method = new \ReflectionMethod($obj, $name);
-            $method->setAccessible(true);
             return $method->invoke($obj, ...$args);
         };
 
