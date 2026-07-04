@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: install dependencies
         run: sudo apt install -y lcov astyle cppcheck clang-tidy
       - name: set RELEASE number
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup go build environment
         uses: actions/setup-go@v6
         with:
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup go build environment
         uses: actions/setup-go@v6
         with:
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup java build environment
         uses: actions/setup-java@v5
         with:
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup node build environment
         uses: actions/setup-node@v6
         with:
@@ -94,14 +94,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup php build environment
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
           ini-values: display_errors=on, error_reporting=-1, zend.assertions=1
       - name: Cache module
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.composer/cache/
           key: composer-cache
@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup python build environment
         uses: actions/setup-python@v6
         with:
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup R build environment
         uses: r-lib/actions/setup-r@v2
       - name: Install dependencies
@@ -162,7 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: install coverage tooling
         run: cd rust && make deps
       - name: set RELEASE number
@@ -174,7 +174,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: setup zig build environment
         uses: mlugg/setup-zig@v2
         with:
