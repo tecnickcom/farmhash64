@@ -11,10 +11,10 @@ SHELL=/bin/bash
 PROJECT=farmhash64
 
 # Current directory
-CURRENTDIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+CURRENTDIR=$(CURDIR)/
 
 # Target directory
-TARGETDIR=$(CURRENTDIR)target
+TARGETDIR=target
 
 # PHP binary
 PHP=$(shell which php)
@@ -26,7 +26,7 @@ COMPOSER=$(PHP) -d "apc.enable_cli=0" $(shell which composer)
 PHPDOC=$(shell which phpDocumentor)
 
 # Mago version
-MAGOVERSION=1.40.2
+MAGOVERSION=1.43.0
 
 # Display general help about this command
 .PHONY: help
@@ -47,7 +47,7 @@ build: deps lint test coverage
 ## Remove any build artifact
 .PHONY: clean
 clean:
-	rm -rf ./vendor $(TARGETDIR)
+	rm -rf ./vendor "$(TARGETDIR)"
 
 ## Clean all artifacts and download all dependencies
 .PHONY: deps
@@ -59,15 +59,15 @@ deps: ensuretarget
 ## Generate source code documentation
 .PHONY: doc
 doc: ensuretarget
-	rm -rf $(TARGETDIR)/doc
-	$(PHPDOC) -d ./src -t $(TARGETDIR)/doc/
+	rm -rf "$(TARGETDIR)/doc"
+	$(PHPDOC) -d ./src -t "$(TARGETDIR)/doc/"
 
 ## Create missing target directories for test and build artifacts
 .PHONY: ensuretarget
 ensuretarget:
-	mkdir -p $(TARGETDIR)/test
-	mkdir -p $(TARGETDIR)/report
-	mkdir -p $(TARGETDIR)/doc
+	mkdir -p "$(TARGETDIR)/test"
+	mkdir -p "$(TARGETDIR)/report"
+	mkdir -p "$(TARGETDIR)/doc"
 
 ## Format the source code
 .PHONY: format
