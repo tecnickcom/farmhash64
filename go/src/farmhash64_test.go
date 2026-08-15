@@ -1,6 +1,9 @@
 package farmhash64
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 const (
 	testSize = 300
@@ -167,11 +170,19 @@ func TestFarmHash64Strings(t *testing.T) {
 	}
 }
 
+// Benchmark every length branch: 0-16, 17-32, 33-64 and the >64 loop.
 func BenchmarkFarmHash64(b *testing.B) {
-	buf := []byte("2ZVSmMwBTILcCekZjgZ49Py5RoJUriQ7URkCgZPw")
+	for _, size := range []int{8, 16, 24, 40, 64, 128, 1024} {
+		buf := make([]byte, size)
+		for i := range buf {
+			buf[i] = byte('a' + (i % 26))
+		}
 
-	for b.Loop() {
-		FarmHash64(buf)
+		b.Run(fmt.Sprintf("%dB", size), func(b *testing.B) {
+			for b.Loop() {
+				FarmHash64(buf)
+			}
+		})
 	}
 }
 

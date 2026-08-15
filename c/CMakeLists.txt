@@ -1,4 +1,6 @@
-cmake_minimum_required (VERSION 3.5)
+# NOTE: CMake 4.0 removed the compatibility with "cmake_minimum_required" values
+# below 3.5; 3.10 keeps the project buildable with both CMake 3.x and 4.x.
+cmake_minimum_required (VERSION 3.10)
 project (farmhash64)
 
 set( CMAKE_VERBOSE_MAKEFILE on )
@@ -21,13 +23,14 @@ message(STATUS "PROJECT_VERSION='${PROJECT_VERSION}'")
 message(STATUS "Generator - ${CMAKE_GENERATOR}")
 
 option(BUILD_DOXYGEN "Build Doxygen" OFF)
-option(BUILD_SHARED_LIB "Build a shared library" ON)
 
 if(CMAKE_COMPILER_IS_GNUCC)
     message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
                     OUTPUT_VARIABLE GCC_VERSION)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D VERSION='\"${PROJECT_VERSION}\"' -s -pedantic -std=c2x -Wall -Wextra -Wno-strict-prototypes -Wunused-value -Wcast-align -Wundef -Wformat -Wformat-security")
+    # NOTE: "-s" (strip) belongs to the Release flags only: in the Debug and
+    # Coverage build types it would strip the "-g3" debug information away.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D VERSION='\"${PROJECT_VERSION}\"' -pedantic -std=c2x -Wall -Wextra -Wno-strict-prototypes -Wunused-value -Wcast-align -Wundef -Wformat -Wformat-security")
 
     if (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow")
@@ -36,20 +39,19 @@ if(CMAKE_COMPILER_IS_GNUCC)
         message(STATUS "GCC 4.8 required to run address sanitizer - please upgrade your installation")
     endif(GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
 
-    set(CMAKE_C_FLAGS_RELEASE     "-O3")
+    # NOTE: "-DNDEBUG" must be set explicitly, as assigning to
+    # CMAKE_C_FLAGS_RELEASE overrides the CMake default of "-O3 -DNDEBUG".
+    set(CMAKE_C_FLAGS_RELEASE     "-O3 -s -DNDEBUG")
     set(CMAKE_C_FLAGS_DEBUG       "-O0 -g3")
     set(CMAKE_C_FLAGS_COVERAGE    "-O0 -g3 --coverage")
     set(CMAKE_C_FLAGS_CHECK       "-O2 -Werror")
     set(CMAKE_C_FLAGS_CHECKFULL   "${CMAKE_C_FLAGS_CHECK} -Wcast-qual")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
-if (BUILD_SHARED_LIB)
-    set(BUILD_SHARED_LIBS ON)
-endif (BUILD_SHARED_LIB)
-
-if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-    set(CMAKE_SHARED_LINKER_FLAGS "--coverage")
-endif(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+# NOTE: farmhash64 is header-only (see src/CMakeLists.txt), so there is no
+# library to build shared and no shared object to link with "--coverage".
+# Coverage instrumentation reaches the header through the test executable's own
+# CMAKE_C_FLAGS_COVERAGE.
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
    # Mac OS X specific code

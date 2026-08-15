@@ -65,3 +65,56 @@ test_that("FarmHash32Hex", {
     res <- FarmHash32Hex(unlist(t[,"str"]))
     expect_identical(res, as.character(unlist(t[,"fh32"])))
 })
+
+test_that("length boundaries", {
+    lengths <- c(33, 63, 64, 65, 128, 129)
+    fh64 <- c(
+        "1bd257e2fc3da812", "d52b7a8646a91b9e", "9c4a595c23bb9bfa",
+        "2434d8917886fe2a", "c3244d5ec8a4474a", "9b1ca0571b8cefd4"
+    )
+    fh32 <- c(
+        "718999c7", "1a6cb3fb", "7316a376",
+        "57a887f8", "a45b0dff", "1eaa35e7"
+    )
+    strv <- vapply(
+        lengths,
+        function(n) substr(strrep("abcdefghijklmnopqrstuvwxyz", 6), 1, n),
+        character(1)
+    )
+    expect_identical(nchar(strv), as.integer(lengths))
+    expect_identical(FarmHash64Hex(strv), fh64)
+    expect_identical(FarmHash32Hex(strv), fh32)
+})
+
+test_that("empty vector", {
+    expect_identical(FarmHash64Hex(character(0)), character(0))
+    expect_identical(FarmHash32Hex(character(0)), character(0))
+})
+
+test_that("NA is propagated", {
+    expect_identical(
+        FarmHash64Hex(c("abc", NA_character_, "abc")),
+        c("24a5b3a074e7f369", NA_character_, "24a5b3a074e7f369")
+    )
+    expect_identical(
+        FarmHash32Hex(c("abc", NA_character_, "abc")),
+        c("caf25fe2", NA_character_, "caf25fe2")
+    )
+})
+
+test_that("the result does not depend on the native encoding", {
+    utf8 <- "\u00a3"
+    latin1 <- utf8
+    Encoding(latin1) <- "unknown"
+    latin1 <- iconv(utf8, "UTF-8", "latin1")
+    Encoding(latin1) <- "latin1"
+    expect_identical(FarmHash64Hex(latin1), FarmHash64Hex(utf8))
+    expect_identical(FarmHash32Hex(latin1), FarmHash32Hex(utf8))
+})
+
+test_that("non-character input is rejected", {
+    expect_error(FarmHash64Hex(42), "character vector")
+    expect_error(FarmHash32Hex(42), "character vector")
+    expect_error(FarmHash64Hex(NA), "character vector")
+    expect_error(FarmHash32Hex(list("a")), "character vector")
+})

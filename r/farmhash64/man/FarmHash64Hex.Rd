@@ -2,15 +2,21 @@
 % Please edit documentation in R/farmhash64.R
 \name{FarmHash64Hex}
 \alias{FarmHash64Hex}
-\title{Computes the 64-bit FarmHash hash value of each string in the input vector
-and returns the hexadecimal representation of the hash values.}
+\title{Compute 64-bit FarmHash hash values in hexadecimal format}
 \usage{
 FarmHash64Hex(strv)
 }
 \arguments{
 \item{strv}{The input character vector containing the strings to be hashed.}
 }
+\value{
+A character vector with the 16-character hexadecimal hash values.
+}
 \description{
 Computes the 64-bit FarmHash hash value of each string in the input vector
 and returns the hexadecimal representation of the hash values.
+}
+\details{
+The strings are hashed as UTF-8 bytes, so the result does not depend on the
+native encoding of the input. NA elements are propagated as NA.
 }

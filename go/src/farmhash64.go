@@ -9,11 +9,14 @@ It is designed to be fast and provide good hash distribution but is not suitable
 The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
 
 All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
-This is a GO port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
-
-This code has been ported/translated by Nicola Asuni (Tecnick.com) to GO code.
+This is Nicola Asuni's (Tecnick.com) GO rewrite of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
 */
 package farmhash64
+
+import (
+	"encoding/binary"
+	"math/bits"
+)
 
 // BASICS
 
@@ -37,31 +40,35 @@ type uint128 struct {
 
 // PLATFORM
 
+// Rotate a 32-bit integer right by the given number of bits.
 func rotate32(val uint32, shift uint) uint32 {
-	return ((val >> shift) | (val << (32 - shift)))
+	return bits.RotateLeft32(val, -int(shift))
 }
 
+// Rotate a 64-bit integer right by the given number of bits.
 func rotate64(val uint64, shift uint) uint64 {
-	return ((val >> shift) | (val << (64 - shift)))
+	return bits.RotateLeft64(val, -int(shift))
 }
 
+// Fetch a 32-bit little-endian integer from a byte array.
 func fetch32(s []byte, idx int) uint64 {
-	return uint64(s[idx+0]) | uint64(s[idx+1])<<8 | uint64(s[idx+2])<<16 | uint64(s[idx+3])<<24
+	return uint64(binary.LittleEndian.Uint32(s[idx : idx+4]))
 }
 
+// Fetch a 64-bit little-endian integer from a byte array.
 func fetch64(s []byte, idx int) uint64 {
-	return uint64(s[idx+0]) | uint64(s[idx+1])<<8 | uint64(s[idx+2])<<16 | uint64(s[idx+3])<<24 |
-		uint64(s[idx+4])<<32 | uint64(s[idx+5])<<40 | uint64(s[idx+6])<<48 | uint64(s[idx+7])<<56
+	return binary.LittleEndian.Uint64(s[idx : idx+8])
 }
 
 // FARMHASH NA
 
+// XOR a 64-bit value with itself shifted right by 47 bits.
 func shiftMix(val uint64) uint64 {
 	return val ^ (val >> 47)
 }
 
+// Combine a 32-bit value into a running hash using the MurmurHash3 mixing step.
 func mur(a, h uint32) uint32 {
-	// Helper from Murmur3 for combining two 32-bit values.
 	a *= c1
 	a = rotate32(a, 17)
 	a *= c2
@@ -71,11 +78,12 @@ func mur(a, h uint32) uint32 {
 	return h*5 + 0xe6546b64
 }
 
-// Merge a 64 bit integer into 32 bit.
+// Reduce a 64-bit integer to 32 bits using the MurmurHash3 mixing step.
 func mix64To32(x uint64) uint32 {
-	return mur(uint32(x>>32), uint32((x<<32)>>32))
+	return mur(uint32(x>>32), uint32(x))
 }
 
+// Return a 64-bit hash for 16 bytes given as two 64-bit words, multiplied by a constant.
 func hashLen16Mul(u, v, mul uint64) uint64 {
 	// Murmur-inspired hashing.
 	a := (u ^ v) * mul
@@ -87,6 +95,7 @@ func hashLen16Mul(u, v, mul uint64) uint64 {
 	return b
 }
 
+// Return a 64-bit hash for 0 to 16 bytes.
 func hashLen0to16(s []byte) uint64 {
 	slen := uint64(len(s))
 
@@ -122,11 +131,10 @@ func hashLen0to16(s []byte) uint64 {
 	return k2
 }
 
-// This probably works well for 16-byte strings as well, but it may be overkill
-// in that case.
+// Return a 64-bit hash for 17 to 32 bytes.
 func hashLen17to32(s []byte) uint64 {
 	slen := len(s)
-	mul := k2 + uint64(slen*2)
+	mul := k2 + uint64(slen)*2
 	a := fetch64(s, 0) * k1
 	b := fetch64(s, 8)
 	c := fetch64(s, slen-8) * mul
@@ -139,7 +147,7 @@ func hashLen17to32(s []byte) uint64 {
 	)
 }
 
-// Return an 8-byte hash for 33 to 64 bytes.
+// Return a 64-bit hash for 33 to 64 bytes.
 func hashLen33to64(s []byte) uint64 {
 	slen := len(s)
 	mul := k2 + uint64(slen)*2
@@ -161,7 +169,7 @@ func hashLen33to64(s []byte) uint64 {
 	)
 }
 
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Return a 128-bit weak hash for four 64-bit words and two seeds.
 // Callers do best to use "random-looking" values for a and b.
 func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) uint128 {
 	a += w
@@ -174,7 +182,7 @@ func weakHashLen32WithSeedsWords(w, x, y, z, a, b uint64) uint128 {
 	return uint128{hi: b + c, lo: a + z}
 }
 
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+// Return a 128-bit weak hash for the first 32 bytes of s and two seeds.
 func weakHashLen32WithSeeds(s []byte, a, b uint64) uint128 {
 	return weakHashLen32WithSeedsWords(
 		fetch64(s, 0),
@@ -186,7 +194,8 @@ func weakHashLen32WithSeeds(s []byte, a, b uint64) uint128 {
 	)
 }
 
-// FarmHash64 returns a 64-bit fingerprint hash for a string.
+// FarmHash64 returns a 64-bit fingerprint hash for a byte array.
+// This function is not suitable for cryptography.
 func FarmHash64(s []byte) uint64 {
 	slen := len(s)
 
@@ -248,8 +257,10 @@ func FarmHash64(s []byte) uint64 {
 	return hashLen16Mul(hashLen16Mul(v.lo, w.lo, mul)+shiftMix(y)*k0+z, hashLen16Mul(v.hi, w.hi, mul)+x, mul)
 }
 
-// FarmHash32 returns a 32-bit fingerprint hash for a string.
+// FarmHash32 returns a 32-bit fingerprint hash for a byte array.
 // NOTE: This is NOT equivalent to the original Fingerprint32 function.
+// It is derived from FarmHash64.
+// This function is not suitable for cryptography.
 func FarmHash32(s []byte) uint32 {
 	return mix64To32(FarmHash64(s))
 }

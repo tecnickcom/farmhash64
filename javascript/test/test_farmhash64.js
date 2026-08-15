@@ -1,6 +1,8 @@
-/** FarmHash64 Javascript Library Test
+/** FarmHash64 JavaScript Library Test
  *
  * test_farmhash64.js
+ *
+ * Unit tests for farmhash64.js.
  *
  * @category   Libraries
  * @license    see LICENSE file
@@ -557,9 +559,9 @@ const exphash = [
 ];
 
 function test_hex64() {
-    var errors = 0;
-    var hs = "";
-    var i;
+    let errors = 0;
+    let hs = "";
+    let i;
     for (i = 0; i < test_data.length; i++) {
         hs = hex64(test_data[i][1]);
         if (hs !== test_data[i][2]) {
@@ -576,12 +578,12 @@ function test_hex64() {
 }
 
 function test_strFarmhash64() {
-    var errors = 0;
-    var h = 0;
-    var i = 0;
+    let errors = 0;
+    let h = 0;
+    let i = 0;
     for (i = 0; i < test_data.length; i++) {
         h = strFarmhash64(test_data[i][3]);
-        if (h.hi != test_data[i][1].hi || h.lo != test_data[i][1].lo) {
+        if (h.hi !== test_data[i][1].hi || h.lo !== test_data[i][1].lo) {
             console.error(
                 "strFarmhash64: (" +
                 i +
@@ -597,12 +599,12 @@ function test_strFarmhash64() {
 }
 
 function test_strFarmhash64Hex() {
-    var errors = 0;
-    var h = 0;
-    var i = 0;
+    let errors = 0;
+    let h = 0;
+    let i = 0;
     for (i = 0; i < test_data.length; i++) {
         h = strFarmhash64Hex(test_data[i][3]);
-        if (h != test_data[i][2]) {
+        if (h !== test_data[i][2]) {
             console.error(
                 "strFarmhash64Hex: (" +
                 i +
@@ -618,12 +620,12 @@ function test_strFarmhash64Hex() {
 }
 
 function test_strFarmhash32() {
-    var errors = 0;
-    var h = 0;
-    var i = 0;
+    let errors = 0;
+    let h = 0;
+    let i = 0;
     for (i = 0; i < test_data.length; i++) {
         h = strFarmhash32(test_data[i][3]);
-        if (h != test_data[i][0]) {
+        if (h !== test_data[i][0]) {
             console.error(
                 "strFarmhash32: (" +
                 i +
@@ -639,13 +641,13 @@ function test_strFarmhash32() {
 }
 
 function test_strFarmhash32Hex() {
-    var errors = 0;
-    var h = 0;
-    var i = 0;
+    let errors = 0;
+    let h = 0;
+    let i = 0;
     for (i = 0; i < test_data.length; i++) {
         h = strFarmhash32Hex(test_data[i][3]);
         const exp = hex32(test_data[i][0]);
-        if (h != exp) {
+        if (h !== exp) {
             console.error(
                 "strFarmhash32: (" +
                 i +
@@ -666,7 +668,7 @@ function testDataItemFarmHash64(data, offset, hlen, index) {
     const s = data.slice(begin, end);
 
     const h = farmhash64(s);
-    if (h.hi != exphash[index] || h.lo != exphash[index + 1]) {
+    if (h.hi !== exphash[index] || h.lo !== exphash[index + 1]) {
         console.error(
             "farmhash64: expected " +
             exphash[index] +
@@ -686,9 +688,9 @@ function test_farmhash64() {
     const dataSize = 1048576; // 1 << 20
     const testSize = 300;
 
-    var errors = 0;
-    var index = 0;
-    var i = 0;
+    let errors = 0;
+    let index = 0;
+    let i = 0;
 
     const data = _testData(dataSize);
 
@@ -710,12 +712,12 @@ function test_farmhash64() {
 }
 
 function test_farmhash32() {
-    var errors = 0;
-    var i = 0;
+    let errors = 0;
+    let i = 0;
     for (i = 0; i < test_data.length; i++) {
         const s = new TextEncoder().encode(test_data[i][3]);
         const h = farmhash32(s);
-        if (h != test_data[i][0]) {
+        if (h !== test_data[i][0]) {
             console.error(
                 "farmhash32: (" +
                 i +
@@ -735,7 +737,7 @@ function eqU64(a, b) {
 }
 
 function test_internals() {
-    var errors = 0;
+    let errors = 0;
     const v = {
         hi: 0x01234567,
         lo: 0x89abcdef,
@@ -811,9 +813,91 @@ function test_internals() {
     return errors;
 }
 
-var errors = 0;
+
+// Regression: hex32/hex64 are public API and must render their arguments as
+// unsigned 32-bit values, and the exported shift/rotate helpers must never
+// return a negative int32.
+function test_unsigned_helpers() {
+    let errors = 0;
+    const checks = [
+        ["hex32(-1)", hex32(-1), "ffffffff"],
+        ["hex32(0)", hex32(0), "00000000"],
+        ["hex32(0x7fffffff)", hex32(0x7fffffff), "7fffffff"],
+        [
+            "hex64({-2147483647, 1})",
+            hex64({
+                hi: -2147483647,
+                lo: 1,
+            }),
+            "8000000100000001",
+        ],
+        [
+            "hex64({0xffffffff, 0xffffffff})",
+            hex64({
+                hi: 0xffffffff,
+                lo: 0xffffffff,
+            }),
+            "ffffffffffffffff",
+        ],
+    ];
+    let i;
+    for (i = 0; i < checks.length; i++) {
+        if (checks[i][1] !== checks[i][2]) {
+            console.error(
+                checks[i][0] + ": expected " + checks[i][2] + ", got " + checks[i][1]
+            );
+            ++errors;
+        }
+    }
+
+    const unsigned = [
+        ["_u32RotR(1, 1)", _u32RotR(1, 1)],
+        ["_u32RotR(0xffffffff, 7)", _u32RotR(0xffffffff, 7)],
+        [
+            "_u64ShiftL.hi",
+            _u64ShiftL({
+                hi: 0x40000000,
+                lo: 0,
+            }, 1).hi,
+        ],
+        [
+            "_u64ShiftL.lo",
+            _u64ShiftL({
+                hi: 0,
+                lo: 0x40000000,
+            }, 1).lo,
+        ],
+        [
+            "_u64ShiftR.lo",
+            _u64ShiftR({
+                hi: 0xffffffff,
+                lo: 0xffffffff,
+            }, 1).lo,
+        ],
+        [
+            "_u64RotR.hi",
+            _u64RotR({
+                hi: 0xffffffff,
+                lo: 0xffffffff,
+            }, 1).hi,
+        ],
+    ];
+    for (i = 0; i < unsigned.length; i++) {
+        if (unsigned[i][1] < 0 || !Number.isInteger(unsigned[i][1])) {
+            console.error(
+                unsigned[i][0] + ": expected an unsigned integer, got " + unsigned[i][1]
+            );
+            ++errors;
+        }
+    }
+
+    return errors;
+}
+
+let errors = 0;
 
 errors += test_hex64();
+errors += test_unsigned_helpers();
 errors += test_strFarmhash64();
 errors += test_strFarmhash64Hex();
 errors += test_strFarmhash32();

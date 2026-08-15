@@ -1,11 +1,10 @@
 exclude .gitignore
 exclude .coverage
 exclude .coveragerc
-exclude .travis.yml
 include setup.cfg
-include ../README.md
-include ../LICENSE
-include ../c/src/farmhash64.h
+include README.md
+include LICENSE
+include farmhash64/farmhash64.h
 include farmhash64/pyfarmhash64.h
 prune .cache
 prune .git
@@ -13,4 +12,4 @@ prune build
 prune dist
 prune htmlcov
 recursive-exclude *.egg-info *
-recursive-include tests *
+recursive-include test *.py

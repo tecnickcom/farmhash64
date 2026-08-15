@@ -1,6 +1,11 @@
 .{
     .name = "farmhash64",
-    .version = "1.9.75",
-    .paths = .{""},
+    .version = "1.10.0",
+    .minimum_zig_version = "0.13.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
     .dependencies = .{},
 }

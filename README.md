@@ -6,13 +6,11 @@
 
 If this project is useful to you, please consider [supporting development via GitHub Sponsors](https://github.com/sponsors/tecnickcom).
 
-![farmhash64 logo](doc/images/logo.png)
-
 * **category:** Libraries
 * **license:**  [LICENSE](https://github.com/tecnickcom/farmhash64/blob/main/LICENSE)
 * **cvs:**      https://github.com/tecnickcom/farmhash64
 
-[![check](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yaml/badge.svg)](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yaml)
+[![check](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yml/badge.svg)](https://github.com/tecnickcom/farmhash64/actions/workflows/check.yml)
 
 
 
@@ -26,7 +24,7 @@ The **FarmHash32** function is also available, providing a 32-bit fingerprint ha
 
 All FarmHash algorithms build upon prior work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
 
-This project is a multi-language port of the original Fingerprint64 (`farmhashna::Hash64`) implementation from Google’s FarmHash ([github.com/google/farmhash](https://github.com/google/farmhash)), maintained by Nicola Asuni (Tecnick.com).
+This project is a multi-language rewrite of the original Fingerprint64 (`farmhashna::Hash64`) implementation from Google's FarmHash ([github.com/google/farmhash](https://github.com/google/farmhash)), by Nicola Asuni (Tecnick.com).
 
 - C (header-only compatible with CPP)
 - CGO (C wrapper)
@@ -43,7 +41,7 @@ This project is a multi-language port of the original Fingerprint64 (`farmhashna
 
 The reference code of this application is written in header-only C language.
 
-A Makefile is available to allows building the project in a Linux-compatible system with simple commands.  
+A Makefile is available to build the project in a Linux-compatible system with simple commands.  
 All the artifacts and reports produced using this Makefile are stored in the *target* folder inside each language directory.  
 
 To see all available options:

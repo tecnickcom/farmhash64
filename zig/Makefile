@@ -35,19 +35,19 @@ help:
 	@echo ""
 
 .PHONY: all
-all: clean version format linter test
+all: clean version format linter test coverage build
 
-# Build the library
+## Build the library
 .PHONY: build
 build:
 	zig build
 
-# Remove any build artifact
+## Remove any build artifact
 .PHONY: clean
 clean:
-	rm -rf zig-*
+	rm -rf zig-* .zig-cache
 
-# Format the source code
+## Format the source code
 .PHONY: format
 format:
 	zig fmt src/*.zig
@@ -61,6 +61,7 @@ linter:
 .PHONY: coverage
 coverage:
 	@if ! command -v kcov >/dev/null 2>&1; then \
+		if [ -n "$$CI" ]; then echo "ERROR: kcov is required to enforce the coverage gate in CI"; exit 1; fi; \
 		echo "kcov not found: skipping Zig coverage check (install kcov to enable it)"; \
 		exit 0; \
 	fi; \
@@ -72,12 +73,12 @@ coverage:
 	echo "Coverage: $$covered%"; \
 	awk -v c="$$covered" 'BEGIN { exit (c + 0 < 100) ? 1 : 0 }' || { echo "ERROR: coverage $$covered% is below 100%"; exit 1; }
 
-# Build and run the unit tests
+## Build and run the unit tests
 .PHONY: test
 test:
 	zig test src/test_farmhash64.zig
-	
-# Set the version from VERSION file
+
+## Set the version from VERSION file
 .PHONY: version
 version:
-	sed $(SEDINPLACE) "s/version.*=.*$$/version = \"$(VERSION)\",/" build.zig.zon
+	sed $(SEDINPLACE) "s/^\( *\.version *= *\).*$$/\1\"$(VERSION)\",/" build.zig.zon

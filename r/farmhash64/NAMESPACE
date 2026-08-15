@@ -2,5 +2,4 @@
 
 export(FarmHash32Hex)
 export(FarmHash64Hex)
-useDynLib(farmhash64,R_FarmHash32Hex)
-useDynLib(farmhash64,R_FarmHash64Hex)
+useDynLib(farmhash64, .registration = TRUE)

@@ -143,7 +143,6 @@ test: ensuretarget
 	@echo -e "\n\n>>> START: Unit Tests <<<\n\n"
 	$(GOTEST) \
 	-shuffle=on \
-	-tags=unit \
 	-covermode=atomic \
 	-bench=. \
 	-race \

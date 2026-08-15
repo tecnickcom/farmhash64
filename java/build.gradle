@@ -15,6 +15,12 @@ plugins {
     id 'jacoco'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 repositories {
     mavenCentral()
     google()
@@ -37,6 +43,8 @@ jacocoTestReport {
         html.required = true
     }
 }
+
+check.dependsOn jacocoTestCoverageVerification
 
 jacocoTestCoverageVerification {
     dependsOn jacocoTestReport

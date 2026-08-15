@@ -10,6 +10,15 @@ SHELL=/bin/bash
 # Project name
 PROJECT=farmhash64
 
+# Project version
+VERSION=$(shell cat ../VERSION)
+
+# sed argument for in-place substitutions
+SEDINPLACE=-i
+ifeq ($(shell uname -s),Darwin)
+	SEDINPLACE=-i ''
+endif
+
 # Directory containing the locally-installed Node.js tools
 NODEBIN=./node_modules/.bin
 
@@ -22,7 +31,12 @@ help:
 	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
-all: clean deps format linter coverage build
+all: clean version deps format linter coverage build
+
+## Set the version from the VERSION file
+.PHONY: version
+version:
+	sed $(SEDINPLACE) 's/^\(    "version": \).*$$/\1"$(VERSION)",/' package.json
 
 ## Download the Node.js dependencies
 .PHONY: deps

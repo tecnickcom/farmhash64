@@ -1,9 +1,9 @@
 """Tests for farmhash64 module."""
 
 
-import farmhash64 as fh
 from unittest import TestCase
 
+import farmhash64 as fh
 
 hashTestData = [
     (0xFE0061E9, 0x9AE16A3B2F90404F, ""),
@@ -28,7 +28,7 @@ hashTestData = [
     (0x26BF5A67, 0xCF1C7D3AD54F9215, "0123456789*01234567"),
     (0x8EEDB634, 0x07ADF50B2AC764FC, "0123456789&012345678"),
     (0xA329652E, 0xDEBCBA8E6F3EABD1, "0123456789^0123456789"),
-    (0xF73C270C, 0xC91FDC3787A41523, "0123456789%0123456789£"),
+    (0x4BA9B4ED, 0x4DBD128AF51D77E8, "0123456789%0123456789£"),
     (0x1B9EA72F, 0xD78D5F852D522E6A, "0123456789$0123456789!0"),
     (0x819D77A5, 0x80D73B843BA57DB8, "size:  a.out:  bad magic"),
     (0x8B72761E, 0x8EB3808D1CCFC779, "Nepal premier won't resign."),
@@ -113,20 +113,68 @@ hashTestData = [
     ),
 ]
 
+# Inputs that exercise the length-branch boundaries (0-16, 17-32, 33-64, >64)
+# that the fixed vector table above does not reach.
+boundaryTestData = [
+    (0x718999C7, 0x1BD257E2FC3DA812, 33),
+    (0x1A6CB3FB, 0xD52B7A8646A91B9E, 63),
+    (0x7316A376, 0x9C4A595C23BB9BFA, 64),
+    (0x57A887F8, 0x2434D8917886FE2A, 65),
+    (0xA45B0DFF, 0xC3244D5EC8A4474A, 128),
+    (0x1EAA35E7, 0x9B1CA0571B8CEFD4, 129),
+]
+
 
 class TestFunctions(TestCase):
     def test_farmhash64_strings(self):
         for expected32, expected64, test_input in hashTestData:
-            h = fh.farmhash64(test_input.encode("unicode_escape"))
+            h = fh.farmhash64(test_input.encode("utf-8"))
             self.assertEqual(h, expected64)
 
     def test_farmhash32_strings(self):
         for expected32, expected64, test_input in hashTestData:
-            h = fh.farmhash32(test_input.encode("unicode_escape"))
+            h = fh.farmhash32(test_input.encode("utf-8"))
             self.assertEqual(h, expected32)
 
+    def test_length_boundaries(self):
+        for expected32, expected64, length in boundaryTestData:
+            data = bytes((ord("a") + (i % 26)) for i in range(length))
+            self.assertEqual(len(data), length)
+            self.assertEqual(fh.farmhash64(data), expected64)
+            self.assertEqual(fh.farmhash32(data), expected32)
 
-class TestBenchmark(object):
+    def test_binary_input_with_embedded_nul(self):
+        # The C reference is length-based, so NUL bytes must not truncate the
+        # input: b"a\x00b" and b"a" must hash differently.
+        self.assertNotEqual(fh.farmhash64(b"a\x00b"), fh.farmhash64(b"a"))
+        self.assertEqual(fh.farmhash64(b"\x00" * 3), fh.farmhash64(bytes(3)))
+        self.assertNotEqual(fh.farmhash64(b"\x00"), fh.farmhash64(b""))
+        self.assertNotEqual(fh.farmhash32(b"a\x00b"), fh.farmhash32(b"a"))
+
+    def test_bytes_like_inputs(self):
+        expected64 = 0x24A5B3A074E7F369
+        expected32 = 0xCAF25FE2
+        for data in (b"abc", bytearray(b"abc"), memoryview(b"abc")):
+            self.assertEqual(fh.farmhash64(data), expected64)
+            self.assertEqual(fh.farmhash32(data), expected32)
+
+    def test_keyword_argument(self):
+        self.assertEqual(fh.farmhash64(s=b"abc"), 0x24A5B3A074E7F369)
+        self.assertEqual(fh.farmhash32(s=b"abc"), 0xCAF25FE2)
+
+    def test_invalid_arguments(self):
+        for fn in (fh.farmhash64, fh.farmhash32):
+            with self.assertRaises(TypeError):
+                fn("abc")
+            with self.assertRaises(TypeError):
+                fn(123)
+            with self.assertRaises(TypeError):
+                fn()
+            with self.assertRaises(TypeError):
+                fn(b"a", b"b")
+
+
+class TestBenchmark:
     def test_farmhash64_benchmark(self, benchmark):
         benchmark.pedantic(
             fh.farmhash64,

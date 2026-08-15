@@ -10,5 +10,6 @@
 docs
 farmhash64.Rcheck
 farmhash64/LICENSE
+farmhash64/src/farmhash64.h
 farmhash64/libs
 farmhash64_*.tar.gz

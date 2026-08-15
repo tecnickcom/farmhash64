@@ -32,57 +32,71 @@ help:
 
 all: clean c cgo go java javascript php python r rust zig
 
-# Build and test the C version
+## Build and test the C version
 .PHONY: c
 c:
 	cd c && make all
 
-# Build and test the CGO version
+## Build and test the CGO version
 .PHONY: cgo
 cgo:
 	cd cgo && make all
 
-# Build and test the GO version
+## Build and test the GO version
 .PHONY: go
 go:
 	cd go && make all
 
-# Build and test the Java version
+## Build and test the Java version
 .PHONY: java
 java:
 	cd java && make all
 
-# Build and test the Javascript version
+## Build and test the Javascript version
 .PHONY: javascript
 javascript:
 	cd javascript && make all
 
-# Build and test the PHP version
+## Build and test the PHP version
 .PHONY: php
 php:
 	cd php && make all
 
-# Build and test the Python version
+## Build and test the Python version
 .PHONY: python
 python:
 	cd python && make all
 
-# Build and test the R version
+## Build and test the R version
 .PHONY: r
 r:
 	cd r && make all
 
-# Build and test the Rust version
+## Build and test the Rust version
 .PHONY: rust
 rust:
 	cd rust && make all
 
-# Build and test the Zig version
+## Build and test the Zig version
 .PHONY: zig
 zig:
 	cd zig && make all
 
-# Run the linters for every language
+## Run the unit tests for every language
+.PHONY: test
+test:
+	cd c && make test
+	cd cgo && make test
+	cd go && make test
+	cd java && make test
+	cd javascript && make test
+	cd php && make test
+	cd python && make test
+	cd r && make test
+	cd rust && make test
+	cd zig && make test
+
+## Run the linters for every language
 .PHONY: linter
 linter:
 	cd c && make linter
@@ -96,7 +110,7 @@ linter:
 	cd rust && make linter
 	cd zig && make linter
 
-# Remove any build artifact
+## Remove any build artifact
 .PHONY: clean
 clean:
 	rm -rf vendor composer.lock
@@ -111,13 +125,13 @@ clean:
 	cd rust && make clean
 	cd zig && make clean
 
-# Tag the Git repository
+## Tag the Git repository
 .PHONY: tag
 tag:
 	git tag -a "v$(VERSION)" -m "Version $(VERSION)" && \
 	git push origin --tags
 
-# Increase the patch number in the VERSION file
+## Increase the patch number in the VERSION file
 .PHONY: versionup
 versionup:
 	echo ${VERSION} | gawk -F. '{printf("%d.%d.%d\n",$$1,$$2,(($$3+1)));}' > VERSION

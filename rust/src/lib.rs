@@ -1,18 +1,14 @@
-/*
-This library implements the farmhash64 and farmhash32 hash functions for strings.
-
-FarmHash is a family of hash functions.
-
-FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
-It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
-
-The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
-
-All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
-This is a Rust port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
-
-This code has been ported/translated by Nicola Asuni (Tecnick.com) to Rust code.
-*/
+//! This library implements the farmhash64 and farmhash32 hash functions for strings.
+//!
+//! FarmHash is a family of hash functions.
+//!
+//! FarmHash64 is a 64-bit fingerprint hash function that produces a hash value for a given string.
+//! It is designed to be fast and provide good hash distribution but is not suitable for cryptography applications.
+//!
+//! The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
+//!
+//! All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
+//! This is Nicola Asuni's (Tecnick.com) Rust rewrite of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (<https://github.com/google/farmhash>).
 
 // BASICS
 
@@ -32,43 +28,43 @@ struct Uint128 {
 
 // PLATFORM
 
+// Rotate a 32-bit integer right by the given number of bits.
 #[inline]
 fn rotate32(val: u32, shift: u32) -> u32 {
     val.rotate_right(shift)
 }
 
+// Rotate a 64-bit integer right by the given number of bits.
 #[inline]
 fn rotate64(val: u64, shift: u32) -> u64 {
     val.rotate_right(shift)
 }
 
+// Fetch a 32-bit little-endian integer from a byte array.
+// A single slice-to-array conversion keeps the load to one bounds check
+// instead of one per byte, which is what lets the caller inline this.
 #[inline]
 fn fetch32(s: &[u8], idx: usize) -> u64 {
-    u64::from(s[idx])
-        | (u64::from(s[idx + 1]) << 8)
-        | (u64::from(s[idx + 2]) << 16)
-        | (u64::from(s[idx + 3]) << 24)
+    let b: [u8; 4] = s[idx..idx + 4].try_into().unwrap();
+    u64::from(u32::from_le_bytes(b))
 }
 
+// Fetch a 64-bit little-endian integer from a byte array.
 #[inline]
 fn fetch64(s: &[u8], idx: usize) -> u64 {
-    u64::from(s[idx])
-        | (u64::from(s[idx + 1]) << 8)
-        | (u64::from(s[idx + 2]) << 16)
-        | (u64::from(s[idx + 3]) << 24)
-        | (u64::from(s[idx + 4]) << 32)
-        | (u64::from(s[idx + 5]) << 40)
-        | (u64::from(s[idx + 6]) << 48)
-        | (u64::from(s[idx + 7]) << 56)
+    let b: [u8; 8] = s[idx..idx + 8].try_into().unwrap();
+    u64::from_le_bytes(b)
 }
 
 // FARMHASH NA
 
+// XOR a 64-bit value with itself shifted right by 47 bits.
 #[inline]
 fn shift_mix(val: u64) -> u64 {
     val ^ (val >> 47)
 }
 
+// Combine a 32-bit value into a running hash using the MurmurHash3 mixing step.
 #[inline]
 fn mur(a: u32, h: u32) -> u32 {
     let mut a: u32 = a;
@@ -81,12 +77,13 @@ fn mur(a: u32, h: u32) -> u32 {
     (h.wrapping_mul(5)).wrapping_add(0xe6546b64)
 }
 
-// Merge a 64 bit integer into 32 bit.
+// Reduce a 64-bit integer to 32 bits using the MurmurHash3 mixing step.
 #[inline]
 fn mix_64_to_32(x: u64) -> u32 {
     mur((x >> 32) as u32, ((x << 32) >> 32) as u32)
 }
 
+// Return a 64-bit hash for 16 bytes given as two 64-bit words, multiplied by a constant.
 #[inline]
 fn hash_len_16_mul(u: u64, v: u64, mul: u64) -> u64 {
     let a = (u ^ v).wrapping_mul(mul);
@@ -96,6 +93,7 @@ fn hash_len_16_mul(u: u64, v: u64, mul: u64) -> u64 {
     b.wrapping_mul(mul)
 }
 
+// Return a 64-bit hash for 0 to 16 bytes.
 #[inline]
 fn hash_len_0_to_16(s: &[u8]) -> u64 {
     let slen = s.len() as u64;
@@ -135,8 +133,7 @@ fn hash_len_0_to_16(s: &[u8]) -> u64 {
     K2
 }
 
-// This probably works well for 16-byte strings as well, but it may be overkill
-// in that case.
+// Return a 64-bit hash for 17 to 32 bytes.
 #[inline]
 fn hash_len_17_to_32(s: &[u8]) -> u64 {
     let slen = s.len();
@@ -156,7 +153,7 @@ fn hash_len_17_to_32(s: &[u8]) -> u64 {
     )
 }
 
-// Return an 8-byte hash for 33 to 64 bytes.
+// Return a 64-bit hash for 33 to 64 bytes.
 #[inline]
 fn hash_len_33_to_64(s: &[u8]) -> u64 {
     let slen = s.len();
@@ -189,7 +186,7 @@ fn hash_len_33_to_64(s: &[u8]) -> u64 {
     )
 }
 
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Return a 128-bit weak hash for four 64-bit words and two seeds.
 // Callers do best to use "random-looking" values for a and b.
 #[inline]
 fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: u64) -> Uint128 {
@@ -206,7 +203,7 @@ fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, a: u64, b: 
     }
 }
 
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+// Return a 128-bit weak hash for the first 32 bytes of s and two seeds.
 #[inline]
 fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> Uint128 {
     weak_hash_len_32_with_seeds_words(
@@ -219,7 +216,9 @@ fn weak_hash_len_32_with_seeds(s: &[u8], a: u64, b: u64) -> Uint128 {
     )
 }
 
-// FarmHash64 returns a 64-bit fingerprint hash for a string.
+/// Returns a 64-bit fingerprint hash for a byte array.
+///
+/// This function is not suitable for cryptography.
 #[inline]
 pub fn farmhash64(mut s: &[u8]) -> u64 {
     let slen = s.len();
@@ -309,8 +308,12 @@ pub fn farmhash64(mut s: &[u8]) -> u64 {
     )
 }
 
-// FarmHash32 returns a 32-bit fingerprint hash for a string.
-// NOTE: This is NOT equivalent to the original Fingerprint32 function.
+/// Returns a 32-bit fingerprint hash for a byte array.
+///
+/// NOTE: This is NOT equivalent to the original Fingerprint32 function.
+/// It is derived from farmhash64.
+///
+/// This function is not suitable for cryptography.
 #[inline]
 pub fn farmhash32(s: &[u8]) -> u32 {
     mix_64_to_32(farmhash64(s))

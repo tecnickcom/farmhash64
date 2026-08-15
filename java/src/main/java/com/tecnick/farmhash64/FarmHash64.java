@@ -1,5 +1,5 @@
 /*
-Package farmhash64 implements the FarmHash64 and FarmHash32 hash functions for strings.
+This library implements the farmhash64 and farmhash32 hash functions for strings.
 
 FarmHash is a family of hash functions.
 
@@ -9,12 +9,23 @@ It is designed to be fast and provide good hash distribution but is not suitable
 The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
 
 All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
-This is a Java port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
-
-This code has been ported/translated by Nicola Asuni (Tecnick.com) to Java code.
+This is Nicola Asuni's (Tecnick.com) Java rewrite of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
 */
 package com.tecnick.farmhash64;
 
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Provides the farmhash64 and farmhash32 hash functions for byte arrays and strings.
+ *
+ * Strings are hashed as their UTF-8 encoding, so the results match the other
+ * language ports of this library.
+ *
+ * Java has no unsigned integer types, so farmhash64 and farmhash32 return the
+ * two's-complement bit pattern of the hash and roughly half of the possible
+ * values are negative. The farmhash64Hex and farmhash32Hex helpers render the
+ * same value as a fixed-length unsigned hexadecimal string.
+ */
 public class FarmHash64 {
 
 	// Utility class: prevent instantiation.
@@ -33,14 +44,17 @@ public class FarmHash64 {
 		public long lo;
 	}
 
+	// Rotate a 32-bit integer right by the given number of bits.
 	private static int rotate32(int val, int shift) {
 		return (val >>> shift) | (val << (32 - shift));
 	}
 
+	// Rotate a 64-bit integer right by the given number of bits.
 	private static long rotate64(long val, int shift) {
 		return (val >>> shift) | (val << (64 - shift));
 	}
 
+	// Fetch a 32-bit little-endian integer from a byte array.
 	private static long fetch32(byte[] s, int idx) {
 		return (s[idx + 0] & 0xFFL)
 				| ((s[idx + 1] & 0xFFL) << 8)
@@ -48,6 +62,7 @@ public class FarmHash64 {
 				| ((s[idx + 3] & 0xFFL) << 24);
 	}
 
+	// Fetch a 64-bit little-endian integer from a byte array.
 	private static long fetch64(byte[] s, int idx) {
 		return (s[idx + 0] & 0xFFL)
 				| ((s[idx + 1] & 0xFFL) << 8)
@@ -59,12 +74,13 @@ public class FarmHash64 {
 				| ((s[idx + 7] & 0xFFL) << 56);
 	}
 
+	// XOR a 64-bit value with itself shifted right by 47 bits.
 	private static long shiftMix(long val) {
 		return val ^ (val >>> 47);
 	}
 
+	// Combine a 32-bit value into a running hash using the MurmurHash3 mixing step.
 	private static int mur(int a, int h) {
-		// Helper from Murmur3 for combining two 32-bit values.
 		a *= c1;
 		a = rotate32(a, 17);
 		a *= c2;
@@ -74,10 +90,12 @@ public class FarmHash64 {
 		return ((h * 5) + 0xe6546b64);
 	}
 
+	// Reduce a 64-bit integer to 32 bits using the MurmurHash3 mixing step.
 	private static int mix64To32(long x) {
-		return mur((int) (x >>> 32), (int) ((x << 32) >>> 32));
+		return mur((int) (x >>> 32), (int) x);
 	}
 
+	// Return a 64-bit hash for 16 bytes given as two 64-bit words, multiplied by a constant.
 	private static long hashLen16Mul(long u, long v, long mul) {
 		// Murmur-inspired hashing.
 		long a = (u ^ v) * mul;
@@ -89,6 +107,7 @@ public class FarmHash64 {
 		return b;
 	}
 
+	// Return a 64-bit hash for 0 to 16 bytes.
 	private static long hashLen0to16(byte[] s) {
 		long slen = s.length;
 
@@ -125,6 +144,7 @@ public class FarmHash64 {
 		return k2;
 	}
 
+	// Return a 64-bit hash for 17 to 32 bytes.
 	private static long hashLen17to32(byte[] s) {
 		int slen = s.length;
 		long mul = k2 + (long) slen * 2;
@@ -139,6 +159,7 @@ public class FarmHash64 {
 				mul);
 	}
 
+	// Return a 64-bit hash for 33 to 64 bytes.
 	private static long hashLen33to64(byte[] s) {
 		int slen = s.length;
 		long mul = k2 + (long) slen * 2;
@@ -159,7 +180,9 @@ public class FarmHash64 {
 				mul);
 	}
 
-	private static UInt128 weakHashLen32WithSeedsWords(long w, long x, long y, long z, long a, long b) {
+	// Return a 128-bit weak hash for four 64-bit words and two seeds.
+	// Callers do best to use "random-looking" values for a and b.
+	private static void weakHashLen32WithSeedsWords(UInt128 out, long w, long x, long y, long z, long a, long b) {
 		a += w;
 		b = rotate64(b + a + z, 21);
 		long c = a;
@@ -167,15 +190,14 @@ public class FarmHash64 {
 		a += y;
 		b += rotate64(a, 44);
 
-		UInt128 result = new UInt128();
-		result.hi = b + c;
-		result.lo = a + z;
-
-		return result;
+		out.hi = b + c;
+		out.lo = a + z;
 	}
 
-	private static UInt128 weakHashLen32WithSeeds(byte[] s, int idx, long a, long b) {
-		return weakHashLen32WithSeedsWords(
+	// Return a 128-bit weak hash for the 32 bytes of s starting at idx and two seeds.
+	private static void weakHashLen32WithSeeds(UInt128 out, byte[] s, int idx, long a, long b) {
+		weakHashLen32WithSeedsWords(
+				out,
 				fetch64(s, idx + 0),
 				fetch64(s, idx + 8),
 				fetch64(s, idx + 16),
@@ -184,17 +206,25 @@ public class FarmHash64 {
 				b);
 	}
 
+	/**
+	 * Returns a 64-bit fingerprint hash for a byte array.
+	 *
+	 * This function is not suitable for cryptography.
+	 *
+	 * @param s the byte array to process
+	 *
+	 * @return the 64-bit hash code
+	 */
 	public static long farmhash64(byte[] s) {
 		int slen = s.length;
 
 		long seed = 81;
 
-
 		if (slen <= 32) {
 			if (slen <= 16) {
 				return hashLen0to16(s);
 			}
-			
+
 			return hashLen17to32(s);
 		}
 
@@ -209,7 +239,6 @@ public class FarmHash64 {
 		long x = seed * k2 + fetch64(s, 0);
 		long y = seed * k1 + 113;
 		long z = shiftMix(y * k2 + 113) * k2;
-		long tmp = 0;
 
 		// Set end so that after the loop we have 1 to 64 bytes left to process.
 		int endIdx = ((slen - 1) >> 6) << 6;
@@ -222,9 +251,9 @@ public class FarmHash64 {
 			x ^= w.hi;
 			y += v.lo + fetch64(s, idx + 40);
 			z = rotate64(z + w.lo, 33) * k1;
-			v = weakHashLen32WithSeeds(s, idx, v.hi * k1, x + w.lo);
-			w = weakHashLen32WithSeeds(s, idx + 32, z + w.hi, y + fetch64(s, idx + 16));
-			tmp = x;
+			weakHashLen32WithSeeds(v, s, idx, v.hi * k1, x + w.lo);
+			weakHashLen32WithSeeds(w, s, idx + 32, z + w.hi, y + fetch64(s, idx + 16));
+			long tmp = x;
 			x = z;
 			z = tmp;
 			idx += 64;
@@ -243,9 +272,9 @@ public class FarmHash64 {
 		x ^= w.hi * 9;
 		y += v.lo * 9 + fetch64(s, idx + 40);
 		z = rotate64(z + w.lo, 33) * mul;
-		v = weakHashLen32WithSeeds(s, idx, v.hi * mul, x + w.lo);
-		w = weakHashLen32WithSeeds(s, idx + 32, z + w.hi, y + fetch64(s, idx + 16));
-		tmp = x;
+		weakHashLen32WithSeeds(v, s, idx, v.hi * mul, x + w.lo);
+		weakHashLen32WithSeeds(w, s, idx + 32, z + w.hi, y + fetch64(s, idx + 16));
+		long tmp = x;
 		x = z;
 		z = tmp;
 
@@ -255,7 +284,96 @@ public class FarmHash64 {
 				mul);
 	}
 
+	/**
+	 * Returns a 32-bit fingerprint hash for a byte array.
+	 *
+	 * NOTE: This is NOT equivalent to the original Fingerprint32 function.
+	 * It is derived from farmhash64.
+	 *
+	 * This function is not suitable for cryptography.
+	 *
+	 * @param s the byte array to process
+	 *
+	 * @return the 32-bit hash code
+	 */
 	public static int farmhash32(byte[] s) {
 		return mix64To32(farmhash64(s));
+	}
+
+	/**
+	 * Returns a 64-bit fingerprint hash for the UTF-8 encoding of a string.
+	 *
+	 * This function is not suitable for cryptography.
+	 *
+	 * @param s the string to process
+	 *
+	 * @return the 64-bit hash code
+	 */
+	public static long farmhash64(String s) {
+		return farmhash64(s.getBytes(StandardCharsets.UTF_8));
+	}
+
+	/**
+	 * Returns a 32-bit fingerprint hash for the UTF-8 encoding of a string.
+	 *
+	 * NOTE: This is NOT equivalent to the original Fingerprint32 function.
+	 * It is derived from farmhash64.
+	 *
+	 * This function is not suitable for cryptography.
+	 *
+	 * @param s the string to process
+	 *
+	 * @return the 32-bit hash code
+	 */
+	public static int farmhash32(String s) {
+		return mix64To32(farmhash64(s));
+	}
+
+	/**
+	 * Returns a 64-bit fingerprint hash for a byte array as a 16-character
+	 * hexadecimal string.
+	 *
+	 * @param s the byte array to process
+	 *
+	 * @return the 64-bit hash code as a fixed-length hexadecimal string
+	 */
+	public static String farmhash64Hex(byte[] s) {
+		return String.format("%016x", farmhash64(s));
+	}
+
+	/**
+	 * Returns a 64-bit fingerprint hash for the UTF-8 encoding of a string as a
+	 * 16-character hexadecimal string.
+	 *
+	 * @param s the string to process
+	 *
+	 * @return the 64-bit hash code as a fixed-length hexadecimal string
+	 */
+	public static String farmhash64Hex(String s) {
+		return String.format("%016x", farmhash64(s));
+	}
+
+	/**
+	 * Returns a 32-bit fingerprint hash for a byte array as an 8-character
+	 * hexadecimal string.
+	 *
+	 * @param s the byte array to process
+	 *
+	 * @return the 32-bit hash code as a fixed-length hexadecimal string
+	 */
+	public static String farmhash32Hex(byte[] s) {
+		return String.format("%08x", farmhash32(s));
+	}
+
+	/**
+	 * Returns a 32-bit fingerprint hash for the UTF-8 encoding of a string as an
+	 * 8-character hexadecimal string.
+	 *
+	 * @param s the string to process
+	 *
+	 * @return the 32-bit hash code as a fixed-length hexadecimal string
+	 */
+	public static String farmhash32Hex(String s) {
+		return String.format("%08x", farmhash32(s));
 	}
 }

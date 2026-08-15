@@ -40,26 +40,32 @@ help:
 	@awk '/^## /{desc=substr($$0,4)} /^\.PHONY:/{if(NF>1) {target=$$2; if(desc) printf "  make %-15s: %s\n",target,desc; desc=""}}' Makefile
 	@echo ""
 
-all: clean version format linter coverage build test
+all: clean prepare version format linter coverage build test
+
+## Copy the shared C header inside the package so that the source tarball is self-contained
+.PHONY: prepare
+prepare:
+	cp ../c/src/farmhash64.h farmhash64/src/farmhash64.h
 
 ## Set the version from VERSION file
 .PHONY: version
-version:
+version: prepare
 	sed $(SEDINPLACE) "s/Version:.*$$/Version: $(VERSION).$(RELEASE)/" farmhash64/DESCRIPTION
 
-## Lint the R source code with lintr
+## Lint the R source code with lintr and the C glue with cppcheck
 .PHONY: linter
-linter:
+linter: prepare
+	cppcheck --enable=warning,style,performance,portability --error-exitcode=1 --inline-suppr -I farmhash64/src farmhash64/src/farmhash64.c farmhash64/src/init.c
 	R -e 'library(lintr); l <- lint_dir("farmhash64/R"); print(l); quit(status = if (length(l) > 0) 1 else 0)'
 
-## Check that the R source code has 100% test coverage (covr)
+## Check that the R and C sources have 100% test coverage (covr)
 .PHONY: coverage
-coverage:
-	R -e 'cov <- covr::package_coverage("farmhash64", quiet = TRUE); df <- covr::tally_coverage(cov); rdf <- df[grepl("R/.*[.]R$$", df$$filename), ]; pct <- 100 * sum(rdf$$value > 0) / nrow(rdf); cat("R coverage:", pct, "%\n"); quit(status = if (pct < 100) 1 else 0)'
+coverage: prepare
+	R -e 'cov <- covr::package_coverage("farmhash64", quiet = TRUE); df <- covr::tally_coverage(cov); err <- 0; for (f in unique(df$$filename)) { d <- df[df$$filename == f, ]; pct <- 100 * sum(d$$value > 0) / nrow(d); cat(sprintf("%s coverage: %.2f%%\n", f, pct)); if (pct < 100) { cat(sprintf("ERROR: %s coverage is below 100%%; uncovered lines: %s\n", f, paste(d$$line[d$$value == 0], collapse = ", "))); err <- 1 } }; quit(status = err)'
 
 ## Build the library
 .PHONY: build
-build: version
+build: prepare version
 	cd farmhash64 \
 	&& cp ../../LICENSE . \
 	&& R -e 'renv::settings$$snapshot.type("implicit");renv::init();renv::snapshot();'
@@ -67,7 +73,7 @@ build: version
 
 ## Unit tests
 .PHONY: test
-test:
+test: prepare
 	R -e 'setwd("./farmhash64"); renv::load(); renv::restore(prompt = FALSE); if (system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", paste0("--library=", .libPaths()[1]), "."), stdout = "", stderr = "") != 0L) stop("package install failed"); library(testthat); testthat::test_dir("tests")'
 
 ## Format the source code
@@ -81,8 +87,8 @@ format:
 ## Remove any build artifact
 .PHONY: clean
 clean:
-	rm -f farmhash64.Rcheck farmhash64/src/farmhash64.o farmhash64/src/farmhash64.so farmhash64/renv.lock
-	rm -rf renv farmhash64/renv farmhash64/.Rbuildignore farmhash64/.Rprofile .Rprofile
+	rm -f farmhash64/src/*.o farmhash64/src/*.so farmhash64/src/farmhash64.h farmhash64/renv.lock
+	rm -rf farmhash64.Rcheck renv farmhash64/renv farmhash64/.Rbuildignore farmhash64/.Rprofile .Rprofile
 
 ## Generate documentation
 .PHONY: devdoc

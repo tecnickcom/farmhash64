@@ -47,8 +47,9 @@ build: version
 ## Remove any build artifact
 .PHONY: clean
 clean:
-	rm -rf venv target c Dockerfile htmlcov build dist .pytest_cache .cache .benchmarks ./test/*.so ./test/__pycache__ ./farmhash64/__pycache__ ./farmhash64.egg-info farmhash64.*.so README.md
+	rm -rf venv target c Dockerfile htmlcov build dist .pytest_cache .cache .benchmarks ./test/*.so ./test/__pycache__ ./farmhash64/__pycache__ ./farmhash64.egg-info farmhash64.*.so README.md LICENSE farmhash64/farmhash64.h
 	find . -type f -name '*.pyc' -exec rm -f {} \;
+	find . -type f \( -name '*.gcda' -o -name '*.gcno' \) -exec rm -f {} \;
 
 ## Generate source code documentation
 .PHONY: doc
@@ -64,7 +65,7 @@ format:
 ## Lint the source code with cppcheck (C extension) and ruff (Python)
 .PHONY: linter
 linter:
-	cppcheck --enable=warning,style,performance,portability --error-exitcode=1 --inline-suppr -I ../c/src -I farmhash64 farmhash64/pyfarmhash64.c
+	cppcheck --enable=warning,style,performance,portability --error-exitcode=1 --inline-suppr -I farmhash64 farmhash64/pyfarmhash64.c
 	source venv/bin/activate \
 	&& ruff check test setup.py
 
@@ -74,15 +75,40 @@ test:
 	source venv/bin/activate \
 	&& pytest
 
-## Run the unit tests and check for 100% test coverage
+## Run the unit tests and check for 100% coverage of the test suite and of the C extension
 .PHONY: coverage
 coverage:
 	source venv/bin/activate \
 	&& pytest --cov=test --cov-branch --cov-report=term-missing --cov-fail-under=100 test
+	# coverage.py cannot see inside a C extension, so the extension is rebuilt
+	# with gcov instrumentation and measured separately with lcov.
+	rm -rf build target/coverage
+	mkdir -p target/coverage
+	source venv/bin/activate \
+	&& CFLAGS="-O0 -g --coverage" LDFLAGS="--coverage" python setup.py build_ext --inplace --force \
+	&& pytest -q test
+	lcov --capture --directory build --output-file target/coverage/all.info --rc branch_coverage=1 --quiet
+	lcov --extract target/coverage/all.info '*/farmhash64/pyfarmhash64.c' --output-file target/coverage/ext.info --rc branch_coverage=1 --quiet
+	@summary=$$(lcov --summary target/coverage/ext.info --rc branch_coverage=1 2>&1); \
+	for metric in lines functions branches; do \
+		value=$$(echo "$$summary" | grep -oE "$$metric[.]*: [0-9]+\.[0-9]+%" | grep -oE '[0-9]+\.[0-9]+' | head -1); \
+		echo "C extension $$metric coverage: $$value%"; \
+		if [ "$$value" != "100.0" ]; then echo "ERROR: $$metric coverage '$$value%' is below 100%"; exit 1; fi; \
+	done
+	# Restore the optimised build.
+	rm -rf build
+	source venv/bin/activate && python setup.py build_ext --inplace --force
+
+## Copy the shared sources inside the package so that the sdist is self-contained
+.PHONY: prepare
+prepare:
+	cp ../c/src/farmhash64.h farmhash64/farmhash64.h
+	cp ../README.md README.md
+	cp ../LICENSE LICENSE
 
 ## Set the version from VERSION file
 .PHONY: version
-version:
+version: prepare
 	sed $(SEDINPLACE) "s/version=.*,$$/version=\"$(VERSION).$(RELEASE)\",/" setup.py
 
 ## Create a virtual environment

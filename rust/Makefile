@@ -82,4 +82,4 @@ coverage:
 ## Set the version from VERSION file
 .PHONY: version
 version:
-	sed $(SEDINPLACE) "s/version.*=.*$$/version = \"$(VERSION)\"/" Cargo.toml
+	sed $(SEDINPLACE) "0,/^version = /s/^version = .*$$/version = \"$(VERSION)\"/" Cargo.toml

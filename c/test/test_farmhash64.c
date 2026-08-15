@@ -1,4 +1,7 @@
-// Nicola Asuni
+// Unit tests and benchmark for farmhash64.h
+//
+// @author Nicola Asuni <info@tecnick.com>
+// @link   https://github.com/tecnickcom/farmhash64
 
 #if __STDC_VERSION__ >= 199901L
 #define _XOPEN_SOURCE 600
@@ -6,6 +9,7 @@
 #define _XOPEN_SOURCE 500
 #endif
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -13,9 +17,12 @@
 
 #define TEST_STRING_DATA_SIZE 45
 
+// Size of the pseudorandom corpus, used as both the array bound and a loop limit.
+#define K_DATA_SIZE 1048576 // 1 << 20
+
 static const int k_test_size = 300;
-static const int k_data_size = 1048576; // 1 << 20
-static char data[1048576];
+static const int k_data_size = K_DATA_SIZE;
+static char data[K_DATA_SIZE];
 
 typedef struct test_data_string_t
 {
@@ -158,16 +165,23 @@ static const uint32_t farmhash64_expected[] =
     3717104621u, 1144474110u, 4166253320u, 2747410691u
 };
 
-// returns current time in nanoseconds
-uint64_t get_time()
+#define FARMHASH64_EXPECTED_SIZE ((int)(sizeof(farmhash64_expected) / sizeof(farmhash64_expected[0])))
+
+// Return the current process CPU time in nanoseconds, or 0 if the clock is unavailable.
+static uint64_t get_time(void)
 {
-    struct timespec t;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
+    // clock_gettime leaves "t" indeterminate on failure, so it is zeroed and
+    // the return value checked.
+    struct timespec t = {0, 0};
+    if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t) != 0)
+    {
+        return 0;
+    }
     return (((uint64_t)t.tv_sec * 1000000000) + (uint64_t)t.tv_nsec);
 }
 
 // Initialize data to pseudorandom values.
-void data_setup()
+static void data_setup(void)
 {
     static const uint64_t kt = 0xc3a5c85c97cb3127ULL;
     uint64_t a = 9;
@@ -184,7 +198,281 @@ void data_setup()
     }
 }
 
-int check(uint32_t actual, int index)
+// Check the fetch helpers against a known little-endian vector.
+static int test_fetch(void)
+{
+    int errors = 0;
+    const char buf[8] = {0x01, 0x23, 0x45, 0x67, (char)0x89, (char)0xab, (char)0xcd, (char)0xef};
+    const uint64_t exp64 = 0xefcdab8967452301ULL;
+    const uint32_t exp32 = 0x67452301U;
+    uint64_t h64 = farmhash_fetch64(buf);
+    uint32_t h32 = farmhash_fetch32(buf);
+    if (h64 != exp64)
+    {
+        fprintf(stderr, "%s : farmhash_fetch64 expected %" PRIx64 " but got %" PRIx64 "\n", __func__, exp64, h64);
+        ++errors;
+    }
+    if (h32 != exp32)
+    {
+        fprintf(stderr, "%s : farmhash_fetch32 expected %" PRIx32 " but got %" PRIx32 "\n", __func__, exp32, h32);
+        ++errors;
+    }
+    return errors;
+}
+
+// Assemble a 64-bit little-endian value one byte at a time, independently of
+// the fetch helpers. Correct on any byte order.
+static uint64_t ref_fetch64(const char *p)
+{
+    const uint8_t *b = (const uint8_t *)p;
+    uint64_t v = 0;
+    int i;
+    for (i = 7; i >= 0; i--)
+    {
+        v = (v << 8) | (uint64_t)b[i];
+    }
+    return v;
+}
+
+// Assemble a 32-bit little-endian value one byte at a time. See ref_fetch64().
+static uint32_t ref_fetch32(const char *p)
+{
+    const uint8_t *b = (const uint8_t *)p;
+    uint32_t v = 0;
+    int i;
+    for (i = 3; i >= 0; i--)
+    {
+        v = (v << 8) | (uint32_t)b[i];
+    }
+    return v;
+}
+
+// Cross-check the fetch helpers against the byte-wise reference at every start
+// offset within a word, so that both aligned and unaligned pointers are covered.
+static int test_fetch_reference(void)
+{
+    int errors = 0;
+    char buf[16];
+    int offset;
+    int i;
+    for (i = 0; i < (int)sizeof(buf); i++)
+    {
+        buf[i] = (char)(uint8_t)((i * 37) + 11);
+    }
+    for (offset = 0; offset < 8; offset++)
+    {
+        uint64_t got64 = farmhash_fetch64(buf + offset);
+        uint64_t exp64 = ref_fetch64(buf + offset);
+        uint32_t got32 = farmhash_fetch32(buf + offset);
+        uint32_t exp32 = ref_fetch32(buf + offset);
+        if (got64 != exp64)
+        {
+            fprintf(stderr, "%s : farmhash_fetch64 at offset %d expected %" PRIx64 " but got %" PRIx64 "\n", __func__, offset, exp64, got64);
+            ++errors;
+        }
+        if (got32 != exp32)
+        {
+            fprintf(stderr, "%s : farmhash_fetch32 at offset %d expected %" PRIx32 " but got %" PRIx32 "\n", __func__, offset, exp32, got32);
+            ++errors;
+        }
+    }
+    return errors;
+}
+
+// Check the byte-swap helpers against known vectors, and that swapping twice
+// returns the input.
+static int test_bswap(void)
+{
+    int errors = 0;
+    int i;
+    static const struct
+    {
+        uint64_t val;
+        uint64_t exp;
+    } bswap64_vec[] =
+    {
+        {0x0000000000000000ULL, 0x0000000000000000ULL},
+        {0xffffffffffffffffULL, 0xffffffffffffffffULL},
+        {0x0123456789abcdefULL, 0xefcdab8967452301ULL},
+        {0x00000000000000ffULL, 0xff00000000000000ULL},
+        {0x9ae16a3b2f90404fULL, 0x4f40902f3b6ae19aULL},
+    };
+    static const struct
+    {
+        uint32_t val;
+        uint32_t exp;
+    } bswap32_vec[] =
+    {
+        {0x00000000U, 0x00000000U},
+        {0xffffffffU, 0xffffffffU},
+        {0x01234567U, 0x67452301U},
+        {0x000000ffU, 0xff000000U},
+        {0xcc9e2d51U, 0x512d9eccU},
+    };
+    for (i = 0; i < (int)(sizeof(bswap64_vec) / sizeof(bswap64_vec[0])); i++)
+    {
+        uint64_t got = farmhash_bswap64(bswap64_vec[i].val);
+        if (got != bswap64_vec[i].exp)
+        {
+            fprintf(stderr, "%s : farmhash_bswap64(%" PRIx64 ") expected %" PRIx64 " but got %" PRIx64 "\n",
+                    __func__, bswap64_vec[i].val, bswap64_vec[i].exp, got);
+            ++errors;
+        }
+        if (farmhash_bswap64(got) != bswap64_vec[i].val)
+        {
+            fprintf(stderr, "%s : farmhash_bswap64 is not an involution for %" PRIx64 "\n", __func__, bswap64_vec[i].val);
+            ++errors;
+        }
+    }
+    for (i = 0; i < (int)(sizeof(bswap32_vec) / sizeof(bswap32_vec[0])); i++)
+    {
+        uint32_t got = farmhash_bswap32(bswap32_vec[i].val);
+        if (got != bswap32_vec[i].exp)
+        {
+            fprintf(stderr, "%s : farmhash_bswap32(%" PRIx32 ") expected %" PRIx32 " but got %" PRIx32 "\n",
+                    __func__, bswap32_vec[i].val, bswap32_vec[i].exp, got);
+            ++errors;
+        }
+        if (farmhash_bswap32(got) != bswap32_vec[i].val)
+        {
+            fprintf(stderr, "%s : farmhash_bswap32 is not an involution for %" PRIx32 "\n", __func__, bswap32_vec[i].val);
+            ++errors;
+        }
+    }
+    return errors;
+}
+
+// Check that a shift of 0 or of the full width returns the input unchanged.
+static int test_rotate(void)
+{
+    int errors = 0;
+    const uint64_t v64 = 0x0123456789abcdefULL;
+    const uint32_t v32 = 0x01234567U;
+    if ((farmhash_ror64(v64, 0) != v64) || (farmhash_ror64(v64, 64) != v64)
+            || (farmhash_ror64(v64, 8) != 0xef0123456789abcdULL))
+    {
+        fprintf(stderr, "%s : unexpected farmhash_ror64 result\n", __func__);
+        ++errors;
+    }
+    if ((farmhash_ror32(v32, 0) != v32) || (farmhash_ror32(v32, 32) != v32)
+            || (farmhash_ror32(v32, 8) != 0x67012345U))
+    {
+        fprintf(stderr, "%s : unexpected farmhash_ror32 result\n", __func__);
+        ++errors;
+    }
+    return errors;
+}
+
+// Check the MurmurHash3 mixing step and the 64-to-32 bit reduction against
+// known vectors.
+static int test_mur(void)
+{
+    int errors = 0;
+    int i;
+    static const struct
+    {
+        uint32_t a;
+        uint32_t h;
+        uint32_t exp;
+    } mur_vec[] =
+    {
+        {0x00000000U, 0x00000000U, 0xe6546b64U},
+        {0x00000001U, 0x00000000U, 0x26cf0576U},
+        {0x00000000U, 0x00000001U, 0xe6550b64U},
+        {0xffffffffU, 0xffffffffU, 0xb849f5eeU},
+        {0x12345678U, 0x9abcdef0U, 0xb459e44dU},
+    };
+    static const struct
+    {
+        uint64_t x;
+        uint32_t exp;
+    } mix_vec[] =
+    {
+        {0x0000000000000000ULL, 0xe6546b64U},
+        {0x0000000000000001ULL, 0xe6550b64U},
+        {0xffffffffffffffffULL, 0xb849f5eeU},
+        {0x9ae16a3b2f90404fULL, 0xfe0061e9U},
+        {0x0123456789abcdefULL, 0x94893cf5U},
+    };
+    for (i = 0; i < (int)(sizeof(mur_vec) / sizeof(mur_vec[0])); i++)
+    {
+        uint32_t h = farmhash_mur(mur_vec[i].a, mur_vec[i].h);
+        if (h != mur_vec[i].exp)
+        {
+            fprintf(stderr, "%s : farmhash_mur(%" PRIx32 ", %" PRIx32 ") expected %" PRIx32 " but got %" PRIx32 "\n",
+                    __func__, mur_vec[i].a, mur_vec[i].h, mur_vec[i].exp, h);
+            ++errors;
+        }
+    }
+    for (i = 0; i < (int)(sizeof(mix_vec) / sizeof(mix_vec[0])); i++)
+    {
+        uint32_t h = farmhash_mix_64_to_32(mix_vec[i].x);
+        if (h != mix_vec[i].exp)
+        {
+            fprintf(stderr, "%s : farmhash_mix_64_to_32(%" PRIx64 ") expected %" PRIx32 " but got %" PRIx32 "\n",
+                    __func__, mix_vec[i].x, mix_vec[i].exp, h);
+            ++errors;
+        }
+    }
+    return errors;
+}
+
+// Check that a NULL pointer with a zero length is accepted and returns the
+// same value as an empty input.
+static int test_null_input(void)
+{
+    int errors = 0;
+    const uint64_t exp64 = 0x9ae16a3b2f90404fULL; // farmhash_k2
+    const uint32_t exp32 = 0xfe0061e9U;
+    uint64_t h64 = farmhash64(NULL, 0);
+    uint32_t h32 = farmhash32(NULL, 0);
+    if (h64 != exp64)
+    {
+        fprintf(stderr, "%s : farmhash64(NULL, 0) expected %" PRIx64 " but got %" PRIx64 "\n", __func__, exp64, h64);
+        ++errors;
+    }
+    if (h32 != exp32)
+    {
+        fprintf(stderr, "%s : farmhash32(NULL, 0) expected %" PRIx32 " but got %" PRIx32 "\n", __func__, exp32, h32);
+        ++errors;
+    }
+    return errors;
+}
+
+// Check that the hash depends only on the input bytes and not on the alignment
+// of the address they are read from.
+static int test_alignment(void)
+{
+    int errors = 0;
+    // 100 bytes: long enough to run the >64-byte loop as well as the tail.
+    enum { k_align_len = 100 };
+    char pattern[k_align_len];
+    char buf[k_align_len + 8];
+    uint64_t expected;
+    int offset;
+    int i;
+    for (i = 0; i < k_align_len; i++)
+    {
+        pattern[i] = (char)(uint8_t)((i * 31) + 7);
+    }
+    expected = farmhash64(pattern, k_align_len);
+    for (offset = 0; offset < 8; offset++)
+    {
+        uint64_t h;
+        memset(buf, 0, sizeof(buf));
+        memcpy(buf + offset, pattern, k_align_len);
+        h = farmhash64(buf + offset, k_align_len);
+        if (h != expected)
+        {
+            fprintf(stderr, "%s : offset %d expected %" PRIx64 " but got %" PRIx64 "\n", __func__, offset, expected, h);
+            ++errors;
+        }
+    }
+    return errors;
+}
+
+// Compare a value against the entry of farmhash64_expected at the given index.
+static int check(uint32_t actual, int index)
 {
     int errors = 0;
     const uint32_t e = farmhash64_expected[index];
@@ -196,16 +484,18 @@ int check(uint32_t actual, int index)
     return errors;
 }
 
-int test_data_item64(int offset, int len, int index)
+// Hash a slice of the corpus and check its two halves against the table.
+static int test_data_item64(int offset, int len, int index)
 {
     int errors = 0;
     uint64_t h = farmhash64(data + offset, len);
     errors += check((uint32_t)(h >> 32), index);
-    errors += check((uint32_t)((h << 32) >> 32), index+1);
+    errors += check((uint32_t)h, index+1);
     return errors;
 }
 
-int test_farmhash64()
+// Check farmhash64 against the expected values for slices of the corpus.
+static int test_farmhash64_data(void)
 {
     int i = 0;
     int errors = 0;
@@ -222,10 +512,14 @@ int test_farmhash64()
         index += 2;
     }
     errors += test_data_item64(0, k_data_size, index);
+    index += 2;
+    // The expected-value table must be consumed exactly.
+    errors += (index != FARMHASH64_EXPECTED_SIZE);
     return errors;
 }
 
-int test_farmhash64_strings()
+// Check farmhash64 against the expected values for the string vectors.
+static int test_farmhash64_strings(void)
 {
     int errors = 0;
     uint64_t h;
@@ -235,31 +529,35 @@ int test_farmhash64_strings()
         h = farmhash64(string_input[i].str, strlen(string_input[i].str));
         if (h != string_input[i].h64)
         {
-            fprintf(stderr, "%s (%d) expected %lx but got %lx for %s\n", __func__, i, string_input[i].h64, h, string_input[i].str);
+            fprintf(stderr, "%s (%d) expected %" PRIx64 " but got %" PRIx64 " for %s\n", __func__, i, string_input[i].h64, h, string_input[i].str);
             ++errors;
         }
     }
     return errors;
 }
 
-void benchmark_farmhash64()
+// Measure the average time per farmhash64 call over inputs of 15 to 70 bytes.
+static void benchmark_farmhash64(void)
 {
     uint64_t tstart, tend;
     int i;
     int size = 100000;
+    // Volatile sink: prevents the compiler from eliminating the loop.
+    volatile uint64_t sink = 0;
     tstart = get_time();
     for (i=0 ; i < size; i++)
     {
-        farmhash64("123456789012345", 15);
-        farmhash64("1234567890123456789012345678901", 31);
-        farmhash64("123456789012345678901234567890123456789012345678901234567890123", 63);
-        farmhash64("1234567890123456789012345678901234567890123456789012345678901234567890", 70);
+        sink ^= farmhash64("123456789012345", 15);
+        sink ^= farmhash64("1234567890123456789012345678901", 31);
+        sink ^= farmhash64("123456789012345678901234567890123456789012345678901234567890123", 63);
+        sink ^= farmhash64("1234567890123456789012345678901234567890123456789012345678901234567890", 70);
     }
     tend = get_time();
-    fprintf(stdout, " * %s : %lu ns/op\n", __func__, (tend - tstart)/(size*4));
+    fprintf(stdout, " * %s : %" PRIu64 " ns/op\n", __func__, (tend - tstart)/((uint64_t)size*4));
 }
 
-int test_farmhash32_strings()
+// Check farmhash32 against the expected values for the string vectors.
+static int test_farmhash32_strings(void)
 {
     int errors = 0;
     uint32_t h;
@@ -276,12 +574,19 @@ int test_farmhash32_strings()
     return errors;
 }
 
-int main()
+int main(void)
 {
     int errors = 0;
 
+    errors += test_fetch();
+    errors += test_fetch_reference();
+    errors += test_bswap();
+    errors += test_rotate();
+    errors += test_mur();
+    errors += test_null_input();
+    errors += test_alignment();
     errors += test_farmhash64_strings();
-    errors += test_farmhash64();
+    errors += test_farmhash64_data();
     errors += test_farmhash32_strings();
 
     benchmark_farmhash64();

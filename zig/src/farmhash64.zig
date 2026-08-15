@@ -8,9 +8,9 @@
 //! The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
 //!
 //! All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
-//! This is a Zig port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
-//!
-//! This code has been ported/translated by Nicola Asuni (Tecnick.com) to Zig code.
+//! This is Nicola Asuni's (Tecnick.com) Zig rewrite of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
+
+const std = @import("std");
 
 // BASICS
 
@@ -23,35 +23,43 @@ const K2: u64 = 0x9ae16a3b2f90404f;
 const C1: u32 = 0xcc9e2d51;
 const C2: u32 = 0x1b873593;
 
-const Uint128 = packed struct {
+const Uint128 = struct {
     hi: u64 = 0,
     lo: u64 = 0,
 };
 
 // PLATFORM
 
+// Rotate a 32-bit integer right by the given number of bits.
 fn rotate32(val: u32, shift: u32) u32 {
-    return (val >> @as(u5, @truncate(shift))) | (val << @as(u5, @truncate((32 - shift))));
+    return std.math.rotr(u32, val, shift);
 }
 
+// Rotate a 64-bit integer right by the given number of bits.
 fn rotate64(val: u64, shift: u32) u64 {
-    return (val >> @as(u6, @truncate(shift))) | (val << @as(u6, @truncate((64 - shift))));
+    return std.math.rotr(u64, val, shift);
 }
 
+// Fetch a 32-bit little-endian integer from a byte array.
+// A single sized read keeps this to one bounds check instead of one per byte,
+// which matters in Debug and ReleaseSafe where the checks are not elided.
 fn fetch32(s: []const u8, idx: usize) u64 {
-    return @as(u64, s[idx + 0]) | (@as(u64, s[idx + 1]) << 8) | (@as(u64, s[idx + 2]) << 16) | (@as(u64, s[idx + 3]) << 24);
+    return @as(u64, std.mem.readInt(u32, s[idx..][0..4], .little));
 }
 
+// Fetch a 64-bit little-endian integer from a byte array.
 fn fetch64(s: []const u8, idx: usize) u64 {
-    return @as(u64, s[idx + 0]) | (@as(u64, s[idx + 1]) << 8) | (@as(u64, s[idx + 2]) << 16) | (@as(u64, s[idx + 3]) << 24) | (@as(u64, s[idx + 4]) << 32) | (@as(u64, s[idx + 5]) << 40) | (@as(u64, s[idx + 6]) << 48) | (@as(u64, s[idx + 7]) << 56);
+    return std.mem.readInt(u64, s[idx..][0..8], .little);
 }
 
 // FARMHASH NA
 
+// XOR a 64-bit value with itself shifted right by 47 bits.
 fn shift_mix(val: u64) u64 {
     return val ^ (val >> 47);
 }
 
+// Combine a 32-bit value into a running hash using the MurmurHash3 mixing step.
 fn mur(pa: u32, ph: u32) u32 {
     var a: u32 = pa;
     var h: u32 = ph;
@@ -63,11 +71,12 @@ fn mur(pa: u32, ph: u32) u32 {
     return (h *% 5) +% 0xe6546b64;
 }
 
-// Merge a 64 bit integer into 32 bit.
+// Reduce a 64-bit integer to 32 bits using the MurmurHash3 mixing step.
 fn mix_64_to_32(x: u64) u32 {
     return mur(@as(u32, @truncate(x >> 32)), @as(u32, @truncate((x << 32) >> 32)));
 }
 
+// Return a 64-bit hash for 16 bytes given as two 64-bit words, multiplied by a constant.
 fn hash_len_16_mul(u: u64, v: u64, mul: u64) u64 {
     var a: u64 = (u ^ v) *% mul;
     a = a ^ (a >> 47);
@@ -76,6 +85,7 @@ fn hash_len_16_mul(u: u64, v: u64, mul: u64) u64 {
     return b *% mul;
 }
 
+// Return a 64-bit hash for 0 to 16 bytes.
 fn hash_len_0_to_16(s: []const u8) u64 {
     const slen: u64 = @as(u64, s.len);
 
@@ -113,9 +123,10 @@ fn hash_len_0_to_16(s: []const u8) u64 {
     return K2;
 }
 
+// Return a 64-bit hash for 17 to 32 bytes.
 fn hash_len_17_to_32(s: []const u8) u64 {
     const slen: usize = s.len;
-    const mul: u64 = K2 +% @as(u64, slen * 2);
+    const mul: u64 = K2 +% (@as(u64, slen) *% 2);
     const a: u64 = fetch64(s, 0) *% K1;
     const b: u64 = fetch64(s, 8);
     const c: u64 = fetch64(s, slen - 8) *% mul;
@@ -128,7 +139,7 @@ fn hash_len_17_to_32(s: []const u8) u64 {
     );
 }
 
-// Return an 8-byte hash for 33 to 64 bytes.
+// Return a 64-bit hash for 33 to 64 bytes.
 fn hash_len_33_to_64(s: []const u8) u64 {
     const slen: usize = s.len;
     const mul: u64 = K2 +% (@as(u64, slen) *% 2);
@@ -154,7 +165,7 @@ fn hash_len_33_to_64(s: []const u8) u64 {
     );
 }
 
-// Return a 16-byte hash for 48 bytes.  Quick and dirty.
+// Return a 128-bit weak hash for four 64-bit words and two seeds.
 // Callers do best to use "random-looking" values for a and b.
 fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, pa: u64, pb: u64) Uint128 {
     var a: u64 = pa +% w;
@@ -170,7 +181,7 @@ fn weak_hash_len_32_with_seeds_words(w: u64, x: u64, y: u64, z: u64, pa: u64, pb
     };
 }
 
-// Return a 16-byte hash for s[0] ... s[31], a, and b.  Quick and dirty.
+// Return a 128-bit weak hash for the 32 bytes of s starting at idx and two seeds.
 fn weak_hash_len_32_with_seeds(s: []const u8, idx: usize, a: u64, b: u64) Uint128 {
     return weak_hash_len_32_with_seeds_words(
         fetch64(s, idx + 0),
@@ -182,7 +193,9 @@ fn weak_hash_len_32_with_seeds(s: []const u8, idx: usize, a: u64, b: u64) Uint12
     );
 }
 
-// FarmHash64 returns a 64-bit fingerprint hash for a string.
+/// Returns a 64-bit fingerprint hash for a byte array.
+///
+/// This function is not suitable for cryptography.
 pub fn farmhash64(s: []const u8) u64 {
     var slen: usize = s.len;
 
@@ -262,8 +275,12 @@ pub fn farmhash64(s: []const u8) u64 {
     );
 }
 
-// FarmHash32 returns a 32-bit fingerprint hash for a string.
-// NOTE: This is NOT equivalent to the original Fingerprint32 function.
+/// Returns a 32-bit fingerprint hash for a byte array.
+///
+/// NOTE: This is NOT equivalent to the original Fingerprint32 function.
+/// It is derived from farmhash64.
+///
+/// This function is not suitable for cryptography.
 pub fn farmhash32(s: []const u8) u32 {
     return mix_64_to_32(farmhash64(s));
 }

@@ -26,7 +26,7 @@ COMPOSER=$(PHP) -d "apc.enable_cli=0" $(shell which composer)
 PHPDOC=$(shell which phpDocumentor)
 
 # Mago version
-MAGOVERSION=1.43.0
+MAGOVERSION=1.46.0
 
 # Display general help about this command
 .PHONY: help
@@ -91,7 +91,7 @@ test:
 	#./vendor/bin/phpunit --migrate-configuration || true
 	XDEBUG_MODE=coverage ./vendor/bin/phpunit --stderr test
 
-## Check that the PHPUnit clover coverage from the test target is 100%
+## Check that the PHPUnit clover coverage from the test target is 100% for statements, methods and elements
 .PHONY: coverage
 coverage:
-	@php -r '$$x=simplexml_load_file("target/coverage/coverage.xml");$$m=$$x->project->metrics;$$s=(int)$$m["statements"];$$c=(int)$$m["coveredstatements"];$$p=$$s?100*$$c/$$s:100;printf("Coverage: %.2f%%\n",$$p);exit($$p<100?1:0);'
+	@php -r '$$x=simplexml_load_file("target/coverage/coverage.xml");$$m=$$x->project->metrics;$$e=0;foreach(["statements"=>"coveredstatements","methods"=>"coveredmethods","elements"=>"coveredelements"] as $$t=>$$ct){$$s=(int)$$m[$$t];$$c=(int)$$m[$$ct];$$p=$$s?100*$$c/$$s:100;printf("%s coverage: %.2f%%\n",$$t,$$p);if($$p<100){fprintf(STDERR,"ERROR: %s coverage %.2f%% is below 100%%\n",$$t,$$p);$$e=1;}}exit($$e);'

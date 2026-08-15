@@ -201,7 +201,7 @@ mod tests {
             a = a.wrapping_add(b);
             b = b.wrapping_add(a);
             a = (a ^ (a >> 41)).wrapping_mul(KT);
-            b = (b ^ (b >> 41)).wrapping_mul(KT) + i as u64;
+            b = (b ^ (b >> 41)).wrapping_mul(KT).wrapping_add(i as u64);
             *item = (b >> 37) as u8;
         }
 

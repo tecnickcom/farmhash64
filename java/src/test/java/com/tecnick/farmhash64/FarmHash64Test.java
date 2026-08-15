@@ -1,6 +1,7 @@
 package com.tecnick.farmhash64;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -163,16 +164,61 @@ public class FarmHash64Test {
  
     @ParameterizedTest
     @MethodSource("hashTestData_Parameters")
-    public void farmhash64String(int oh32, long oh64, String in) throws Throwable {
-        long h = FarmHash64.farmhash64(in.getBytes());
+    public void farmhash64Bytes(int oh32, long oh64, String in) throws Throwable {
+        long h = FarmHash64.farmhash64(in.getBytes(StandardCharsets.UTF_8));
         assertEquals(oh64, h);
     }
  
     @ParameterizedTest
     @MethodSource("hashTestData_Parameters")
-    public void farmhash32String(int oh32, long oh64, String in) throws Throwable {
-        int h = FarmHash64.farmhash32(in.getBytes());
+    public void farmhash32Bytes(int oh32, long oh64, String in) throws Throwable {
+        int h = FarmHash64.farmhash32(in.getBytes(StandardCharsets.UTF_8));
         assertEquals(oh32, h);
+    }
+
+    // The String overloads must encode as UTF-8, matching the byte[] overloads
+    // and the other language ports.
+    @ParameterizedTest
+    @MethodSource("hashTestData_Parameters")
+    public void farmhash64String(int oh32, long oh64, String in) throws Throwable {
+        assertEquals(oh64, FarmHash64.farmhash64(in));
+    }
+ 
+    @ParameterizedTest
+    @MethodSource("hashTestData_Parameters")
+    public void farmhash32String(int oh32, long oh64, String in) throws Throwable {
+        assertEquals(oh32, FarmHash64.farmhash32(in));
+    }
+
+    // The hex helpers must render the value as unsigned and zero-padded to a
+    // fixed width, for both the byte[] and the String overloads.
+    @ParameterizedTest
+    @MethodSource("hashTestData_Parameters")
+    public void farmhashHex(int oh32, long oh64, String in) throws Throwable {
+        byte[] b = in.getBytes(StandardCharsets.UTF_8);
+
+        String h64 = FarmHash64.farmhash64Hex(b);
+        assertEquals(16, h64.length());
+        assertEquals(oh64, Long.parseUnsignedLong(h64, 16));
+        assertEquals(h64, FarmHash64.farmhash64Hex(in));
+
+        String h32 = FarmHash64.farmhash32Hex(b);
+        assertEquals(8, h32.length());
+        assertEquals(oh32, Integer.parseUnsignedInt(h32, 16));
+        assertEquals(h32, FarmHash64.farmhash32Hex(in));
+    }
+
+    @Test
+    public void farmhashHexKnownValues() throws Throwable {
+        // Fixed expectations shared with the C, JS, PHP and R ports, including
+        // values whose top bit is set (which a signed rendering would corrupt).
+        assertEquals("9ae16a3b2f90404f", FarmHash64.farmhash64Hex(""));
+        assertEquals("fe0061e9", FarmHash64.farmhash32Hex(""));
+        assertEquals("aa8d6e5242ada51e", FarmHash64.farmhash64Hex("ab"));
+        assertEquals("24a5b3a074e7f369", FarmHash64.farmhash64Hex("abc"));
+        assertEquals("caf25fe2", FarmHash64.farmhash32Hex("abc"));
+        assertEquals("4dbd128af51d77e8", FarmHash64.farmhash64Hex("0123456789%0123456789\u00a3"));
+        assertEquals("4ba9b4ed", FarmHash64.farmhash32Hex("0123456789%0123456789\u00a3"));
     }
 
     private byte[] dataSetup() {

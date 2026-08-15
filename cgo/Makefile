@@ -99,7 +99,7 @@ coverage: ensuretarget
 	echo "Total coverage: $$total"; \
 	if [ "$$total" != "100.0%" ]; then echo "ERROR: coverage $$total is below 100.0%"; exit 1; fi
 
-# Get the test dependencies
+## Get the test dependencies
 .PHONY: deps
 deps: ensuretarget
 	curl --silent --show-error --fail --location "https://golangci-lint.run/install.sh" | sh -s -- -b "$(BINUTIL)" $(GOLANGCILINTVERSION)
@@ -143,7 +143,6 @@ test: ensuretarget
 	@echo -e "\n\n>>> START: Unit Tests <<<\n\n"
 	$(GOTEST) \
 	-shuffle=on \
-	-tags=unit \
 	-covermode=atomic \
 	-bench=. \
 	-race \

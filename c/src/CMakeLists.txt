@@ -1,16 +1,20 @@
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+# farmhash64 is a header-only library: every function in farmhash64.h is
+# "static inline", so there is no object code to build and nothing to export.
+#
+# NOTE: this used to be "add_library(farmhash64 farmhash64.h)" with an explicit
+# LINKER_LANGUAGE. CMake does not compile a .h, and internal-linkage functions
+# cannot be exported anyway, so that produced a shared object with zero defined
+# symbols: linking -lfarmhash64 gave the caller nothing. An INTERFACE library
+# models what this actually is and propagates the include directory to whoever
+# links it.
+add_library (farmhash64 INTERFACE)
+target_include_directories (farmhash64 INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-
-# Add the binary tree directory to the search path for linking and include files
-link_directories( ${CMAKE_CURRENT_BINARY_DIR} )
-include_directories (${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_BINARY_DIR}/src )
-
-add_library (farmhash64 farmhash64.h)
-target_include_directories (farmhash64 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-set_target_properties(farmhash64 PROPERTIES LINKER_LANGUAGE "C")
-
-# Required to link the math library
-target_link_libraries(farmhash64)
+# The header is the only installable artifact. Without an install rule the
+# generated install_manifest.txt never exists, which makes the uninstall target
+# abort and leaves the CPack DEB/RPM/TGZ payloads empty.
+include(GNUInstallDirs)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/farmhash64.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

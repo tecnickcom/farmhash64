@@ -2,40 +2,56 @@
 //
 // farmhash64.c
 //
+// C entry points that expose the farmhash64 and farmhash32 functions to R.
+//
 // @category   Libraries
 // @author     Nicola Asuni <info@tecnick.com>
 // @link       https://github.com/tecnickcom/farmhash64
 
 #include <inttypes.h>
+#include <string.h>
 #include <R.h>
-#include <Rdefines.h>
-#include <stdlib.h>
-#include "../../../c/src/farmhash64.h"
+#include <Rinternals.h>
+#include "farmhash64.h"
 
 /**
  * Computes the 64-bit FarmHash hash value of each string in the input vector
  * and returns the hexadecimal representation of the hash values.
  *
- * @param strv The input character vector containing the strings to be hashed.
- * @param ret The output character vector to store the hexadecimal hash values.
+ * The strings are hashed as UTF-8 bytes, so that the result does not depend on
+ * the native encoding of the input elements. NA elements are propagated as NA.
  *
- * @return The output character vector with the hexadecimal hash values.
+ * @param strv The input character vector containing the strings to be hashed.
+ *
+ * @return A character vector with the 16-character hexadecimal hash values.
  */
-SEXP R_FarmHash64Hex(SEXP strv, SEXP ret)
+SEXP R_FarmHash64Hex(SEXP strv)
 {
-    uint64_t i = 0;
-    uint64_t n = LENGTH(strv);
-    uint64_t hash = 0;
-    char hex[17] = "0000000000000000\0";
-
-    for(i = 0; i < n; i++)
+    if (TYPEOF(strv) != STRSXP)
     {
-        const char *s = CHAR(STRING_ELT(strv, i));
-        hash = farmhash64(s, strlen(s));
-        sprintf(hex, "%016" PRIx64, hash);
-        SET_STRING_ELT(ret, i, mkChar(hex));
+        Rf_error("strv must be a character vector");
     }
 
+    R_xlen_t n = XLENGTH(strv);
+    SEXP ret = PROTECT(Rf_allocVector(STRSXP, n));
+
+    for (R_xlen_t i = 0; i < n; i++)
+    {
+        SEXP elt = STRING_ELT(strv, i);
+
+        if (elt == NA_STRING)
+        {
+            SET_STRING_ELT(ret, i, NA_STRING);
+            continue;
+        }
+
+        const char *s = Rf_translateCharUTF8(elt);
+        char hex[17];
+        snprintf(hex, sizeof(hex), "%016" PRIx64, farmhash64(s, strlen(s)));
+        SET_STRING_ELT(ret, i, Rf_mkChar(hex));
+    }
+
+    UNPROTECT(1);
     return ret;
 }
 
@@ -43,25 +59,39 @@ SEXP R_FarmHash64Hex(SEXP strv, SEXP ret)
  * Computes the 32-bit FarmHash hash value of each string in the input vector
  * and returns the hexadecimal representation of the hash values.
  *
- * @param strv The input character vector containing the strings to be hashed.
- * @param ret The output character vector to store the hexadecimal hash values.
+ * The strings are hashed as UTF-8 bytes, so that the result does not depend on
+ * the native encoding of the input elements. NA elements are propagated as NA.
  *
- * @return The output character vector with the hexadecimal hash values.
+ * @param strv The input character vector containing the strings to be hashed.
+ *
+ * @return A character vector with the 8-character hexadecimal hash values.
  */
-SEXP R_FarmHash32Hex(SEXP strv, SEXP ret)
+SEXP R_FarmHash32Hex(SEXP strv)
 {
-    uint64_t i = 0;
-    uint64_t n = LENGTH(strv);
-    uint32_t hash = 0;
-    char hex[17] = "00000000\0";
-
-    for(i = 0; i < n; i++)
+    if (TYPEOF(strv) != STRSXP)
     {
-        const char *s = CHAR(STRING_ELT(strv, i));
-        hash = farmhash32(s, strlen(s));
-        sprintf(hex, "%08" PRIx32, hash);
-        SET_STRING_ELT(ret, i, mkChar(hex));
+        Rf_error("strv must be a character vector");
     }
 
+    R_xlen_t n = XLENGTH(strv);
+    SEXP ret = PROTECT(Rf_allocVector(STRSXP, n));
+
+    for (R_xlen_t i = 0; i < n; i++)
+    {
+        SEXP elt = STRING_ELT(strv, i);
+
+        if (elt == NA_STRING)
+        {
+            SET_STRING_ELT(ret, i, NA_STRING);
+            continue;
+        }
+
+        const char *s = Rf_translateCharUTF8(elt);
+        char hex[9];
+        snprintf(hex, sizeof(hex), "%08" PRIx32, farmhash32(s, strlen(s)));
+        SET_STRING_ELT(ret, i, Rf_mkChar(hex));
+    }
+
+    UNPROTECT(1);
     return ret;
 }

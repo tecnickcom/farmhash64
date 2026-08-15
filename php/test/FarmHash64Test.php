@@ -12,6 +12,10 @@ use PHPUnit\Framework\TestCase;
 
 class FarmHash64Test extends TestCase
 {
+    // Mirrors of the private constants, as signed 64-bit two's-complement values.
+    private const K1 = -5_435_081_209_227_447_693; // 0xb492b66fbe98f273
+    private const K2 = -7_286_425_919_675_154_353; // 0x9ae16a3b2f90404f
+
     // @codingStandardsIgnoreStart
     private const TEST_DATA = [
         [
@@ -419,6 +423,60 @@ class FarmHash64Test extends TestCase
             'c3f02c4ffd5d71e6',
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
         ],
+        [
+            0x7189_99c7,
+            [
+                'hi' => 0x1bd2_57e2,
+                'lo' => 0xfc3d_a812,
+            ],
+            '1bd257e2fc3da812',
+            'abcdefghijklmnopqrstuvwxyzabcdefg',
+        ],
+        [
+            0x1a6c_b3fb,
+            [
+                'hi' => 0xd52b_7a86,
+                'lo' => 0x46a9_1b9e,
+            ],
+            'd52b7a8646a91b9e',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk',
+        ],
+        [
+            0x7316_a376,
+            [
+                'hi' => 0x9c4a_595c,
+                'lo' => 0x23bb_9bfa,
+            ],
+            '9c4a595c23bb9bfa',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl',
+        ],
+        [
+            0x57a8_87f8,
+            [
+                'hi' => 0x2434_d891,
+                'lo' => 0x7886_fe2a,
+            ],
+            '2434d8917886fe2a',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklm',
+        ],
+        [
+            0xa45b_0dff,
+            [
+                'hi' => 0xc324_4d5e,
+                'lo' => 0xc8a4_474a,
+            ],
+            'c3244d5ec8a4474a',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx',
+        ],
+        [
+            0x1eaa_35e7,
+            [
+                'hi' => 0x9b1c_a057,
+                'lo' => 0x1b8c_efd4,
+            ],
+            '9b1ca0571b8cefd4',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxy',
+        ],
     ];
 
     // @codingStandardsIgnoreEnd
@@ -453,7 +511,21 @@ class FarmHash64Test extends TestCase
         }
     }
 
-    public function testRotateAndShiftEdgeCases(): void
+    public function testAcceptsLiteralAndExpressionArguments(): void
+    {
+        $obj = $this->getTestObject();
+
+        // Regression: the public entry points must not take their argument by
+        // reference, otherwise literals and expressions raise a fatal Error.
+        static::assertSame('24a5b3a074e7f369', $obj->farmhash64Hex('abc'));
+        static::assertSame(0x24a5_b3a0, $obj->farmhash64('abc')['hi']);
+        static::assertSame(0x74e7_f369, $obj->farmhash64('abc')['lo']);
+        static::assertSame(0xcaf2_5fe2, $obj->farmhash32('abc'));
+        static::assertSame(0xcaf2_5fe2, $obj->farmhash32(substr('abcd', 0, 3)));
+        static::assertSame(0xcaf2_5fe2, $obj->farmhash32(strtolower('ABC')));
+    }
+
+    public function testArithmeticPrimitives(): void
     {
         $obj = $this->getTestObject();
         $invoke = static function (string $name, mixed ...$args) use ($obj): mixed {
@@ -461,25 +533,53 @@ class FarmHash64Test extends TestCase
             return $method->invoke($obj, ...$args);
         };
 
-        $v = ['hi' => 0x0123_4567, 'lo' => 0x89ab_cdef];
+        $v = 81_985_529_216_486_895; // 0x0123456789abcdef
 
-        // u32RotR: shifts of 0 or >= 32 return the value unchanged.
-        static::assertSame(0x89ab_cdef, $invoke('u32RotR', 0x89ab_cdef, 0));
-        static::assertSame(0x89ab_cdef, $invoke('u32RotR', 0x89ab_cdef, 32));
+        // add64 must wrap instead of promoting the result to a float.
+        static::assertSame(0, $invoke('add64', -1, 1));
+        static::assertSame(PHP_INT_MIN, $invoke('add64', PHP_INT_MAX, 1));
+        static::assertSame(-1, $invoke('add64', -1, 0));
+        static::assertSame(5_725_236_944_806_949_570, $invoke('add64', self::K1, self::K2));
+        static::assertIsInt($invoke('add64', PHP_INT_MAX, PHP_INT_MAX));
 
-        // u64RotR: 0 and 64 are identity, 32 swaps the words.
-        static::assertSame($v, $invoke('u64RotR', $v, 0));
-        static::assertSame($v, $invoke('u64RotR', $v, 64));
-        static::assertSame(['hi' => 0x89ab_cdef, 'lo' => 0x0123_4567], $invoke('u64RotR', $v, 32));
+        // mul64 must wrap instead of promoting the result to a float.
+        static::assertSame(1, $invoke('mul64', -1, -1));
+        static::assertSame(0, $invoke('mul64', $v, 0));
+        static::assertSame($v, $invoke('mul64', $v, 1));
+        static::assertSame(2_541_551_405_711_093_504, $invoke('mul64', $v, 0x100));
+        static::assertSame(1_185_015_349_418_889_597, $invoke('mul64', self::K1, self::K2));
+        static::assertIsInt($invoke('mul64', PHP_INT_MAX, PHP_INT_MAX));
 
-        // u64ShiftL: 0 and 64 are identity, 32..63 clears the low word.
-        static::assertSame($v, $invoke('u64ShiftL', $v, 0));
-        static::assertSame($v, $invoke('u64ShiftL', $v, 64));
-        static::assertSame(['hi' => 0x100, 'lo' => 0], $invoke('u64ShiftL', ['hi' => 0, 'lo' => 1], 40));
+        // shr64 must fill with zeros, unlike PHP's arithmetic >>.
+        static::assertSame(5_124_095_576_030_430, $invoke('shr64', $v, 4));
+        static::assertSame(131_071, $invoke('shr64', -1, 47));
+        static::assertSame(1, $invoke('shr64', -1, 63));
 
-        // u64ShiftR: 0 and 64 are identity, 1..31 shifts within 64 bits.
-        static::assertSame($v, $invoke('u64ShiftR', $v, 0));
-        static::assertSame($v, $invoke('u64ShiftR', $v, 64));
-        static::assertSame(['hi' => 0, 'lo' => 0xf], $invoke('u64ShiftR', ['hi' => 0, 'lo' => 0xf0], 4));
+        // rotr32: shifts of 0 or >= 32 return the value unchanged.
+        static::assertSame(0x89ab_cdef, $invoke('rotr32', 0x89ab_cdef, 0));
+        static::assertSame(0x89ab_cdef, $invoke('rotr32', 0x89ab_cdef, 32));
+        static::assertSame(0xf89a_bcde, $invoke('rotr32', 0x89ab_cdef, 4));
+
+        // rotr64: 0 and 64 are identity, 32 swaps the halves.
+        static::assertSame($v, $invoke('rotr64', $v, 0));
+        static::assertSame($v, $invoke('rotr64', $v, 64));
+        static::assertSame(-8_526_495_043_095_935_641, $invoke('rotr64', $v, 32));
+        static::assertSame(-1_147_797_409_030_816_546, $invoke('rotr64', $v, 4));
+
+        // fetch32 and fetch64 read little-endian, including at an offset.
+        static::assertSame(0x6463_6261, $invoke('fetch32', 'abcdefghijkl', 0));
+        static::assertSame(0x6867_6665, $invoke('fetch32', 'abcdefghijkl', 4));
+        static::assertSame(7_523_094_288_207_667_809, $invoke('fetch64', 'abcdefghijkl', 0));
+        static::assertSame(7_812_454_979_559_974_501, $invoke('fetch64', 'abcdefghijkl', 4));
+    }
+
+    public function testFarmhash32Hex(): void
+    {
+        foreach (self::TEST_DATA as $data) {
+            $h = $this->getTestObject()->farmhash32Hex($data[3]);
+            static::assertSame(sprintf('%08x', $data[0]), $h);
+        }
+
+        static::assertSame('caf25fe2', $this->getTestObject()->farmhash32Hex('abc'));
     }
 }

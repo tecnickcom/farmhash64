@@ -1,9 +1,8 @@
-/** FarmHash64 Javascript Library
+/** FarmHash64 JavaScript Library
  *
  * farmhash64.js
  *
- *
- * The Library farmhash64 implements the FarmHash64 and FarmHash32 hash functions for strings.
+ * This library implements the farmhash64 and farmhash32 hash functions for strings.
  *
  * FarmHash is a family of hash functions.
  *
@@ -13,11 +12,9 @@
  * The FarmHash32 function is also provided, which returns a 32-bit fingerprint hash for a string.
  *
  * All members of the FarmHash family were designed with heavy reliance on previous work by Jyrki Alakuijala, Austin Appleby, Bob Jenkins, and others.
- * This is a Javascript port of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
+ * This is Nicola Asuni's (Tecnick.com) JavaScript rewrite of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash).
  *
- * This code has been ported/translated by Nicola Asuni (Tecnick.com) to JavaScript code.
- *
- * NOTE: Javascript has no support for unsigned integers.
+ * NOTE: JavaScript has no support for unsigned integers.
  *       The function strFarmhash64Hex is provided to calculate the 64-bit hash value from a string and return it as a fixed-length hexadecimal string.
  *
  * @category   Libraries
@@ -43,6 +40,7 @@ const k2 = {
 const c1 = 0xcc9e2d51;
 const c2 = 0x1b873593;
 
+// Add two 64-bit values represented as {hi,lo} pairs of 32-bit halves.
 function u64Add(a, b) {
     const losum = a.lo + b.lo;
     const cb = losum >>> 0 < a.lo >>> 0 || losum >>> 0 < b.lo >>> 0 ? 1 : 0;
@@ -52,6 +50,7 @@ function u64Add(a, b) {
     };
 }
 
+// Split a 32-bit value into its high and low 16-bit halves.
 function u32Split16(a) {
     return {
         hi: (a >>> 16) & 0xffff,
@@ -59,12 +58,14 @@ function u32Split16(a) {
     };
 }
 
+// Multiply two 32-bit values, truncated to 32 bits.
 function u32Mul(a, b) {
     const x = u32Split16(a);
     const y = u32Split16(b);
     return (x.lo * y.lo + (((x.hi * y.lo + x.lo * y.hi) << 16) >>> 0)) >>> 0;
 }
 
+// Multiply two 32-bit values into a 64-bit result.
 function u32Mul64(a, b) {
     const x = u32Split16(a);
     const y = u32Split16(b);
@@ -85,6 +86,7 @@ function u32Mul64(a, b) {
     return u64Add(u64Add(s, v), w);
 }
 
+// Multiply two 64-bit values, truncated to 64 bits.
 function u64Mul(a, b) {
     return u64Add({
             hi: (u32Mul(a.hi, b.lo) + u32Mul(a.lo, b.hi)) >>> 0,
@@ -94,13 +96,17 @@ function u64Mul(a, b) {
     );
 }
 
+// Rotate a 32-bit value right by the given number of bits.
+// Shifts of 0 or of 32 and above return the value unchanged.
 function u32RotR(a, s) {
     if (s <= 0 || s >= 32) {
         return a >>> 0;
     }
-    return ((a << (32 - s)) >>> 0) | (a >>> s);
+    return (((a << (32 - s)) >>> 0) | (a >>> s)) >>> 0;
 }
 
+// Rotate a 64-bit value right by the given number of bits.
+// Shifts of 0 or of 64 and above return the value unchanged.
 function u64RotR(a, s) {
     if (s <= 0 || s >= 64) {
         return {
@@ -129,6 +135,8 @@ function u64RotR(a, s) {
     };
 }
 
+// Shift a 64-bit value left by the given number of bits.
+// Shifts of 0 or of 64 and above return the value unchanged.
 function u64ShiftL(a, s) {
     if (s <= 0 || s >= 64) {
         return {
@@ -138,7 +146,7 @@ function u64ShiftL(a, s) {
     }
     if (s < 32) {
         return {
-            hi: (a.lo >>> (32 - s)) | ((a.hi << s) >>> 0),
+            hi: ((a.lo >>> (32 - s)) | ((a.hi << s) >>> 0)) >>> 0,
             lo: (a.lo << s) >>> 0,
         };
     }
@@ -148,6 +156,8 @@ function u64ShiftL(a, s) {
     };
 }
 
+// Shift a 64-bit value right by the given number of bits.
+// Shifts of 0 or of 64 and above return the value unchanged.
 function u64ShiftR(a, s) {
     if (s <= 0 || s >= 64) {
         return {
@@ -158,7 +168,7 @@ function u64ShiftR(a, s) {
     if (s < 32) {
         return {
             hi: a.hi >>> s,
-            lo: (a.hi << (32 - s)) | (a.lo >>> s),
+            lo: (((a.hi << (32 - s)) >>> 0) | (a.lo >>> s)) >>> 0,
         };
     }
     return {
@@ -167,6 +177,7 @@ function u64ShiftR(a, s) {
     };
 }
 
+// XOR two 64-bit values.
 function u64XOR(a, b) {
     return {
         hi: (a.hi ^ b.hi) >>> 0,
@@ -174,6 +185,7 @@ function u64XOR(a, b) {
     };
 }
 
+// Fetch a 32-bit little-endian integer from a byte array.
 function fetchU32(s, i) {
     const lo =
         (s[i + 0] >>> 0) |
@@ -186,6 +198,7 @@ function fetchU32(s, i) {
     };
 }
 
+// Fetch a 64-bit little-endian integer from a byte array.
 function fetchU64(s, i) {
     const lo =
         (s[i + 0] >>> 0) |
@@ -203,10 +216,12 @@ function fetchU64(s, i) {
     };
 }
 
+// XOR a 64-bit value with itself shifted right by 47 bits.
 function shiftMix(v) {
     return u64XOR(v, u64ShiftR(v, 47));
 }
 
+// Combine a 32-bit value into a running hash using the MurmurHash3 mixing step.
 function mur(a, h) {
     a = u32Mul(a, c1);
     a = u32RotR(a, 17);
@@ -216,10 +231,12 @@ function mur(a, h) {
     return (u32Mul(h, 5) + 0xe6546b64) >>> 0;
 }
 
+// Reduce a 64-bit value to 32 bits using the MurmurHash3 mixing step.
 function mix64To32(v) {
     return mur(v.hi, v.lo);
 }
 
+// Return a 64-bit hash for 16 bytes given as two 64-bit words, multiplied by a constant.
 function hashLen16Mul(u, v, mul) {
     let a = u64Mul(u64XOR(u, v), mul);
     a = u64XOR(a, u64ShiftR(a, 47));
@@ -229,6 +246,7 @@ function hashLen16Mul(u, v, mul) {
     return b;
 }
 
+// Return a 64-bit hash for 0 to 16 bytes.
 function hashLen0to16(s) {
     const slen = s.length;
     const slen64 = {
@@ -239,10 +257,7 @@ function hashLen0to16(s) {
     if (slen >= 8) {
         const mul = u64Add(
             k2,
-            u64Mul(slen64, {
-                hi: 0,
-                lo: 2,
-            })
+            u64Add(slen64, slen64)
         );
         const a = u64Add(fetchU64(s, 0), k2);
         const b = fetchU64(s, slen - 8);
@@ -257,10 +272,7 @@ function hashLen0to16(s) {
     if (slen >= 4) {
         const mul = u64Add(
             k2,
-            u64Mul(slen64, {
-                hi: 0,
-                lo: 2,
-            })
+            u64Add(slen64, slen64)
         );
         const a = fetchU32(s, 0);
         const u = u64Add(slen64, u64ShiftL(a, 3));
@@ -299,6 +311,7 @@ function hashLen0to16(s) {
     return k2;
 }
 
+// Return a 64-bit hash for 17 to 32 bytes.
 function hashLen17to32(s) {
     const slen = s.length;
     const slen64 = {
@@ -307,10 +320,7 @@ function hashLen17to32(s) {
     };
     const mul = u64Add(
         k2,
-        u64Mul(slen64, {
-            hi: 0,
-            lo: 2,
-        })
+        u64Add(slen64, slen64)
     );
     const a = u64Mul(fetchU64(s, 0), k1);
     const b = fetchU64(s, 8);
@@ -324,6 +334,7 @@ function hashLen17to32(s) {
     );
 }
 
+// Return a 64-bit hash for 33 to 64 bytes.
 function hashLen33to64(s) {
     const slen = s.length;
     const slen64 = {
@@ -332,10 +343,7 @@ function hashLen33to64(s) {
     };
     const mul = u64Add(
         k2,
-        u64Mul(slen64, {
-            hi: 0,
-            lo: 2,
-        })
+        u64Add(slen64, slen64)
     );
     const a = u64Mul(fetchU64(s, 0), k2);
     const b = fetchU64(s, 8);
@@ -358,6 +366,8 @@ function hashLen33to64(s) {
     );
 }
 
+// Return a 128-bit weak hash for four 64-bit words and two seeds.
+// Callers do best to use "random-looking" values for a and b.
 function weakHashLen32WithSeedsWords(w, x, y, z, a, b) {
     a = u64Add(a, w);
     b = u64RotR(u64Add(u64Add(b, a), z), 21);
@@ -371,6 +381,7 @@ function weakHashLen32WithSeedsWords(w, x, y, z, a, b) {
     };
 }
 
+// Return a 128-bit weak hash for the 32 bytes of s starting at idx and two seeds.
 function weakHashLen32WithSeeds(s, idx, a, b) {
     return weakHashLen32WithSeedsWords(
         fetchU64(s, idx + 0),
@@ -382,17 +393,18 @@ function weakHashLen32WithSeeds(s, idx, a, b) {
     );
 }
 
+// Generate a pseudorandom byte array of the given size, used by the unit tests.
 function _testData(size) {
     const kt = {
         hi: 0xc3a5c85c,
         lo: 0x97cb3127,
     };
     const data = new Uint8Array(size);
-    var a = {
+    let a = {
         hi: 0,
         lo: 9,
     };
-    var b = {
+    let b = {
         hi: 0,
         lo: 777,
     };
@@ -410,13 +422,15 @@ function _testData(size) {
 }
 
 /**
- * Calculates the 64-bit FarmHash hash value for the given byte array.
+ * Returns a 64-bit fingerprint hash for a byte array.
  *
- * @param {Uint8Array} s - The input byte array to be hashed.
+ * This function is not suitable for cryptography.
+ *
+ * @param {Uint8Array} s - The input byte array to hash.
  * @returns {object} The 64-bit hash value as an object with properties `hi` and `lo`, representing the high and low 32 bits respectively.
  */
 function farmhash64(s) {
-    var slen = s.length;
+    let slen = s.length;
 
 
     if (slen <= 32) {
@@ -431,7 +445,7 @@ function farmhash64(s) {
         return hashLen33to64(s);
     }
 
-    var v = {
+    let v = {
         hi: {
             hi: 0,
             lo: 0,
@@ -442,7 +456,7 @@ function farmhash64(s) {
         },
     };
 
-    var w = {
+    let w = {
         hi: {
             hi: 0,
             lo: 0,
@@ -463,14 +477,14 @@ function farmhash64(s) {
         lo: 113,
     };
 
-    var x = u64Add(u64Mul(seed, k2), fetchU64(s, 0));
-    var y = u64Add(u64Mul(seed, k1), a113);
-    var z = u64Mul(shiftMix(u64Add(u64Mul(y, k2), a113)), k2);
+    let x = u64Add(u64Mul(seed, k2), fetchU64(s, 0));
+    let y = u64Add(u64Mul(seed, k1), a113);
+    let z = u64Mul(shiftMix(u64Add(u64Mul(y, k2), a113)), k2);
 
     const endIdx = ((slen - 1) >>> 6) << 6;
     const last64Idx = endIdx + (((slen - 1) >>> 0) & 63) - 63;
 
-    var idx = 0;
+    let idx = 0;
 
     while (slen > 64) {
         x = u64Mul(
@@ -548,65 +562,73 @@ function farmhash64(s) {
 }
 
 /**
- * Calculates a 32-bit hash value using the FarmHash64 algorithm.
+ * Returns a 32-bit fingerprint hash for a byte array.
  *
- * @param {string} s - The input string to hash.
+ * NOTE: This is NOT equivalent to the original Fingerprint32 function.
+ * It is derived from farmhash64.
+ *
+ * This function is not suitable for cryptography.
+ *
+ * @param {Uint8Array} s - The input byte array to hash.
  * @returns {number} The 32-bit hash value.
  */
 function farmhash32(s) {
     return mix64To32(farmhash64(s));
 }
 
+// Reusable UTF-8 encoder: constructing one per call is measurably slower.
+const utf8Encoder = new TextEncoder();
+
 /**
- * Calculates the farmhash64 hash value for a given string.
+ * Returns a 64-bit fingerprint hash for the UTF-8 encoding of a string.
  *
- * @param {string} str - The input string to be hashed.
+ * @param {string} str - The input string to hash.
  * @returns {object} The 64-bit hash value as an object with properties `hi` and `lo`, representing the high and low 32 bits respectively.
  */
 function strFarmhash64(str) {
-    const s = new TextEncoder().encode(str);
-    return farmhash64(s);
+    return farmhash64(utf8Encoder.encode(str));
 }
 
 /**
- * Calculates the farmhash32 hash value for a given string.
+ * Returns a 32-bit fingerprint hash for the UTF-8 encoding of a string.
  *
- * @param {string} str - The input string to be hashed.
+ * @param {string} str - The input string to hash.
  * @returns {number} The 32-bit hash value.
  */
 function strFarmhash32(str) {
-    const s = new TextEncoder().encode(str);
-    return farmhash32(s);
+    return farmhash32(utf8Encoder.encode(str));
 }
 
+// Left-pad a string with zeros to a length of 8 characters.
 function padL08(s) {
     return ("00000000" + s).slice(-8);
 }
 
 /**
- * Converts a 32 bit number to a fixed-length hexadecimal string representation.
+ * Converts a 32-bit number to an 8-character hexadecimal string.
  *
- * @param {number} n - The number to convert
- * @returns {string} The fixed-length hexadecimal string representation of the FarmHash object.
+ * @param {number} n - The number to convert.
+ * @returns {string} The hexadecimal representation of the number.
  */
 function hex32(n) {
-    return padL08(n.toString(16));
+    return padL08((n >>> 0).toString(16));
 }
 
 /**
- * Converts a 64 bit {hi,lo} FarmHash64 object to a hexadecimal string representation.
+ * Converts a 64-bit {hi,lo} hash value to a 16-character hexadecimal string.
  *
- * @param {Object} h - The FarmHash64 object to convert.
- * @returns {string} The fixed-length hexadecimal string representation of the FarmHash object.
+ * @param {Object} h - The 64-bit hash value to convert.
+ * @returns {string} The hexadecimal representation of the hash value.
  */
 function hex64(h) {
-    return padL08(h.hi.toString(16)) + padL08(h.lo.toString(16));
+    return padL08((h.hi >>> 0).toString(16)) + padL08((h.lo >>> 0).toString(16));
 }
 
 /**
- * Calculates the farmhash64 hash value for a given string.
+ * Returns a 64-bit fingerprint hash for the UTF-8 encoding of a string,
+ * as a 16-character hexadecimal string.
  *
- * @param {string} str - The input string to be hashed.
+ * @param {string} str - The input string to hash.
  * @returns {string} The 64-bit hash value as a fixed-length hexadecimal string.
  */
 function strFarmhash64Hex(str) {
@@ -614,16 +636,16 @@ function strFarmhash64Hex(str) {
 }
 
 /**
- * Calculates the farmhash32 hash value for a given string.
+ * Returns a 32-bit fingerprint hash for the UTF-8 encoding of a string,
+ * as an 8-character hexadecimal string.
  *
- * @param {string} str - The input string to be hashed.
+ * @param {string} str - The input string to hash.
  * @returns {string} The 32-bit hash value as a fixed-length hexadecimal string.
  */
 function strFarmhash32Hex(str) {
     return hex32(strFarmhash32(str));
 }
 
-/* c8 ignore start */
 if (typeof module !== "undefined") {
     module.exports = {
         farmhash32: farmhash32,
@@ -641,4 +663,3 @@ if (typeof module !== "undefined") {
         _u64ShiftR: u64ShiftR,
     };
 }
-/* c8 ignore stop */
