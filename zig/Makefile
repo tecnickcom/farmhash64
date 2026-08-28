@@ -57,6 +57,8 @@ format:
 linter:
 	zig fmt --check src/*.zig
 
+# The test binary is built with -fllvm because kcov cannot read the debug info
+# emitted by the self-hosted backend.
 ## Run the unit tests under kcov and check for 100% code coverage (kcov is optional)
 .PHONY: coverage
 coverage:
@@ -67,7 +69,7 @@ coverage:
 	fi; \
 	rm -rf zig-out/coverage; \
 	mkdir -p zig-out; \
-	zig test --test-no-exec -femit-bin=zig-out/test_farmhash64 src/test_farmhash64.zig; \
+	zig test --test-no-exec -fllvm -femit-bin=zig-out/test_farmhash64 src/test_farmhash64.zig; \
 	kcov --include-pattern=src/farmhash64.zig --exclude-pattern=test_farmhash64.zig --clean zig-out/coverage ./zig-out/test_farmhash64; \
 	covered=$$(grep -oE '"percent_covered" *: *"[0-9.]+"' zig-out/coverage/test_farmhash64/coverage.json | grep -oE '[0-9.]+' | head -1); \
 	echo "Coverage: $$covered%"; \
