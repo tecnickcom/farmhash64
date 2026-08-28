@@ -202,7 +202,7 @@ func testDataItemFarmHash64(t *testing.T, data []byte, offset int, hlen int, ind
 	t.Helper()
 
 	h := FarmHash64(data[offset : offset+hlen])
-	a := (uint32)(h >> 32)
+	a := uint32(h >> 32)
 
 	exp := expectedFarmHash64()
 
@@ -210,7 +210,7 @@ func testDataItemFarmHash64(t *testing.T, data []byte, offset int, hlen int, ind
 		t.Errorf("Expected %d got %d", exp[index], a)
 	}
 
-	a = (uint32)((h << 32) >> 32)
+	a = uint32((h << 32) >> 32)
 
 	if a != exp[index+1] {
 		t.Errorf("Expected %d got %d", exp[index+1], a)
