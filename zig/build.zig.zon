@@ -1,6 +1,6 @@
 .{
     .name = .farmhash64,
-    .version = "1.10.3",
+    .version = "1.10.4",
     .fingerprint = 0xa76c118ed3353d92,
     .minimum_zig_version = "0.16.0",
     .paths = .{
