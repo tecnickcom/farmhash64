@@ -1,6 +1,6 @@
 {
     "name": "farmhash64",
-    "version": "1.10.4",
+    "version": "1.10.5",
     "description": "FarmHash64 and FarmHash32 hash functions for strings",
     "license": "SEE LICENSE IN LICENSE",
     "private": true,
