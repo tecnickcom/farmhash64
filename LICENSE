@@ -1,10 +1,6 @@
-The code in this project is a multi-language rewrite of the Fingerprint64
-(farmhashna::Hash64) code from Google's FarmHash
-(https://github.com/google/farmhash) by Nicola Asuni (Tecnick.com).
-
 MIT License:
 
-  - Copyright (c) 2016-2026 Nicola Asuni (versions in C, CGO, GO, Java, Javascript, PHP, Python, R, Rust, Zig).
+  - Copyright (c) 2016-2026 Nicola Asuni (Tecnick.com) - multi-language rewrite of the Fingerprint64 (farmhashna::Hash64) code from Google's FarmHash (https://github.com/google/farmhash), versions in C, CGO, GO, Java, Javascript, PHP, Python, R, Rust, Zig.
   - Copyright (c) 2014 Damian Gryski (original GO version).
   - Copyright (c) 2014 Google, Inc (original C++ version).
 
