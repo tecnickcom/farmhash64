@@ -38,7 +38,7 @@ $(if $(VH_BUILD_DOXYGEN),-DBUILD_DOXYGEN="$(VH_BUILD_DOXYGEN)")
 LCOVOPTS=--rc branch_coverage=1
 
 # clang-tidy checks (mirrors the tidy target) used by the linter target
-TIDYCHECKS=*,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-altera-unroll-loops,-altera-id-dependent-backward-branch,-altera-struct-pack-align,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-readability-identifier-length,-llvmlibc-restrict-system-libc-headers,-llvm-header-guard,-llvm-include-order,-android-cloexec-open,-hicpp-no-assembler,-hicpp-signed-bitwise,-misc-include-cleaner,-clang-analyzer-alpha.*
+TIDYCHECKS=*,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-altera-unroll-loops,-altera-id-dependent-backward-branch,-altera-struct-pack-align,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-readability-identifier-length,-readability-use-concise-preprocessor-directives,-llvmlibc-restrict-system-libc-headers,-llvm-header-guard,-llvm-include-order,-android-cloexec-open,-hicpp-no-assembler,-hicpp-signed-bitwise,-misc-include-cleaner,-clang-analyzer-alpha.*
 
 # --- MAKE TARGETS ---
 
