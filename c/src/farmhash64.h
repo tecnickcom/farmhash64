@@ -532,7 +532,7 @@ static inline uint64_t farmhash64(const char *s, size_t len)
     x = farmhash_ror64(x + y + v.lo + farmhash_fetch64(s + 8), 37) * mul;
     y = farmhash_ror64(y + v.hi + farmhash_fetch64(s + 48), 42) * mul;
     x ^= w.hi * 9;
-    y += v.lo * 9 + farmhash_fetch64(s + 40);
+    y += (v.lo * 9) + farmhash_fetch64(s + 40);
     z = farmhash_ror64(z + w.lo, 33) * mul;
     v = farmhash_weak_na_len_32_with_seeds(s, v.hi * mul, x + w.lo);
     w = farmhash_weak_na_len_32_with_seeds(s + 32, z + w.hi, y + farmhash_fetch64(s + 16));
