@@ -5,7 +5,7 @@ module github.com/tecnickcom/farmhash64/go/resources/tools
 
 go 1.24
 
-toolchain go1.27.3
+toolchain go1.27.4
 
 tool github.com/jstemmer/go-junit-report/v2
 
